@@ -1,0 +1,1162 @@
+[
+    {
+        "id": 1205,
+        "entity_id": "80ea9989-06b2-4210-857a-2a8163a50bde",
+        "entity_name": "add_line_item_to_ticket1",
+        "execution_id": "46b06023-65c4-4590-8d6d-47195b0ef7c9",
+        "message": "Using jsonpickle to serialize an instance of AnotherParent. It is recommended to register a serializer for classes or subclass AnotherParent with Hook",
+        "log_type": "WARNING",
+        "object": null,
+        "parent_id": null,
+        "logged_at": "2023-06-19T21:40:21Z"
+    },
+    {
+        "id": 1206,
+        "entity_id": "80ea9989-06b2-4210-857a-2a8163a50bde",
+        "entity_name": "add_line_item_to_ticket1",
+        "execution_id": "46b06023-65c4-4590-8d6d-47195b0ef7c9",
+        "message": "Using jsonpickle to serialize an instance of AutomationEntity. It is recommended to register a serializer for classes or subclass AutomationEntity with Hook",
+        "log_type": "WARNING",
+        "object": null,
+        "parent_id": null,
+        "logged_at": "2023-06-19T21:40:21Z"
+    },
+    {
+        "id": 1207,
+        "entity_id": "80ea9989-06b2-4210-857a-2a8163a50bde",
+        "entity_name": "add_line_item_to_ticket1",
+        "execution_id": "46b06023-65c4-4590-8d6d-47195b0ef7c9",
+        "message": "Starting Entity Execution - add_line_item_to_ticket1",
+        "log_type": "ENTITY_EXECUTION_START",
+        "object": {
+            "id": "80ea9989-06b2-4210-857a-2a8163a50bde",
+            "name": "add_line_item_to_ticket1",
+            "logger": {
+                "entity": "<pos_store.entity.AutomationEntity object at 0x107b25b20>",
+                "py/object": "pos_store.logger.Logger"
+            },
+            "exception": null,
+            "parent_id": null,
+            "py/object": "pos_store.entity.AutomationEntity",
+            "input_data": {
+                "item": 13,
+                "ticket": 12
+            },
+            "description": "Add an item to the pending ticket.",
+            "output_data": null,
+            "input_schema": {
+                "item": {
+                    "required": true,
+                    "max_value": null,
+                    "min_value": null,
+                    "py/object": "pos_store.validators.IntegerField"
+                },
+                "ticket": {
+                    "required": true,
+                    "max_value": null,
+                    "min_value": null,
+                    "py/object": "pos_store.validators.IntegerField"
+                },
+                "discount": {
+                    "required": false,
+                    "max_value": null,
+                    "min_value": null,
+                    "py/object": "pos_store.validators.FloatField"
+                }
+            },
+            "output_schema": {
+                "item": {
+                    "schema": null,
+                    "required": true,
+                    "py/object": "pos_store.validators.ObjectOfTypeField",
+                    "object_type": {
+                        "py/type": "pos_store.tax_interface_2.LineItem"
+                    }
+                },
+                "ticket": {
+                    "schema": null,
+                    "required": true,
+                    "py/object": "pos_store.validators.ObjectOfTypeField",
+                    "object_type": {
+                        "py/type": "pos_store.tax_interface_2.PendingTicket"
+                    }
+                }
+            },
+            "target_function": {
+                "py/function": "pos_store.tax_interface_2.add_line_item_to_ticket"
+            },
+            "execution_start_time": null,
+            "executed_successfully": false
+        },
+        "parent_id": null,
+        "logged_at": "2023-06-19T21:40:21Z"
+    },
+    {
+        "id": 1208,
+        "entity_id": "80ea9989-06b2-4210-857a-2a8163a50bde",
+        "entity_name": "add_line_item_to_ticket1",
+        "execution_id": "46b06023-65c4-4590-8d6d-47195b0ef7c9",
+        "message": "Starting execution of create_line_item",
+        "log_type": "INFO",
+        "object": null,
+        "parent_id": null,
+        "logged_at": "2023-06-19T21:40:21Z"
+    },
+    {
+        "id": 1209,
+        "entity_id": "2310a3e4-80b8-4cc7-b806-bc017d88569b",
+        "entity_name": "create_line_item",
+        "execution_id": "46b06023-65c4-4590-8d6d-47195b0ef7c9",
+        "message": "Using jsonpickle to serialize an instance of AutomationEntity. It is recommended to register a serializer for classes or subclass AutomationEntity with Hook",
+        "log_type": "WARNING",
+        "object": null,
+        "parent_id": "80ea9989-06b2-4210-857a-2a8163a50bde",
+        "logged_at": "2023-06-19T21:40:21Z"
+    },
+    {
+        "id": 1210,
+        "entity_id": "2310a3e4-80b8-4cc7-b806-bc017d88569b",
+        "entity_name": "create_line_item",
+        "execution_id": "46b06023-65c4-4590-8d6d-47195b0ef7c9",
+        "message": "Starting Entity Execution - create_line_item",
+        "log_type": "ENTITY_EXECUTION_START",
+        "object": {
+            "id": "2310a3e4-80b8-4cc7-b806-bc017d88569b",
+            "name": "create_line_item",
+            "logger": {
+                "entity": "<pos_store.entity.AutomationEntity object at 0x107b25d90>",
+                "py/object": "pos_store.logger.Logger"
+            },
+            "exception": null,
+            "parent_id": "80ea9989-06b2-4210-857a-2a8163a50bde",
+            "py/object": "pos_store.entity.AutomationEntity",
+            "input_data": {
+                "ticket": {
+                    "id": 12,
+                    "py/object": "pos_store.tax_interface_2.PendingTicket",
+                    "line_items": []
+                },
+                "item_id": 13
+            },
+            "description": "Creates a new line item object and append it to pending ticket.",
+            "output_data": null,
+            "input_schema": {
+                "ticket": {
+                    "schema": null,
+                    "required": true,
+                    "py/object": "pos_store.validators.ObjectOfTypeField",
+                    "object_type": {
+                        "py/type": "pos_store.tax_interface_2.PendingTicket"
+                    }
+                },
+                "item_id": {
+                    "required": true,
+                    "max_value": null,
+                    "min_value": null,
+                    "py/object": "pos_store.validators.IntegerField"
+                }
+            },
+            "output_schema": {
+                "item": {
+                    "schema": null,
+                    "required": true,
+                    "py/object": "pos_store.validators.ObjectOfTypeField",
+                    "object_type": {
+                        "py/type": "pos_store.tax_interface_2.LineItem"
+                    }
+                },
+                "ticket": {
+                    "schema": null,
+                    "required": true,
+                    "py/object": "pos_store.validators.ObjectOfTypeField",
+                    "object_type": {
+                        "py/type": "pos_store.tax_interface_2.PendingTicket"
+                    }
+                }
+            },
+            "target_function": {
+                "py/function": "pos_store.tax_interface_2.create_line_item"
+            },
+            "execution_start_time": null,
+            "executed_successfully": false
+        },
+        "parent_id": "80ea9989-06b2-4210-857a-2a8163a50bde",
+        "logged_at": "2023-06-19T21:40:21Z"
+    },
+    {
+        "id": 1211,
+        "entity_id": "2310a3e4-80b8-4cc7-b806-bc017d88569b",
+        "entity_name": "create_line_item",
+        "execution_id": "46b06023-65c4-4590-8d6d-47195b0ef7c9",
+        "message": "Starting execution of set_description",
+        "log_type": "INFO",
+        "object": null,
+        "parent_id": "80ea9989-06b2-4210-857a-2a8163a50bde",
+        "logged_at": "2023-06-19T21:40:21Z"
+    },
+    {
+        "id": 1212,
+        "entity_id": "68180134-941f-4a34-bb99-3c3a86b5f34e",
+        "entity_name": "set_description",
+        "execution_id": "46b06023-65c4-4590-8d6d-47195b0ef7c9",
+        "message": "Using jsonpickle to serialize an instance of AutomationEntity. It is recommended to register a serializer for classes or subclass AutomationEntity with Hook",
+        "log_type": "WARNING",
+        "object": null,
+        "parent_id": "2310a3e4-80b8-4cc7-b806-bc017d88569b",
+        "logged_at": "2023-06-19T21:40:21Z"
+    },
+    {
+        "id": 1213,
+        "entity_id": "68180134-941f-4a34-bb99-3c3a86b5f34e",
+        "entity_name": "set_description",
+        "execution_id": "46b06023-65c4-4590-8d6d-47195b0ef7c9",
+        "message": "Starting Entity Execution - set_description",
+        "log_type": "ENTITY_EXECUTION_START",
+        "object": {
+            "id": "68180134-941f-4a34-bb99-3c3a86b5f34e",
+            "name": "set_description",
+            "logger": {
+                "entity": "<pos_store.entity.AutomationEntity object at 0x107b25ee0>",
+                "py/object": "pos_store.logger.Logger"
+            },
+            "exception": null,
+            "parent_id": "2310a3e4-80b8-4cc7-b806-bc017d88569b",
+            "py/object": "pos_store.entity.AutomationEntity",
+            "input_data": {
+                "item": {
+                    "id": 13,
+                    "tax": 0,
+                    "price": 0,
+                    "discount": 0,
+                    "py/object": "pos_store.tax_interface_2.LineItem",
+                    "description": "",
+                    "final_amount": 0
+                }
+            },
+            "description": "Sets item's description on the line item",
+            "output_data": null,
+            "input_schema": {
+                "item": {
+                    "schema": null,
+                    "required": true,
+                    "py/object": "pos_store.validators.ObjectOfTypeField",
+                    "object_type": {
+                        "py/type": "pos_store.tax_interface_2.LineItem"
+                    }
+                }
+            },
+            "output_schema": {},
+            "target_function": {
+                "py/function": "pos_store.tax_interface_2.set_description"
+            },
+            "execution_start_time": null,
+            "executed_successfully": false
+        },
+        "parent_id": "2310a3e4-80b8-4cc7-b806-bc017d88569b",
+        "logged_at": "2023-06-19T21:40:21Z"
+    },
+    {
+        "id": 1214,
+        "entity_id": "68180134-941f-4a34-bb99-3c3a86b5f34e",
+        "entity_name": "set_description",
+        "execution_id": "46b06023-65c4-4590-8d6d-47195b0ef7c9",
+        "message": "Using jsonpickle to serialize an instance of AutomationEntity. It is recommended to register a serializer for classes or subclass AutomationEntity with Hook",
+        "log_type": "WARNING",
+        "object": null,
+        "parent_id": "2310a3e4-80b8-4cc7-b806-bc017d88569b",
+        "logged_at": "2023-06-19T21:40:21Z"
+    },
+    {
+        "id": 1215,
+        "entity_id": "68180134-941f-4a34-bb99-3c3a86b5f34e",
+        "entity_name": "set_description",
+        "execution_id": "46b06023-65c4-4590-8d6d-47195b0ef7c9",
+        "message": "Completing Entity Execution - set_description",
+        "log_type": "ENTITY_EXECUTION_END",
+        "object": {
+            "id": "68180134-941f-4a34-bb99-3c3a86b5f34e",
+            "name": "set_description",
+            "logger": {
+                "entity": "<pos_store.entity.AutomationEntity object at 0x107b25ee0>",
+                "py/object": "pos_store.logger.Logger"
+            },
+            "exception": null,
+            "parent_id": "2310a3e4-80b8-4cc7-b806-bc017d88569b",
+            "py/object": "pos_store.entity.AutomationEntity",
+            "input_data": {
+                "item": {
+                    "id": 13,
+                    "tax": 0,
+                    "price": 0,
+                    "discount": 0,
+                    "py/object": "pos_store.tax_interface_2.LineItem",
+                    "description": "Item 1",
+                    "final_amount": 0
+                }
+            },
+            "description": "Sets item's description on the line item",
+            "output_data": null,
+            "input_schema": {
+                "item": {
+                    "schema": null,
+                    "required": true,
+                    "py/object": "pos_store.validators.ObjectOfTypeField",
+                    "object_type": {
+                        "py/type": "pos_store.tax_interface_2.LineItem"
+                    }
+                }
+            },
+            "output_schema": {},
+            "target_function": {
+                "py/function": "pos_store.tax_interface_2.set_description"
+            },
+            "execution_end_time": {
+                "py/object": "datetime.datetime",
+                "__reduce__": [
+                    {
+                        "py/type": "datetime.datetime"
+                    },
+                    [
+                        "B+cGExUoFA1MNw=="
+                    ]
+                ]
+            },
+            "execution_start_time": {
+                "py/object": "datetime.datetime",
+                "__reduce__": [
+                    {
+                        "py/type": "datetime.datetime"
+                    },
+                    [
+                        "B+cGExUoFA1L+w=="
+                    ]
+                ]
+            },
+            "executed_successfully": true
+        },
+        "parent_id": "2310a3e4-80b8-4cc7-b806-bc017d88569b",
+        "logged_at": "2023-06-19T21:40:21Z"
+    },
+    {
+        "id": 1216,
+        "entity_id": "2310a3e4-80b8-4cc7-b806-bc017d88569b",
+        "entity_name": "create_line_item",
+        "execution_id": "46b06023-65c4-4590-8d6d-47195b0ef7c9",
+        "message": "Completed execution of set_description",
+        "log_type": "INFO",
+        "object": null,
+        "parent_id": "80ea9989-06b2-4210-857a-2a8163a50bde",
+        "logged_at": "2023-06-19T21:40:21Z"
+    },
+    {
+        "id": 1217,
+        "entity_id": "2310a3e4-80b8-4cc7-b806-bc017d88569b",
+        "entity_name": "create_line_item",
+        "execution_id": "46b06023-65c4-4590-8d6d-47195b0ef7c9",
+        "message": "Starting execution of apply_tax",
+        "log_type": "INFO",
+        "object": null,
+        "parent_id": "80ea9989-06b2-4210-857a-2a8163a50bde",
+        "logged_at": "2023-06-19T21:40:21Z"
+    },
+    {
+        "id": 1218,
+        "entity_id": "dfce2283-5681-461d-bdf3-b48d503a8389",
+        "entity_name": "apply_tax",
+        "execution_id": "46b06023-65c4-4590-8d6d-47195b0ef7c9",
+        "message": "Using jsonpickle to serialize an instance of AutomationEntity. It is recommended to register a serializer for classes or subclass AutomationEntity with Hook",
+        "log_type": "WARNING",
+        "object": null,
+        "parent_id": "2310a3e4-80b8-4cc7-b806-bc017d88569b",
+        "logged_at": "2023-06-19T21:40:21Z"
+    },
+    {
+        "id": 1219,
+        "entity_id": "dfce2283-5681-461d-bdf3-b48d503a8389",
+        "entity_name": "apply_tax",
+        "execution_id": "46b06023-65c4-4590-8d6d-47195b0ef7c9",
+        "message": "Starting Entity Execution - apply_tax",
+        "log_type": "ENTITY_EXECUTION_START",
+        "object": {
+            "id": "dfce2283-5681-461d-bdf3-b48d503a8389",
+            "name": "apply_tax",
+            "logger": {
+                "entity": "<pos_store.entity.AutomationEntity object at 0x107b31070>",
+                "py/object": "pos_store.logger.Logger"
+            },
+            "exception": null,
+            "parent_id": "2310a3e4-80b8-4cc7-b806-bc017d88569b",
+            "py/object": "pos_store.entity.AutomationEntity",
+            "input_data": {
+                "item": {
+                    "id": 13,
+                    "tax": 0,
+                    "price": 0,
+                    "discount": 0,
+                    "py/object": "pos_store.tax_interface_2.LineItem",
+                    "description": "Item 1",
+                    "final_amount": 0
+                }
+            },
+            "description": "Apply tax on the item",
+            "output_data": null,
+            "input_schema": {
+                "item": {
+                    "schema": null,
+                    "required": true,
+                    "py/object": "pos_store.validators.ObjectOfTypeField",
+                    "object_type": {
+                        "py/type": "pos_store.tax_interface_2.LineItem"
+                    }
+                }
+            },
+            "output_schema": {},
+            "target_function": {
+                "py/function": "pos_store.tax_interface_2.apply_tax"
+            },
+            "execution_start_time": null,
+            "executed_successfully": false
+        },
+        "parent_id": "2310a3e4-80b8-4cc7-b806-bc017d88569b",
+        "logged_at": "2023-06-19T21:40:21Z"
+    },
+    {
+        "id": 1220,
+        "entity_id": "dfce2283-5681-461d-bdf3-b48d503a8389",
+        "entity_name": "apply_tax",
+        "execution_id": "46b06023-65c4-4590-8d6d-47195b0ef7c9",
+        "message": "Using jsonpickle to serialize an instance of AutomationEntity. It is recommended to register a serializer for classes or subclass AutomationEntity with Hook",
+        "log_type": "WARNING",
+        "object": null,
+        "parent_id": "2310a3e4-80b8-4cc7-b806-bc017d88569b",
+        "logged_at": "2023-06-19T21:40:21Z"
+    },
+    {
+        "id": 1221,
+        "entity_id": "dfce2283-5681-461d-bdf3-b48d503a8389",
+        "entity_name": "apply_tax",
+        "execution_id": "46b06023-65c4-4590-8d6d-47195b0ef7c9",
+        "message": "Completing Entity Execution - apply_tax",
+        "log_type": "ENTITY_EXECUTION_END",
+        "object": {
+            "id": "dfce2283-5681-461d-bdf3-b48d503a8389",
+            "name": "apply_tax",
+            "logger": {
+                "entity": "<pos_store.entity.AutomationEntity object at 0x107b31070>",
+                "py/object": "pos_store.logger.Logger"
+            },
+            "exception": null,
+            "parent_id": "2310a3e4-80b8-4cc7-b806-bc017d88569b",
+            "py/object": "pos_store.entity.AutomationEntity",
+            "input_data": {
+                "item": {
+                    "id": 13,
+                    "tax": 2.5,
+                    "price": 0,
+                    "discount": 0,
+                    "py/object": "pos_store.tax_interface_2.LineItem",
+                    "description": "Item 1",
+                    "final_amount": 0
+                }
+            },
+            "description": "Apply tax on the item",
+            "output_data": null,
+            "input_schema": {
+                "item": {
+                    "schema": null,
+                    "required": true,
+                    "py/object": "pos_store.validators.ObjectOfTypeField",
+                    "object_type": {
+                        "py/type": "pos_store.tax_interface_2.LineItem"
+                    }
+                }
+            },
+            "output_schema": {},
+            "target_function": {
+                "py/function": "pos_store.tax_interface_2.apply_tax"
+            },
+            "execution_end_time": {
+                "py/object": "datetime.datetime",
+                "__reduce__": [
+                    {
+                        "py/type": "datetime.datetime"
+                    },
+                    [
+                        "B+cGExUoFA2zpw=="
+                    ]
+                ]
+            },
+            "execution_start_time": {
+                "py/object": "datetime.datetime",
+                "__reduce__": [
+                    {
+                        "py/type": "datetime.datetime"
+                    },
+                    [
+                        "B+cGExUoFA2zdw=="
+                    ]
+                ]
+            },
+            "executed_successfully": true
+        },
+        "parent_id": "2310a3e4-80b8-4cc7-b806-bc017d88569b",
+        "logged_at": "2023-06-19T21:40:21Z"
+    },
+    {
+        "id": 1222,
+        "entity_id": "2310a3e4-80b8-4cc7-b806-bc017d88569b",
+        "entity_name": "create_line_item",
+        "execution_id": "46b06023-65c4-4590-8d6d-47195b0ef7c9",
+        "message": "Completed execution of apply_tax",
+        "log_type": "INFO",
+        "object": null,
+        "parent_id": "80ea9989-06b2-4210-857a-2a8163a50bde",
+        "logged_at": "2023-06-19T21:40:21Z"
+    },
+    {
+        "id": 1223,
+        "entity_id": "2310a3e4-80b8-4cc7-b806-bc017d88569b",
+        "entity_name": "create_line_item",
+        "execution_id": "46b06023-65c4-4590-8d6d-47195b0ef7c9",
+        "message": "Starting execution of set_price",
+        "log_type": "INFO",
+        "object": null,
+        "parent_id": "80ea9989-06b2-4210-857a-2a8163a50bde",
+        "logged_at": "2023-06-19T21:40:21Z"
+    },
+    {
+        "id": 1224,
+        "entity_id": "8ac41127-07d9-4234-8310-e98a6f37d5a4",
+        "entity_name": "set_price",
+        "execution_id": "46b06023-65c4-4590-8d6d-47195b0ef7c9",
+        "message": "Using jsonpickle to serialize an instance of AutomationEntity. It is recommended to register a serializer for classes or subclass AutomationEntity with Hook",
+        "log_type": "WARNING",
+        "object": null,
+        "parent_id": "2310a3e4-80b8-4cc7-b806-bc017d88569b",
+        "logged_at": "2023-06-19T21:40:21Z"
+    },
+    {
+        "id": 1225,
+        "entity_id": "8ac41127-07d9-4234-8310-e98a6f37d5a4",
+        "entity_name": "set_price",
+        "execution_id": "46b06023-65c4-4590-8d6d-47195b0ef7c9",
+        "message": "Starting Entity Execution - set_price",
+        "log_type": "ENTITY_EXECUTION_START",
+        "object": {
+            "id": "8ac41127-07d9-4234-8310-e98a6f37d5a4",
+            "name": "set_price",
+            "logger": {
+                "entity": "<pos_store.entity.AutomationEntity object at 0x107b311c0>",
+                "py/object": "pos_store.logger.Logger"
+            },
+            "exception": null,
+            "parent_id": "2310a3e4-80b8-4cc7-b806-bc017d88569b",
+            "py/object": "pos_store.entity.AutomationEntity",
+            "input_data": {
+                "item": {
+                    "id": 13,
+                    "tax": 2.5,
+                    "price": 0,
+                    "discount": 0,
+                    "py/object": "pos_store.tax_interface_2.LineItem",
+                    "description": "Item 1",
+                    "final_amount": 0
+                }
+            },
+            "description": "Set the price on the item",
+            "output_data": null,
+            "input_schema": {
+                "item": {
+                    "schema": null,
+                    "required": true,
+                    "py/object": "pos_store.validators.ObjectOfTypeField",
+                    "object_type": {
+                        "py/type": "pos_store.tax_interface_2.LineItem"
+                    }
+                }
+            },
+            "output_schema": {},
+            "target_function": {
+                "py/function": "pos_store.tax_interface_2.set_price"
+            },
+            "execution_start_time": null,
+            "executed_successfully": false
+        },
+        "parent_id": "2310a3e4-80b8-4cc7-b806-bc017d88569b",
+        "logged_at": "2023-06-19T21:40:21Z"
+    },
+    {
+        "id": 1226,
+        "entity_id": "8ac41127-07d9-4234-8310-e98a6f37d5a4",
+        "entity_name": "set_price",
+        "execution_id": "46b06023-65c4-4590-8d6d-47195b0ef7c9",
+        "message": "Using jsonpickle to serialize an instance of AutomationEntity. It is recommended to register a serializer for classes or subclass AutomationEntity with Hook",
+        "log_type": "WARNING",
+        "object": null,
+        "parent_id": "2310a3e4-80b8-4cc7-b806-bc017d88569b",
+        "logged_at": "2023-06-19T21:40:21Z"
+    },
+    {
+        "id": 1227,
+        "entity_id": "8ac41127-07d9-4234-8310-e98a6f37d5a4",
+        "entity_name": "set_price",
+        "execution_id": "46b06023-65c4-4590-8d6d-47195b0ef7c9",
+        "message": "Completing Entity Execution - set_price",
+        "log_type": "ENTITY_EXECUTION_END",
+        "object": {
+            "id": "8ac41127-07d9-4234-8310-e98a6f37d5a4",
+            "name": "set_price",
+            "logger": {
+                "entity": "<pos_store.entity.AutomationEntity object at 0x107b311c0>",
+                "py/object": "pos_store.logger.Logger"
+            },
+            "exception": null,
+            "parent_id": "2310a3e4-80b8-4cc7-b806-bc017d88569b",
+            "py/object": "pos_store.entity.AutomationEntity",
+            "input_data": {
+                "item": {
+                    "id": 13,
+                    "tax": 2.5,
+                    "price": 101,
+                    "discount": 0,
+                    "py/object": "pos_store.tax_interface_2.LineItem",
+                    "description": "Item 1",
+                    "final_amount": 0
+                }
+            },
+            "description": "Set the price on the item",
+            "output_data": null,
+            "input_schema": {
+                "item": {
+                    "schema": null,
+                    "required": true,
+                    "py/object": "pos_store.validators.ObjectOfTypeField",
+                    "object_type": {
+                        "py/type": "pos_store.tax_interface_2.LineItem"
+                    }
+                }
+            },
+            "output_schema": {},
+            "target_function": {
+                "py/function": "pos_store.tax_interface_2.set_price"
+            },
+            "execution_end_time": {
+                "py/object": "datetime.datetime",
+                "__reduce__": [
+                    {
+                        "py/type": "datetime.datetime"
+                    },
+                    [
+                        "B+cGExUoFA33ag=="
+                    ]
+                ]
+            },
+            "execution_start_time": {
+                "py/object": "datetime.datetime",
+                "__reduce__": [
+                    {
+                        "py/type": "datetime.datetime"
+                    },
+                    [
+                        "B+cGExUoFA33Pg=="
+                    ]
+                ]
+            },
+            "executed_successfully": true
+        },
+        "parent_id": "2310a3e4-80b8-4cc7-b806-bc017d88569b",
+        "logged_at": "2023-06-19T21:40:21Z"
+    },
+    {
+        "id": 1228,
+        "entity_id": "2310a3e4-80b8-4cc7-b806-bc017d88569b",
+        "entity_name": "create_line_item",
+        "execution_id": "46b06023-65c4-4590-8d6d-47195b0ef7c9",
+        "message": "Completed execution of set_price",
+        "log_type": "INFO",
+        "object": null,
+        "parent_id": "80ea9989-06b2-4210-857a-2a8163a50bde",
+        "logged_at": "2023-06-19T21:40:21Z"
+    },
+    {
+        "id": 1229,
+        "entity_id": "2310a3e4-80b8-4cc7-b806-bc017d88569b",
+        "entity_name": "create_line_item",
+        "execution_id": "46b06023-65c4-4590-8d6d-47195b0ef7c9",
+        "message": "Starting execution of calculate_total",
+        "log_type": "INFO",
+        "object": null,
+        "parent_id": "80ea9989-06b2-4210-857a-2a8163a50bde",
+        "logged_at": "2023-06-19T21:40:21Z"
+    },
+    {
+        "id": 1230,
+        "entity_id": "86b2b4f0-31cf-42ee-9f8a-9befb7be291f",
+        "entity_name": "calculate_total",
+        "execution_id": "46b06023-65c4-4590-8d6d-47195b0ef7c9",
+        "message": "Using jsonpickle to serialize an instance of AutomationEntity. It is recommended to register a serializer for classes or subclass AutomationEntity with Hook",
+        "log_type": "WARNING",
+        "object": null,
+        "parent_id": "2310a3e4-80b8-4cc7-b806-bc017d88569b",
+        "logged_at": "2023-06-19T21:40:21Z"
+    },
+    {
+        "id": 1231,
+        "entity_id": "86b2b4f0-31cf-42ee-9f8a-9befb7be291f",
+        "entity_name": "calculate_total",
+        "execution_id": "46b06023-65c4-4590-8d6d-47195b0ef7c9",
+        "message": "Starting Entity Execution - calculate_total",
+        "log_type": "ENTITY_EXECUTION_START",
+        "object": {
+            "id": "86b2b4f0-31cf-42ee-9f8a-9befb7be291f",
+            "name": "calculate_total",
+            "logger": {
+                "entity": "<pos_store.entity.AutomationEntity object at 0x107b31310>",
+                "py/object": "pos_store.logger.Logger"
+            },
+            "exception": null,
+            "parent_id": "2310a3e4-80b8-4cc7-b806-bc017d88569b",
+            "py/object": "pos_store.entity.AutomationEntity",
+            "input_data": {
+                "item": {
+                    "id": 13,
+                    "tax": 2.5,
+                    "price": 101,
+                    "discount": 0,
+                    "py/object": "pos_store.tax_interface_2.LineItem",
+                    "description": "Item 1",
+                    "final_amount": 0
+                }
+            },
+            "description": "Calculate total price of the item",
+            "output_data": null,
+            "input_schema": {
+                "item": {
+                    "schema": null,
+                    "required": true,
+                    "py/object": "pos_store.validators.ObjectOfTypeField",
+                    "object_type": {
+                        "py/type": "pos_store.tax_interface_2.LineItem"
+                    }
+                }
+            },
+            "output_schema": {},
+            "target_function": {
+                "py/function": "pos_store.tax_interface_2.calculate_total"
+            },
+            "execution_start_time": null,
+            "executed_successfully": false
+        },
+        "parent_id": "2310a3e4-80b8-4cc7-b806-bc017d88569b",
+        "logged_at": "2023-06-19T21:40:21Z"
+    },
+    {
+        "id": 1232,
+        "entity_id": "86b2b4f0-31cf-42ee-9f8a-9befb7be291f",
+        "entity_name": "calculate_total",
+        "execution_id": "46b06023-65c4-4590-8d6d-47195b0ef7c9",
+        "message": "Using jsonpickle to serialize an instance of AutomationEntity. It is recommended to register a serializer for classes or subclass AutomationEntity with Hook",
+        "log_type": "WARNING",
+        "object": null,
+        "parent_id": "2310a3e4-80b8-4cc7-b806-bc017d88569b",
+        "logged_at": "2023-06-19T21:40:21Z"
+    },
+    {
+        "id": 1233,
+        "entity_id": "86b2b4f0-31cf-42ee-9f8a-9befb7be291f",
+        "entity_name": "calculate_total",
+        "execution_id": "46b06023-65c4-4590-8d6d-47195b0ef7c9",
+        "message": "Completing Entity Execution - calculate_total",
+        "log_type": "ENTITY_EXECUTION_END",
+        "object": {
+            "id": "86b2b4f0-31cf-42ee-9f8a-9befb7be291f",
+            "name": "calculate_total",
+            "logger": {
+                "entity": "<pos_store.entity.AutomationEntity object at 0x107b31310>",
+                "py/object": "pos_store.logger.Logger"
+            },
+            "exception": null,
+            "parent_id": "2310a3e4-80b8-4cc7-b806-bc017d88569b",
+            "py/object": "pos_store.entity.AutomationEntity",
+            "input_data": {
+                "item": {
+                    "id": 13,
+                    "tax": 2.5,
+                    "price": 101,
+                    "discount": 0,
+                    "py/object": "pos_store.tax_interface_2.LineItem",
+                    "description": "Item 1",
+                    "final_amount": 103.5
+                }
+            },
+            "description": "Calculate total price of the item",
+            "output_data": null,
+            "input_schema": {
+                "item": {
+                    "schema": null,
+                    "required": true,
+                    "py/object": "pos_store.validators.ObjectOfTypeField",
+                    "object_type": {
+                        "py/type": "pos_store.tax_interface_2.LineItem"
+                    }
+                }
+            },
+            "output_schema": {},
+            "target_function": {
+                "py/function": "pos_store.tax_interface_2.calculate_total"
+            },
+            "execution_end_time": {
+                "py/object": "datetime.datetime",
+                "__reduce__": [
+                    {
+                        "py/type": "datetime.datetime"
+                    },
+                    [
+                        "B+cGExUoFA5Abg=="
+                    ]
+                ]
+            },
+            "execution_start_time": {
+                "py/object": "datetime.datetime",
+                "__reduce__": [
+                    {
+                        "py/type": "datetime.datetime"
+                    },
+                    [
+                        "B+cGExUoFA5ASQ=="
+                    ]
+                ]
+            },
+            "executed_successfully": true
+        },
+        "parent_id": "2310a3e4-80b8-4cc7-b806-bc017d88569b",
+        "logged_at": "2023-06-19T21:40:21Z"
+    },
+    {
+        "id": 1234,
+        "entity_id": "2310a3e4-80b8-4cc7-b806-bc017d88569b",
+        "entity_name": "create_line_item",
+        "execution_id": "46b06023-65c4-4590-8d6d-47195b0ef7c9",
+        "message": "Completed execution of calculate_total",
+        "log_type": "INFO",
+        "object": null,
+        "parent_id": "80ea9989-06b2-4210-857a-2a8163a50bde",
+        "logged_at": "2023-06-19T21:40:21Z"
+    },
+    {
+        "id": 1235,
+        "entity_id": "2310a3e4-80b8-4cc7-b806-bc017d88569b",
+        "entity_name": "create_line_item",
+        "execution_id": "46b06023-65c4-4590-8d6d-47195b0ef7c9",
+        "message": "Using jsonpickle to serialize an instance of LineItem. It is recommended to register a serializer for classes or subclass LineItem with Hook",
+        "log_type": "WARNING",
+        "object": null,
+        "parent_id": "80ea9989-06b2-4210-857a-2a8163a50bde",
+        "logged_at": "2023-06-19T21:40:21Z"
+    },
+    {
+        "id": 1236,
+        "entity_id": "2310a3e4-80b8-4cc7-b806-bc017d88569b",
+        "entity_name": "create_line_item",
+        "execution_id": "46b06023-65c4-4590-8d6d-47195b0ef7c9",
+        "message": "Adding Item \"Item 1\" to ticket.",
+        "log_type": "CREATE_OBJECT",
+        "object": {
+            "id": 13,
+            "tax": 2.5,
+            "price": 101,
+            "discount": 0,
+            "py/object": "pos_store.tax_interface_2.LineItem",
+            "description": "Item 1",
+            "final_amount": 103.5
+        },
+        "parent_id": "80ea9989-06b2-4210-857a-2a8163a50bde",
+        "logged_at": "2023-06-19T21:40:21Z"
+    },
+    {
+        "id": 1237,
+        "entity_id": "2310a3e4-80b8-4cc7-b806-bc017d88569b",
+        "entity_name": "create_line_item",
+        "execution_id": "46b06023-65c4-4590-8d6d-47195b0ef7c9",
+        "message": "Using jsonpickle to serialize an instance of AutomationEntity. It is recommended to register a serializer for classes or subclass AutomationEntity with Hook",
+        "log_type": "WARNING",
+        "object": null,
+        "parent_id": "80ea9989-06b2-4210-857a-2a8163a50bde",
+        "logged_at": "2023-06-19T21:40:21Z"
+    },
+    {
+        "id": 1238,
+        "entity_id": "2310a3e4-80b8-4cc7-b806-bc017d88569b",
+        "entity_name": "create_line_item",
+        "execution_id": "46b06023-65c4-4590-8d6d-47195b0ef7c9",
+        "message": "Completing Entity Execution - create_line_item",
+        "log_type": "ENTITY_EXECUTION_END",
+        "object": {
+            "id": "2310a3e4-80b8-4cc7-b806-bc017d88569b",
+            "name": "create_line_item",
+            "logger": {
+                "entity": "<pos_store.entity.AutomationEntity object at 0x107b25d90>",
+                "py/object": "pos_store.logger.Logger"
+            },
+            "exception": null,
+            "parent_id": "80ea9989-06b2-4210-857a-2a8163a50bde",
+            "py/object": "pos_store.entity.AutomationEntity",
+            "input_data": {
+                "ticket": {
+                    "id": 12,
+                    "py/object": "pos_store.tax_interface_2.PendingTicket",
+                    "line_items": [
+                        {
+                            "id": 13,
+                            "tax": 2.5,
+                            "price": 101,
+                            "discount": 0,
+                            "py/object": "pos_store.tax_interface_2.LineItem",
+                            "description": "Item 1",
+                            "final_amount": 103.5
+                        }
+                    ]
+                },
+                "item_id": 13
+            },
+            "description": "Creates a new line item object and append it to pending ticket.",
+            "output_data": {
+                "item": {
+                    "id": 13,
+                    "tax": 2.5,
+                    "price": 101,
+                    "discount": 0,
+                    "py/object": "pos_store.tax_interface_2.LineItem",
+                    "description": "Item 1",
+                    "final_amount": 103.5
+                },
+                "ticket": {
+                    "id": 12,
+                    "py/object": "pos_store.tax_interface_2.PendingTicket",
+                    "line_items": [
+                        {
+                            "id": 13,
+                            "tax": 2.5,
+                            "price": 101,
+                            "discount": 0,
+                            "py/object": "pos_store.tax_interface_2.LineItem",
+                            "description": "Item 1",
+                            "final_amount": 103.5
+                        }
+                    ]
+                }
+            },
+            "input_schema": {
+                "ticket": {
+                    "schema": null,
+                    "required": true,
+                    "py/object": "pos_store.validators.ObjectOfTypeField",
+                    "object_type": {
+                        "py/type": "pos_store.tax_interface_2.PendingTicket"
+                    }
+                },
+                "item_id": {
+                    "required": true,
+                    "max_value": null,
+                    "min_value": null,
+                    "py/object": "pos_store.validators.IntegerField"
+                }
+            },
+            "output_schema": {
+                "item": {
+                    "schema": null,
+                    "required": true,
+                    "py/object": "pos_store.validators.ObjectOfTypeField",
+                    "object_type": {
+                        "py/type": "pos_store.tax_interface_2.LineItem"
+                    }
+                },
+                "ticket": {
+                    "schema": null,
+                    "required": true,
+                    "py/object": "pos_store.validators.ObjectOfTypeField",
+                    "object_type": {
+                        "py/type": "pos_store.tax_interface_2.PendingTicket"
+                    }
+                }
+            },
+            "target_function": {
+                "py/function": "pos_store.tax_interface_2.create_line_item"
+            },
+            "execution_end_time": {
+                "py/object": "datetime.datetime",
+                "__reduce__": [
+                    {
+                        "py/type": "datetime.datetime"
+                    },
+                    [
+                        "B+cGExUoFA5xZQ=="
+                    ]
+                ]
+            },
+            "execution_start_time": {
+                "py/object": "datetime.datetime",
+                "__reduce__": [
+                    {
+                        "py/type": "datetime.datetime"
+                    },
+                    [
+                        "B+cGExUoFA0Ueg=="
+                    ]
+                ]
+            },
+            "executed_successfully": true
+        },
+        "parent_id": "80ea9989-06b2-4210-857a-2a8163a50bde",
+        "logged_at": "2023-06-19T21:40:21Z"
+    },
+    {
+        "id": 1239,
+        "entity_id": "80ea9989-06b2-4210-857a-2a8163a50bde",
+        "entity_name": "add_line_item_to_ticket1",
+        "execution_id": "46b06023-65c4-4590-8d6d-47195b0ef7c9",
+        "message": "Completed execution of create_line_item",
+        "log_type": "INFO",
+        "object": null,
+        "parent_id": null,
+        "logged_at": "2023-06-19T21:40:21Z"
+    },
+    {
+        "id": 1240,
+        "entity_id": "80ea9989-06b2-4210-857a-2a8163a50bde",
+        "entity_name": "add_line_item_to_ticket1",
+        "execution_id": "46b06023-65c4-4590-8d6d-47195b0ef7c9",
+        "message": "Applying discount 0",
+        "log_type": "INFO",
+        "object": null,
+        "parent_id": null,
+        "logged_at": "2023-06-19T21:40:21Z"
+    },
+    {
+        "id": 1241,
+        "entity_id": "80ea9989-06b2-4210-857a-2a8163a50bde",
+        "entity_name": "add_line_item_to_ticket1",
+        "execution_id": "46b06023-65c4-4590-8d6d-47195b0ef7c9",
+        "message": "Using jsonpickle to serialize an instance of AutomationEntity. It is recommended to register a serializer for classes or subclass AutomationEntity with Hook",
+        "log_type": "WARNING",
+        "object": null,
+        "parent_id": null,
+        "logged_at": "2023-06-19T21:40:21Z"
+    },
+    {
+        "id": 1242,
+        "entity_id": "80ea9989-06b2-4210-857a-2a8163a50bde",
+        "entity_name": "add_line_item_to_ticket1",
+        "execution_id": "46b06023-65c4-4590-8d6d-47195b0ef7c9",
+        "message": "Completing Entity Execution - add_line_item_to_ticket1",
+        "log_type": "ENTITY_EXECUTION_END",
+        "object": {
+            "id": "80ea9989-06b2-4210-857a-2a8163a50bde",
+            "name": "add_line_item_to_ticket1",
+            "logger": {
+                "entity": "<pos_store.entity.AutomationEntity object at 0x107b25b20>",
+                "py/object": "pos_store.logger.Logger"
+            },
+            "exception": null,
+            "parent_id": null,
+            "py/object": "pos_store.entity.AutomationEntity",
+            "input_data": {
+                "item": 13,
+                "ticket": 12
+            },
+            "description": "Add an item to the pending ticket.",
+            "output_data": {
+                "item": {
+                    "id": 13,
+                    "tax": 2.5,
+                    "price": 101,
+                    "discount": 0,
+                    "py/object": "pos_store.tax_interface_2.LineItem",
+                    "description": "Item 1",
+                    "final_amount": 103.5
+                },
+                "ticket": {
+                    "id": 12,
+                    "py/object": "pos_store.tax_interface_2.PendingTicket",
+                    "line_items": [
+                        {
+                            "id": 13,
+                            "tax": 2.5,
+                            "price": 101,
+                            "discount": 0,
+                            "py/object": "pos_store.tax_interface_2.LineItem",
+                            "description": "Item 1",
+                            "final_amount": 103.5
+                        }
+                    ]
+                }
+            },
+            "input_schema": {
+                "item": {
+                    "required": true,
+                    "max_value": null,
+                    "min_value": null,
+                    "py/object": "pos_store.validators.IntegerField"
+                },
+                "ticket": {
+                    "required": true,
+                    "max_value": null,
+                    "min_value": null,
+                    "py/object": "pos_store.validators.IntegerField"
+                },
+                "discount": {
+                    "required": false,
+                    "max_value": null,
+                    "min_value": null,
+                    "py/object": "pos_store.validators.FloatField"
+                }
+            },
+            "output_schema": {
+                "item": {
+                    "schema": null,
+                    "required": true,
+                    "py/object": "pos_store.validators.ObjectOfTypeField",
+                    "object_type": {
+                        "py/type": "pos_store.tax_interface_2.LineItem"
+                    }
+                },
+                "ticket": {
+                    "schema": null,
+                    "required": true,
+                    "py/object": "pos_store.validators.ObjectOfTypeField",
+                    "object_type": {
+                        "py/type": "pos_store.tax_interface_2.PendingTicket"
+                    }
+                }
+            },
+            "target_function": {
+                "py/function": "pos_store.tax_interface_2.add_line_item_to_ticket"
+            },
+            "execution_end_time": {
+                "py/object": "datetime.datetime",
+                "__reduce__": [
+                    {
+                        "py/type": "datetime.datetime"
+                    },
+                    [
+                        "B+cGExUoFA6S6w=="
+                    ]
+                ]
+            },
+            "execution_start_time": {
+                "py/object": "datetime.datetime",
+                "__reduce__": [
+                    {
+                        "py/type": "datetime.datetime"
+                    },
+                    [
+                        "B+cGExUoFAzbiw=="
+                    ]
+                ]
+            },
+            "executed_successfully": true
+        },
+        "parent_id": null,
+        "logged_at": "2023-06-19T21:40:21Z"
+    }
+]
