@@ -12,6 +12,7 @@ import PersistentDrawerLeft from "./components/AppBar";
 import { RouterProvider, createBrowserRouter } from "react-router-dom";
 import { TestCaseListView } from "./components/TestCreate/TestCaseListView";
 import { TestCreateView } from "./components/TestCreate/TestCreateView";
+import { TestComponent } from "./TestComp";
 
 // const executedFunctions = createEntitiesFromDBRecords({
 //   logs: logs as unknown as Log[],
@@ -29,6 +30,10 @@ export const APP_ROUTES = createBrowserRouter([
       {
         path: "test_case/*",
         element: <TestCreateView />,
+      },
+      {
+        path: "new",
+        element: <TestComponent />,
       },
     ],
   },
