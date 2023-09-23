@@ -26,3 +26,9 @@ export enum LOG_TYPE {
     execution_id: string;
     id: string;
   };
+  export type Log1 =  {
+    message:   string;
+    log_type:  string;
+    object:    any | null;
+    logged_at: Date;
+}

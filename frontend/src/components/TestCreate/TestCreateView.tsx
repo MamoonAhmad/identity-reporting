@@ -7,7 +7,7 @@ import React, {
   useRef,
   useState,
 } from "react";
-import { ExecutedFunction } from "../../ExecutionFunction";
+import { ExecutedFunction, ExecutedFunction1Type } from "../../ExecutionFunction";
 import {
   TestConfig,
   TestConfigForFunction,
@@ -19,6 +19,7 @@ import { StoreContext } from "../../context/StoreContext";
 import { ArrayValidator, Validator } from "../../validators";
 import {
   createEntitiesFromDBRecords,
+  createExecutedFunctions,
   createMatchersFromValue,
   getValidatorFromJSON,
 } from "../../helpers/function";
@@ -41,7 +42,7 @@ import {
   Typography,
 } from "@mui/material";
 import { useLocation } from "react-router-dom";
-import logs from "../../tests/data/logs.json";
+import logs from "../../tests/data/logs1.json";
 import { TestCaseService } from "../../services/base";
 import { GenericObjectPathView } from "./ObjectValuePath";
 import { SidePanel } from "../SidePanel";
@@ -65,9 +66,7 @@ const convertFunctionConfigToJSON = (
   };
 };
 
-const functions = createEntitiesFromDBRecords({
-  logs: logs as any,
-});
+const functions = createExecutedFunctions(logs as any);
 
 export const TestCreateView: React.FC = () => {
   const props = useLocation();
@@ -182,7 +181,7 @@ export const TestCreateView: React.FC = () => {
 };
 
 type TestCreateViewProps = {
-  executionFunctions: ExecutedFunction[];
+  executionFunctions: ExecutedFunction1Type[];
   existingFunctionConfig: TestConfigForFunction[];
 };
 
@@ -217,7 +216,7 @@ export const CreateTest: React.FC<TestCreateViewProps> = ({
 };
 
 type FunctionViewProps = {
-  executionFunction: ExecutedFunction;
+  executionFunction: ExecutedFunction1Type;
   parentContainer: TestConfigForFunction[];
   existingConfig?: TestConfigForFunction;
 };
@@ -247,12 +246,12 @@ export const FunctionView: React.FC<FunctionViewProps> = React.memo(
         const newState: Partial<FunctionViewState> = {};
         if (!state?.inputValidator) {
           newState.inputValidator = createMatchersFromValue(
-            executionFunction?.functionMeta?.input_data
+            executionFunction?.input_data
           );
         }
         if (!state?.outputValidator) {
           newState.outputValidator = createMatchersFromValue(
-            executionFunction?.functionMeta?.output_data
+            executionFunction?.output_data
           );
         }
         if (!state?.createdObjectsValidator) {
@@ -308,23 +307,23 @@ export const FunctionView: React.FC<FunctionViewProps> = React.memo(
           {" "}
           <GenericObjectInputView
             name={"Input"}
-            value={executionFunction?.functionMeta?.input_data}
+            value={executionFunction?.input_data}
             //   peString={`${executionFunction?.entity?.name}.${executionFunction?.entity?.reference_id}.Input`}
             validator={state?.inputValidator}
           />
         </>
       );
-    }, [executionFunction?.functionMeta?.input_data, state?.inputValidator]);
+    }, [executionFunction?.input_data, state?.inputValidator]);
 
     const OutputComponent = useCallback(() => {
       return (
         <GenericObjectInputView
           name="Output"
-          value={executionFunction?.functionMeta?.output_data}
+          value={executionFunction?.output_data}
           validator={state?.outputValidator}
         />
       );
-    }, [executionFunction?.functionMeta?.output_data, state?.outputValidator]);
+    }, [executionFunction?.output_data, state?.outputValidator]);
 
     const CreatedObjects = useCallback(() => {
       return (
@@ -360,12 +359,12 @@ export const FunctionView: React.FC<FunctionViewProps> = React.memo(
       if (parentContainer) {
         const existing = parentContainer?.find(
           (c) =>
-            c.executedFunction?.id === executionFunction?.functionMeta?.id &&
+            c.executedFunction?.id === executionFunction?.id &&
             c.executedFunction?.id
         );
         if (!existing) {
           const currentFunctionConfig: TestConfigForFunction = {
-            executedFunction: { ...executionFunction?.functionMeta },
+            executedFunction: { ...executionFunction },
             testCaseValidationConfig: state?.ignore
               ? undefined
               : {
@@ -422,9 +421,9 @@ export const FunctionView: React.FC<FunctionViewProps> = React.memo(
     return (
       <div
         className={`flex flex-col my-1 items-start ${
-          executionFunction?.functionMeta?.parent_id ? "" : "ml-10"
+          executionFunction?.parent_id ? "" : "ml-10"
         } `}
-        id={executionFunction?.functionMeta?.execution_id}
+        id={executionFunction?.execution_id}
       >
         <p className={`flex items-center text-mg font-semibold`}>
           {
@@ -443,7 +442,7 @@ export const FunctionView: React.FC<FunctionViewProps> = React.memo(
             size="small"
           />
           <span className="pl-1">
-            {executionFunction?.functionMeta?.name}:{" "}
+            {executionFunction?.name}:{" "}
           </span>
 
           <div className="ml-2 flex items-center font-normal">
@@ -515,14 +514,14 @@ export const FunctionView: React.FC<FunctionViewProps> = React.memo(
             borderLeft: showChildren ? "1px solid black" : "",
           }}
         >
-          {!executionFunction?.functionMeta?.executed_successfully ? (
+          {!executionFunction?.executed_successfully ? (
             <span className="flex items-center text-amber-800 my-1 font-normal">
               <BugReportSharp className="mx-1" />
               {executionFunction?.exception ? (
                 <>
                   {executionFunction?.exception
                     ?.replace(LOG_TYPE.ERROR, "")
-                    .replace(executionFunction?.functionMeta?.name, "")
+                    .replace(executionFunction?.name, "")
                     .replace(":", "")}
                 </>
               ) : (
@@ -532,7 +531,7 @@ export const FunctionView: React.FC<FunctionViewProps> = React.memo(
           ) : (
             <span className="-ml-2 text-sm text-black font-normal">
               {" "}
-              {executionFunction?.functionMeta?.description}{" "}
+              {executionFunction?.description}{" "}
             </span>
           )}
 
@@ -629,3 +628,51 @@ const gatherObjectsForPath = (c: TestConfigForFunction) => {
 
   return obj
 }
+
+
+
+function testObject(
+  source = {
+    id: {
+      checkExists: true,
+      targetValueType: 'number',
+      required: true
+    },
+    name: {
+      targetValue: "Some Product"
+    }
+  }, target = {
+    id: 30,
+    name: "Some Product"
+  }
+) {
+  return null
+}
+
+
+const obj = {
+  purchase: 1,
+  customer: {
+    first_name: "Mamoon ",
+    last_name: "Ahmed",
+  }
+}
+
+
+const config = {
+  purchase: {
+    checkExists: true,
+    required: true
+  },
+  customer: {
+    targetValue: {
+      first_name: {
+        targetValue: "Mamoon"
+      },
+      last_name: {
+        targetValue: "Ahmed"
+      }
+    }
+  }
+}
+

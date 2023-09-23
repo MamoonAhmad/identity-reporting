@@ -1,11 +1,23 @@
-import { ExecutedFunction } from "../ExecutionFunction"
+import { ExecutedFunction, ExecutedFunction1Type } from "../ExecutionFunction"
 import { LOG_TYPE, Log } from "../Log"
 import { ArrayValidator, ArrayValidatorConfigJSON, ObjectValidator, ObjectValidatorConfigJSON, Validator, ValidatorConfigJSON } from "../validators"
 
 
+export const createExecutedFunctions = (functions: ExecutedFunction1Type[]) => {
+    const processedFunctions: ExecutedFunction1Type[] = []
+    const functionWithoutParents = functions?.filter(f => !f.parent_id)
+    functionWithoutParents.forEach(func => {
+        const f = {...func}
+        processedFunctions.push(f)
+        const childFunctions = functions.filter(ff => ff.parent_id === f.id)
+        f.childFunctions = childFunctions
+        f.createdObjects = []
+        f.deletedObjects = []
+        f.updatedObjects = []
+    })
 
-
-
+    return processedFunctions
+}
 
 export const createEntitiesFromDBRecords = ({ logs }: {logs: Log[]}) => {
 

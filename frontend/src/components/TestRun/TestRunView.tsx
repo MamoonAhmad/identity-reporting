@@ -1,5 +1,5 @@
 import { Card } from "@mui/material";
-import { ExecutedFunction } from "../../ExecutionFunction";
+import { ExecutedFunction, ExecutedFunction1Type } from "../../ExecutionFunction";
 import { FunctionMeta } from "../../ExecutionFunction";
 import { ArrayValidator, Validator, ValidatorConfigJSON } from "../../validators";
 import React, { useCallback, useContext, useEffect } from "react";
@@ -15,7 +15,7 @@ import { LOG_TYPE } from "../../Log";
 
 
 export type TestConfigForFunctionJSON = {
-  executedFunction: FunctionMeta;
+  executedFunction: ExecutedFunction1Type;
   ignore: boolean;
   testCaseValidationConfig?: {
     inputData: ValidatorConfigJSON;
@@ -28,7 +28,7 @@ export type TestConfigForFunctionJSON = {
 };
 
 export type TestConfigForFunction = {
-  executedFunction: FunctionMeta;
+  executedFunction: ExecutedFunction1Type;
   ignore: boolean;
   testCaseValidationConfig?: {
     inputData: Validator;
@@ -235,7 +235,7 @@ export const ExecutedFunctionTestResult: React.FC<ExecutedFunctionTestResultProp
                   <ExecutedFunctionTestResult
                     testCase={childTestCase}
                     executedFunction={executedFunction?.childFunctions?.[i]}
-                    key={childTestCase?.executedFunction?.reference_id}
+                    key={childTestCase?.executedFunction?.execution_id}
                   />
                 )
               )}
