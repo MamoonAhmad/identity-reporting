@@ -1,0 +1,160 @@
+[
+    {
+        "name": "some_function",
+        "description": "Some Function To Test Some Things",
+        "executed_successfully": true,
+        "execution_id": "09b8555f-5cb0-4c7e-93cd-47ccd010bcc2",
+        "id": "912d69c6-ba57-4f62-a52f-6c0872794fe5",
+        "exception": null,
+        "output_data": null,
+        "input_data": [
+            {}
+        ],
+        "parent_id": null,
+        "logs": [
+            {
+                "message": "Starting Function Execution - some_function",
+                "log_type": "FUNCTION_EXECUTION_START",
+                "object": {
+                    "function": {
+                        "py/object": "identity_python.function.FunctionRunner",
+                        "id": "912d69c6-ba57-4f62-a52f-6c0872794fe5",
+                        "name": "some_function",
+                        "description": "Some Function To Test Some Things",
+                        "logger": {
+                            "py/object": "identity_python.logger.Logger",
+                            "function_manager_instance": {
+                                "py/id": 3
+                            },
+                            "logs": {
+                                "py/id": 0
+                            }
+                        },
+                        "target_function": {
+                            "py/function": "test_case.services.test_case.some_function"
+                        },
+                        "execution_start_time": "2023-09-23 17:47:15.050122",
+                        "execution_end_time": "2023-09-23 17:47:17.338113",
+                        "executed_successfully": true,
+                        "execution_ended": true,
+                        "execution_initiated": true,
+                        "exception": null,
+                        "input_data": [
+                            {}
+                        ],
+                        "output_data": null,
+                        "execution_id": {
+                            "py/object": "uuid.UUID",
+                            "hex": "09b8555f5cb04c7e93cd47ccd010bcc2"
+                        },
+                        "parent_id": null
+                    }
+                },
+                "logged_at": "2023-09-23 17:47:15.050103"
+            },
+            {
+                "message": "Some things to inform",
+                "log_type": "INFO",
+                "object": null,
+                "logged_at": "2023-09-23 17:47:15.050169"
+            },
+            {
+                "message": "Line Item Created",
+                "log_type": "CREATE_OBJECT",
+                "object": {
+                    "id": 1
+                },
+                "logged_at": "2023-09-23 17:47:15.050188"
+            },
+            {
+                "message": "Function Execution Ended - some_function",
+                "log_type": "FUNCTION_EXECUTION_END",
+                "object": {
+                    "function": {
+                        "py/id": 3
+                    },
+                    "logs": {
+                        "py/id": 0
+                    }
+                },
+                "logged_at": "2023-09-23 17:47:17.338128"
+            }
+        ]
+    },
+    {
+        "name": "some_child_function",
+        "description": "Some Child Function To Test Some Things",
+        "executed_successfully": true,
+        "execution_id": "09b8555f-5cb0-4c7e-93cd-47ccd010bcc2",
+        "id": "e3832b65-71b0-4200-8ca7-f038e897eb26",
+        "exception": null,
+        "output_data": null,
+        "input_data": [
+            {}
+        ],
+        "parent_id": "912d69c6-ba57-4f62-a52f-6c0872794fe5",
+        "logs": [
+            {
+                "message": "Starting Function Execution - some_child_function",
+                "log_type": "FUNCTION_EXECUTION_START",
+                "object": {
+                    "function": {
+                        "py/object": "identity_python.function.FunctionRunner",
+                        "id": "e3832b65-71b0-4200-8ca7-f038e897eb26",
+                        "name": "some_child_function",
+                        "description": "Some Child Function To Test Some Things",
+                        "logger": {
+                            "py/object": "identity_python.logger.Logger",
+                            "function_manager_instance": {
+                                "py/id": 3
+                            },
+                            "logs": {
+                                "py/id": 0
+                            }
+                        },
+                        "target_function": {
+                            "py/function": "test_case.services.test_case.some_child_function"
+                        },
+                        "execution_start_time": "2023-09-23 17:47:15.050240",
+                        "execution_end_time": "2023-09-23 17:47:15.050282",
+                        "executed_successfully": true,
+                        "execution_ended": true,
+                        "execution_initiated": true,
+                        "exception": null,
+                        "input_data": [
+                            {}
+                        ],
+                        "output_data": null,
+                        "execution_id": {
+                            "py/object": "uuid.UUID",
+                            "hex": "09b8555f5cb04c7e93cd47ccd010bcc2"
+                        },
+                        "parent_id": "912d69c6-ba57-4f62-a52f-6c0872794fe5"
+                    }
+                },
+                "logged_at": "2023-09-23 17:47:15.050237"
+            },
+            {
+                "message": "Line Item updated",
+                "log_type": "UPDATE_OBJECT",
+                "object": {
+                    "id": 1
+                },
+                "logged_at": "2023-09-23 17:47:15.050279"
+            },
+            {
+                "message": "Function Execution Ended - some_child_function",
+                "log_type": "FUNCTION_EXECUTION_END",
+                "object": {
+                    "function": {
+                        "py/id": 3
+                    },
+                    "logs": {
+                        "py/id": 0
+                    }
+                },
+                "logged_at": "2023-09-23 17:47:15.050299"
+            }
+        ]
+    }
+]

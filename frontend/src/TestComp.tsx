@@ -6,7 +6,7 @@ import {
     ObjectValidator, ArrayValidator, Validator
 } from './validators'
 
-
+const input = {first_name: "Mamoon"}
 const testObj = {
     first_name: "Mamoon",
     last_name: "Ahmed",
@@ -33,6 +33,11 @@ const testObj2 = {
         {
             order_id: 2,
             description: "Addidas Shoes"
+        },
+        {
+            order_id: 3,
+            description: "Addidasdadasdasdas"
+
         }
     ]
 }

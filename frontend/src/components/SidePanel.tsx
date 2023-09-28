@@ -44,6 +44,8 @@ export const SidePanel = () => {
     }, [showPanel])
 
 
+    console.log('showPanel', showPanel)
+
     
 
     return (

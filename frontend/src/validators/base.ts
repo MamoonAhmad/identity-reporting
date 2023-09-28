@@ -10,11 +10,11 @@ export type ValidatorConfig = {
 export const DEFAULT_VALIDATOR_CONFIG: ValidatorConfig = {
   ignore: false,
   targetValue: null,
-  strictEqual: true,
-  checkIsSet: false,
-  expressionValue: null,
-  valuePath: undefined
-};
+  // strictEqual: true,
+  // checkIsSet: false,
+  // expressionValue: null,
+  // valuePath: undefined
+} as any;
 
 export type ValidatorConfigJSON = ValidatorConfig;
 

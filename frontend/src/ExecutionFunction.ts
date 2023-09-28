@@ -1,4 +1,4 @@
-import { LOG_TYPE, Log } from "./Log";
+import { LOG_TYPE, Log, Log1 as Log1Type } from "./Log";
 
 
 export type FunctionMeta = {
@@ -91,4 +91,44 @@ export class ExecutedFunction {
   calculateDifferenceInInputAndOutput() {
     // TODO calculate object diff
   }
+}
+
+
+
+export type ExecutedFunction1Type = {
+  name:                  string;
+  description:           string | null;
+  executed_successfully: boolean;
+  execution_id:          string;
+  id:                    string;
+  exception:             string | null;
+  output_data:           any | null;
+  input_data:            any | null;
+  parent_id:             null | string;
+  logs:                  Log1Type[];
+
+
+
+  createdObjects: any[];
+  updatedObjects: any[];
+  deletedObjects: any[];
+  childFunctions: ExecutedFunction1Type[]
+}
+
+
+export type ExecutedFunction1TypeTestConfig = {
+  name:                  string;
+  description:           string | null;
+  executed_successfully: boolean;
+  execution_id:          string;
+  id:                    string;
+  exception:             string | null;
+  output_data:           any | null;
+  input_data:            any | null;
+  parent_id:             null | string;
+
+
+  createdObjects: any[];
+  updatedObjects: any[];
+  deletedObjects: any[];
 }
