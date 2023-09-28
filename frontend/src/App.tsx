@@ -26,7 +26,7 @@ export const APP_ROUTES = createBrowserRouter([
     children: [
       {
         path: "test_case",
-        element: <TestCaseListView />,
+        element: <TEST_CASE_VIEWS.LIST />,
       },
       {
         path: "test_case/create",
