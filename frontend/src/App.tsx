@@ -13,6 +13,7 @@ import { RouterProvider, createBrowserRouter } from "react-router-dom";
 import { TestCaseListView } from "./components/TestCreate/TestCaseListView";
 import { TestCreateView } from "./components/TestCreate/TestCreateView";
 import { TestComponent } from "./TestComp";
+import { TEST_CASE_VIEWS } from "./views/test_case";
 
 // const executedFunctions = createEntitiesFromDBRecords({
 //   logs: logs as unknown as Log[],
@@ -28,8 +29,12 @@ export const APP_ROUTES = createBrowserRouter([
         element: <TestCaseListView />,
       },
       {
+        path: "test_case/create",
+        element: <TEST_CASE_VIEWS.CREATE />,
+      },
+      {
         path: "test_case/*",
-        element: <TestCreateView />,
+        element: <TEST_CASE_VIEWS.UPDATE />,
       },
       {
         path: "new",

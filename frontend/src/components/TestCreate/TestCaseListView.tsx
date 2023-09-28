@@ -13,7 +13,7 @@ import { useGeneralState } from "../../helpers/useGeneralState";
 import { CreateTestModal } from "./Steps";
 import { useCallback, useEffect } from "react";
 import { TestCaseService } from "../../services/base";
-import { TestConfig } from "../TestRun/TestRunView";
+import { TestConfig, TestConfigJSON } from "../TestRun/TestRunView";
 import { Link } from "react-router-dom";
 
 export const TestCaseListView: React.FC = () => {
@@ -25,7 +25,7 @@ export const TestCaseListView: React.FC = () => {
 
   const fetchData = useCallback(async () => {
     new TestCaseService().get({}).then((v) => {
-      setState({ testCases: v, loading: false });
+      setState({ testCases: v as any, loading: false });
     });
   }, []);
   useEffect(() => {
@@ -96,7 +96,7 @@ export const TestCaseListView: React.FC = () => {
         <CreateTestModal
           onCreate={(c) => {
             setState({ testCases: [], loading: true });
-            new TestCaseService().post(c as TestConfig).then(() => {
+            new TestCaseService().post(c as TestConfigJSON).then(() => {
               fetchData().then(() => setState({ show: false }));
             });
           }}

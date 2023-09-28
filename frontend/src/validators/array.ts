@@ -29,10 +29,7 @@ export class ArrayValidator extends Validator{
         
 
     json(): ArrayValidatorConfigJSON {
-        if(!this.config.targetValue || this.config.ignore) {
-            return {...this.config, targetValue: null}
-        }
-        const newTarget = this.config?.targetValue.map(k => k.json())
+        const newTarget = this.config?.targetValue?.map(k => k.json()) || null
         return {...this.config, targetValue: newTarget}
     }
 

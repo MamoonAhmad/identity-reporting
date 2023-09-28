@@ -114,3 +114,21 @@ export type ExecutedFunction1Type = {
   deletedObjects: any[];
   childFunctions: ExecutedFunction1Type[]
 }
+
+
+export type ExecutedFunction1TypeTestConfig = {
+  name:                  string;
+  description:           string | null;
+  executed_successfully: boolean;
+  execution_id:          string;
+  id:                    string;
+  exception:             string | null;
+  output_data:           any | null;
+  input_data:            any | null;
+  parent_id:             null | string;
+
+
+  createdObjects: any[];
+  updatedObjects: any[];
+  deletedObjects: any[];
+}
