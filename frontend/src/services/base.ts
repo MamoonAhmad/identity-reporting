@@ -60,6 +60,16 @@ export class BaseService<T extends { id: string }> {
       return null;
     }
   }
+  async delete(pk: string): Promise<T | null> {
+    try {
+      const res = await axios.delete<T>(
+        `${baseURL}${this.endpoint}/${pk}`
+      );
+      return res.data;
+    } catch (e) {
+      return null;
+    }
+  }
 }
 
 export class TestCaseService extends BaseService<TestConfigJSON> {

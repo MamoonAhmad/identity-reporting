@@ -12,6 +12,7 @@ import {
 import { TestCreateView } from "../../components/TestCreate/TestCreateView";
 import { Box, Button, CircularProgress, Typography } from "@mui/material";
 import { useParams } from "react-router-dom";
+import { PlayArrowSharp } from "@mui/icons-material";
 
 export const UpdateTestView: React.FC<any> = () => {
   const params = useParams();
@@ -79,9 +80,22 @@ export const UpdateTestView: React.FC<any> = () => {
   return (
     <>
       <Box display={"flex"} flexDirection={"column"} alignItems={"flex-start"}>
-        <Typography sx={{ mb: 5, mt: 1 }} variant="h4">
-          Test Case
-        </Typography>
+        <Box
+          display={"flex"}
+          justifyContent={"space-between"}
+          alignItems={"center"}
+          width={"100%"}
+          sx={{ mb: 5 }}
+        >
+          <Typography sx={{ mt: 1 }} variant="h4">
+            Test Case
+          </Typography>
+          <Button sx={{ width: 150 }} variant="outlined">
+            <PlayArrowSharp color="success" sx={{ mr: 1 }} />
+            Run Test
+          </Button>
+        </Box>
+
         <TestCreateView
           config={state.config}
           onChange={(config) => setState({ config })}
