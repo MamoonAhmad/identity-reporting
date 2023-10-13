@@ -7,5 +7,5 @@ class TestCaseSerializer(ModelSerializer):
 
     class Meta:
         model = TestCase
-        fields = ['id', 'name', 'description', 'config']
+        fields = ['id', 'name', 'description', 'functions']
     

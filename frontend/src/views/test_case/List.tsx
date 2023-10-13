@@ -15,12 +15,11 @@ import {
   tableCellClasses,
 } from "@mui/material";
 import { useGeneralState } from "../../helpers/useGeneralState";
-import { TestConfig } from "../../components/TestRun/TestRunView";
 import { useEffect } from "react";
 import { TestCaseService } from "../../services/base";
-import { convertJSONConfigToTestCaseConfig } from "../../helpers/function";
 import { AddSharp, DeleteSharp, RemoveRedEyeSharp } from "@mui/icons-material";
 import { Link, useNavigate } from "react-router-dom";
+import { TestValidatorConfigJSON } from "../../validators/test";
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
   [`&.${tableCellClasses.head}`]: {
@@ -60,7 +59,7 @@ const StyledTableRow = styled(TableRow)(({ theme }) => ({
 
 export const TestCaseList: React.FC<any> = () => {
   const [state, setState] = useGeneralState<{
-    testCases: TestConfig[];
+    testCases: TestValidatorConfigJSON[];
     loading: boolean;
     testCasesBeingDeletedIDs: string[];
   }>({
@@ -76,21 +75,13 @@ export const TestCaseList: React.FC<any> = () => {
     const tests = await new TestCaseService().get({});
     setState({
       loading: false,
-      testCases: tests.map((t) => {
-        return {
-          name: t.name,
-          description: t.description!,
-          id: t.id,
-          testCases: t.config.map((cc) =>
-            convertJSONConfigToTestCaseConfig(cc)
-          ),
-        };
-      }),
+      testCases: tests,
     });
   };
 
   useEffect(() => {
     getAllTestCases();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const deleteTestCase = (testCaseID: string) => {
@@ -162,7 +153,10 @@ export const TestCaseList: React.FC<any> = () => {
                             color="primary"
                             // onClick={() => navigate(`/test_case/${t.id}`)}
                           >
-                            <Link to={`/test_case/${t.id}`}>
+                            <Link
+                              to={`/test_case/${t.id}`}
+                              onClick={(e) => e.stopPropagation()}
+                            >
                               <RemoveRedEyeSharp fontSize="medium" />
                             </Link>
                           </IconButton>

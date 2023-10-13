@@ -12,7 +12,7 @@ type SidePanelState = {
 };
 export const SidePanel = () => {
   const [state, setState] = useGeneralState<SidePanelState>({
-    ComponentToShow: NullComponent,
+    ComponentToShow: <NullComponent />,
     zIndex: undefined,
   });
 
@@ -61,7 +61,7 @@ export const SidePanel = () => {
           <Close />
         </button>
       </div>
-      <div className="p-3">{<state.ComponentToShow />}</div>
+      <div className="p-3">{state.ComponentToShow}</div>
     </div>
   );
 };

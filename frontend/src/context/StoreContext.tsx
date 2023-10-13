@@ -1,10 +1,13 @@
 import React, { PropsWithChildren, useCallback, useRef } from "react"
 import { useGeneralState } from "../helpers/useGeneralState"
+import { Validator } from "../validators"
 
 
 
 export type StoreStateType = {
-    SidePanelComponents: React.FC[]
+    SidePanelComponents: JSX.Element[]
+    objectToConfigure: Validator
+    objectChangeCallback: (v: Validator) => void
 }
 
 
