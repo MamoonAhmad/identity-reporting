@@ -55,7 +55,7 @@ export class ArrayValidator extends Validator{
     }
 
     static initializeFromJSON (jsonValue: ArrayValidatorConfigJSON) {
-        if(!jsonValue?.targetValue || jsonValue?.ignore) {
+        if(!jsonValue?.targetValue) {
             return new ArrayValidator(jsonValue)
         }
         if(!Array.isArray(jsonValue?.targetValue)) {

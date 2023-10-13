@@ -13,4 +13,4 @@ class TestCase(BaseModel):
     
     name = models.TextField()
     description = models.TextField()
-    config = models.JSONField(null=True)
+    functions = models.JSONField(null=True)

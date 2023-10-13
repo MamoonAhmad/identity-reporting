@@ -1,20 +1,7 @@
 import axios from "axios";
-import { TestConfig, TestConfigJSON } from "../components/TestRun/TestRunView";
+import { TestValidatorConfigJSON } from "../validators/test";
 
 const baseURL = "http://localhost:8005/";
-
-type BaseResponseType<T> = {
-  data?: T;
-  meta_data?: {
-    page: number;
-    current_page: number;
-    total: number;
-  };
-  error?: string; // If the error is present, that means the request execution was not successful
-  error_details_objects?: {
-    [key: string]: any;
-  };
-};
 
 export class BaseService<T extends { id: string }> {
   endpoint!: string;
@@ -72,6 +59,6 @@ export class BaseService<T extends { id: string }> {
   }
 }
 
-export class TestCaseService extends BaseService<TestConfigJSON> {
+export class TestCaseService extends BaseService<TestValidatorConfigJSON> {
   endpoint = "test_case";
 }

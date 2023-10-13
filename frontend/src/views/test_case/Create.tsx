@@ -1,16 +1,7 @@
-import React, { PropsWithChildren, useEffect, useState } from "react";
+import React, { PropsWithChildren, useEffect } from "react";
 import { ExecutedFunction1Type } from "../../ExecutionFunction";
-import {
-  TestConfig,
-  TestConfigForFunctionJSON,
-} from "../../components/TestRun/TestRunView";
 import { useGeneralState } from "../../helpers/useGeneralState";
-import {
-  convertFunctionConfigToJSON,
-  convertJSONConfigToTestCaseConfig,
-  createExecutedFunctions,
-  createTestConfigFromExecutedFunctions,
-} from "../../helpers/function";
+import { createExecutedFunctions } from "../../helpers/function";
 import { TestCaseService } from "../../services/base";
 import { TestCreateView } from "../../components/TestCreate/TestCreateView";
 import {
@@ -27,25 +18,20 @@ import {
   ListItemButton,
   ListItemIcon,
   ListItemText,
-  Modal,
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableRow,
   Typography,
 } from "@mui/material";
 import logs from "../../tests/data/logs1.json";
-import { CheckBox } from "@mui/icons-material";
-import { redirect, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import { TestValidator } from "../../validators/test";
+import { FunctionValidator } from "../../validators/function";
 
 const functions = createExecutedFunctions(logs as any);
 
-export const CreateTestView: React.FC<any> = (props) => {
+export const CreateTestView: React.FC<any> = () => {
   const navigate = useNavigate();
 
   const [state, setState] = useGeneralState<{
-    config: TestConfig;
+    config: TestValidator;
     loading: boolean;
     executedFunctions: { selected: boolean; function: ExecutedFunction1Type }[];
   }>({
@@ -64,33 +50,19 @@ export const CreateTestView: React.FC<any> = (props) => {
         })),
       });
     })();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const onCreate = () => {
     const { config } = state;
     setState({ loading: true });
-    new TestCaseService()
-      .post({
-        name: config.name,
-        description: config.description,
-        config:
-          config.testCases.map(
-            (c): TestConfigForFunctionJSON => convertFunctionConfigToJSON(c)
-          ) || [],
-      })
-      .then((res) => {
-        setState({
-          config: {
-            ...res!,
-            testCases:
-              res?.config?.map((c) =>
-                convertJSONConfigToTestCaseConfig(c as any)
-              ) || [],
-          },
-          loading: false,
-        });
-        navigate(`/test_case/${res!.id}`);
+    new TestCaseService().post(config.json()).then((res) => {
+      setState({
+        config: TestValidator.initializeFromJSON(res!),
+        loading: false,
       });
+      navigate(`/test_case/${res!.id}`);
+    });
   };
 
   if (!state.executedFunctions.length) {
@@ -114,7 +86,7 @@ export const CreateTestView: React.FC<any> = (props) => {
             />
             <Button
               sx={{ mt: 10 }}
-              disabled={!!state?.config?.id}
+              disabled={!!state?.config?.config.id || !state.config.config.name}
               variant="outlined"
               color="primary"
               onClick={onCreate}
@@ -131,11 +103,16 @@ export const CreateTestView: React.FC<any> = (props) => {
         onClose={(confirm) => {
           if (!confirm) return;
 
-          const config = createTestConfigFromExecutedFunctions(
-            state.executedFunctions
+          const config = new TestValidator({
+            name: "",
+            description: "",
+            id: null as any,
+            functions: state.executedFunctions
               .filter((f) => f.selected)
-              .map((f) => f.function)
-          );
+              .map((f) =>
+                FunctionValidator.initializeFromExecutedFunction(f.function)
+              ),
+          });
 
           setState({ config });
         }}

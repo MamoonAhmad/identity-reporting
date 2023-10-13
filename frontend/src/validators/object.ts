@@ -54,7 +54,7 @@ export class ObjectValidator extends Validator {
   }
 
   static initializeFromJSON(jsonValue: ObjectValidatorConfigJSON) {
-    if (!jsonValue?.targetValue || jsonValue?.ignore) {
+    if (!jsonValue?.targetValue) {
       return new ObjectValidator({ ...jsonValue });
     }
     const jsonObject: ObjectValidatorConfig["targetValue"] = {};

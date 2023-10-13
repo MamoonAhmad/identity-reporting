@@ -1,11 +1,6 @@
 import { ExecutedFunction, ExecutedFunction1Type } from "../ExecutionFunction";
 import { LOG_TYPE, Log } from "../Log";
 import {
-  TestConfig,
-  TestConfigForFunction,
-  TestConfigForFunctionJSON,
-} from "../components/TestRun/TestRunView";
-import {
   ArrayValidator,
   ArrayValidatorConfigJSON,
   ObjectValidator,
@@ -15,16 +10,21 @@ import {
 } from "../validators";
 
 export const createExecutedFunctions = (functions: ExecutedFunction1Type[]) => {
+  const fs: ExecutedFunction1Type[] = functions.map((f) => ({
+    ...f,
+    createdObjects: [],
+    updatedObjects: [],
+    deletedObjects: [],
+    childFunctions: []
+  }));
   const processedFunctions: ExecutedFunction1Type[] = [];
-  const functionWithoutParents = functions?.filter((f) => !f.parent_id);
+  const functionWithoutParents = fs?.filter((f) => !f.parent_id);
+
   functionWithoutParents.forEach((func) => {
     const f = { ...func };
     processedFunctions.push(f);
-    const childFunctions = functions.filter((ff) => ff.parent_id === f.id);
+    const childFunctions = fs.filter((ff) => ff.parent_id === f.id);
     f.childFunctions = childFunctions;
-    f.createdObjects = [];
-    f.deletedObjects = [];
-    f.updatedObjects = [];
   });
 
   return processedFunctions;
@@ -108,92 +108,4 @@ export const getValidatorFromJSON = (JSON: ValidatorConfigJSON): Validator => {
   return Validator.initializeFromJSON(JSON);
 };
 
-export const createValidatorForFunction = (
-  executedFunction: ExecutedFunction1Type
-) => {
-  const config: TestConfigForFunction = {} as any;
-  config.executedFunction = executedFunction;
-  config.ignore = false;
-  config.testCaseValidationConfig = {
-    inputData: createMatchersFromValue(executedFunction.input_data),
-    outputData: createMatchersFromValue(executedFunction.output_data),
-    createdObjects: createMatchersFromValue(
-      executedFunction.createdObjects
-    ) as any,
-    updatedObjects: createMatchersFromValue(
-      executedFunction.updatedObjects
-    ) as any,
-    deletedObjects: createMatchersFromValue(
-      executedFunction.deletedObjects
-    ) as any,
-    childFunctionExecutions:
-      executedFunction.childFunctions?.map((f) =>
-        createValidatorForFunction(f)
-      ) || [],
-  };
-  return config;
-};
 
-export const createTestConfigFromExecutedFunctions = (
-  executedFunctions: ExecutedFunction1Type[]
-) => {
-  const testCaseConfig: TestConfig = {
-    name: "",
-    description: "",
-    id: null as any,
-    testCases: executedFunctions.map((f) => createValidatorForFunction(f)),
-  };
-
-  return testCaseConfig;
-};
-
-export const convertFunctionConfigToJSON = (
-  c: TestConfigForFunction
-): TestConfigForFunctionJSON => {
-  return {
-    ...c,
-    testCaseValidationConfig: {
-      childFunctionExecutions:
-        c.testCaseValidationConfig?.childFunctionExecutions?.map((cf) =>
-          convertFunctionConfigToJSON(cf)
-        ) || [],
-      inputData: c.testCaseValidationConfig!.inputData.json(),
-      outputData: c.testCaseValidationConfig!.outputData.json(),
-      createdObjects: c.testCaseValidationConfig!.createdObjects.json(),
-      updatedObjects: c.testCaseValidationConfig!.updatedObjects.json(),
-      deletedObjects: c.testCaseValidationConfig!.deletedObjects.json(),
-    },
-  };
-};
-
-export const convertJSONConfigToTestCaseConfig = (
-  c: TestConfigForFunctionJSON
-): TestConfigForFunction => {
-  const cc: TestConfigForFunction = {
-    ...c,
-  } as any;
-
-  const config = c.testCaseValidationConfig;
-
-  cc.testCaseValidationConfig = {
-    createdObjects: getValidatorFromJSON(
-      config.createdObjects
-    ) as ArrayValidator,
-    updatedObjects: getValidatorFromJSON(
-      config.updatedObjects
-    ) as ArrayValidator,
-    deletedObjects: getValidatorFromJSON(
-      config.deletedObjects
-    ) as ArrayValidator,
-
-    inputData: getValidatorFromJSON(config.inputData),
-    outputData: getValidatorFromJSON(config.outputData),
-
-    childFunctionExecutions:
-      config.childFunctionExecutions?.map((c) =>
-        convertJSONConfigToTestCaseConfig(c)
-      ) || [],
-  };
-
-  return cc;
-};

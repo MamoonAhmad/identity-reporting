@@ -16,18 +16,15 @@ import ListItem from "@mui/material/ListItem";
 import ListItemButton from "@mui/material/ListItemButton";
 import ListItemIcon from "@mui/material/ListItemIcon";
 import ListItemText from "@mui/material/ListItemText";
-import InboxIcon from "@mui/icons-material/MoveToInbox";
-import MailIcon from "@mui/icons-material/Mail";
 import { CodeSharp, TimelineSharp } from "@mui/icons-material";
 import { useGeneralState } from "../helpers/useGeneralState";
-import { CreateTestModal, TestCreateStep } from "./TestCreate/Steps";
-import { TestCaseListView } from "./TestCreate/TestCaseListView";
 import { Container } from "@mui/material";
-import { Outlet } from "react-router-dom";
+import { Outlet, useNavigate } from "react-router-dom";
 
 type DrawerOption = {
   label: string;
   Icon: React.FC;
+  route: string;
 };
 type DrawerConfig = {
   logs: DrawerOption;
@@ -38,10 +35,12 @@ const DrawerOptions: DrawerConfig = {
   logs: {
     label: "Logs",
     Icon: TimelineSharp,
+    route: "logs",
   },
   test_cases: {
     label: "Test Cases",
     Icon: CodeSharp,
+    route: "test_case",
   },
 };
 
@@ -112,6 +111,8 @@ export default function PersistentDrawerLeft() {
     setOpen(false);
   };
 
+  const navigate = useNavigate();
+
   return (
     <Box sx={{ display: "flex" }}>
       <CssBaseline />
@@ -156,18 +157,19 @@ export default function PersistentDrawerLeft() {
         <Divider />
         <List>
           {Object.keys(DrawerOptions).map((key) => {
-            const { Icon, label } = DrawerOptions[
+            const { Icon, label, route } = DrawerOptions[
               key as keyof DrawerConfig
             ] as any as DrawerOption;
             return (
               <ListItem
                 key={key}
                 disablePadding
-                onClick={(e) =>
-                  setState({ currentDrawerOption: key as keyof DrawerConfig })
-                }
+                onClick={() => {
+                  setState({ currentDrawerOption: key as keyof DrawerConfig });
+                  navigate(route);
+                }}
               >
-                <ListItemButton>
+                <ListItemButton selected={state.currentDrawerOption === key}>
                   <ListItemIcon>
                     <Icon />
                   </ListItemIcon>

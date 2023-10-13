@@ -1,17 +1,7 @@
-import React, {
-  PropsWithChildren,
-  useCallback,
-  useContext,
-  useEffect,
-} from "react";
-import { ArrayValidator, Validator } from "../../validators";
-import { TestConfigForFunction } from "../TestRun/TestRunView";
-import { ExecutedFunction1Type } from "../../ExecutionFunction";
+import React, { useEffect } from "react";
 import { useGeneralState } from "../../helpers/useGeneralState";
 
-import { StoreContext } from "../../context/StoreContext";
-import { GenericObjectInputView } from "./ObjectInput";
-import { Checkbox } from "@mui/material";
+import { Button, Checkbox } from "@mui/material";
 import {
   AddCircleOutlineSharp,
   BugReportSharp,
@@ -21,47 +11,44 @@ import {
   UpdateSharp,
 } from "@mui/icons-material";
 import { LOG_TYPE } from "../../Log";
+import { getChildrenForObject } from "../NestedObjectView/nestedObjectUtils";
+import {
+  GeneralObjectDetailView,
+  ObjectListItemView,
+} from "../NestedObjectView/ConfigureObjectView";
+import { NestedObjectView } from "../NestedObjectView/NestedObjectView";
+import { FunctionValidator } from "../../validators/function";
 
 type FunctionTestCreateProps = {
-  existingConfig: TestConfigForFunction;
-  onChange: (v: TestConfigForFunction) => void;
+  existingConfig: FunctionValidator;
+  onChange: (v: FunctionValidator) => void;
+  namePath: string[];
 };
 
-type FunctionTestCreateState = {
-  inputValidator: Validator;
-  outputValidator: Validator;
-  createdObjectsValidator: ArrayValidator;
-  updatedObjectsValidator: ArrayValidator;
-  deletedObjectsValidator: ArrayValidator;
-  childFunctions: TestConfigForFunction[];
-  ignore: boolean;
-};
 export const FunctionTestCreate: React.FC<FunctionTestCreateProps> = React.memo(
-  ({ existingConfig, onChange }) => {
-    const [state, setState] = useGeneralState<FunctionTestCreateState>({});
-    const executionFunction = existingConfig.executedFunction;
+  ({ existingConfig, onChange, namePath }) => {
+    const executionFunction =
+      existingConfig.config.targetValue?.executedFunctionMeta;
 
-    const config = existingConfig.testCaseValidationConfig;
-    const updateConfig = useCallback(
-      (v: any) => {
-        onChange({
-          ...existingConfig,
-          testCaseValidationConfig: {
-            ...existingConfig,
-            ...v,
-          },
-        });
-      },
-      [existingConfig]
-    );
+    const [state, setState] = useGeneralState<{
+      showNestedObjectView: boolean;
+      namePath: string[];
+      nestedObjectTarget: any;
+    }>({
+      namePath: [],
+    });
+
+    const config = existingConfig.config.targetValue.validatorConfig;
 
     // const onChildChange = (i: number, config: TestConfigForFunction) => {
     //   state?.childFunctions?.splice(i, 1, config);
     //   setState({ childFunctions: [...state.childFunctions] });
     // };
 
-    const childrenLength = !!config?.childFunctionExecutions?.length;
-    const showChildren = childrenLength && !state?.ignore;
+    const childrenLength = !!config?.childFunctions?.length;
+    const showChildren = childrenLength && !existingConfig.config.ignore;
+
+    const functionID = `functions.[0].${executionFunction.name}`;
 
     return (
       <div
@@ -82,57 +69,81 @@ export const FunctionTestCreate: React.FC<FunctionTestCreateProps> = React.memo(
           }
 
           <Checkbox
-            checked={!existingConfig.ignore}
-            onChange={(_e, c) => onChange({ ...existingConfig, ignore: !c })}
+            checked={!existingConfig.config.ignore}
+            onChange={(_e, c) =>
+              onChange(
+                new FunctionValidator({ ...existingConfig.config, ignore: !c })
+              )
+            }
             size="small"
           />
           <span className="pl-1">{executionFunction?.name}: </span>
 
           <div className="ml-2 flex items-center font-normal">
-            <FunctionInput
-              validator={config?.inputData}
-              targetObject={executionFunction?.input_data}
-              targetObjectKey={"inputData"}
-              onChange={updateConfig}
+            <Button
+              onClick={() => {
+                setState({
+                  showNestedObjectView: true,
+                  namePath: [functionID, "input"],
+                });
+              }}
             >
               <InputSharp className="mr-1 mt-0.5" fontSize={"small"} />
-              Input1
-            </FunctionInput>
-            <FunctionInput
-              validator={config?.outputData}
-              targetObject={executionFunction?.output_data}
-              targetObjectKey={"outputData"}
-              onChange={updateConfig}
+              Input
+            </Button>
+            <Button
+              onClick={() => {
+                setState({
+                  showNestedObjectView: true,
+                  namePath: [functionID, "output"],
+                });
+              }}
             >
               <OutputSharp className="mt-0.5 mx-1" fontSize="small" /> Output
-            </FunctionInput>
-            <FunctionInput
-              validator={config?.createdObjects}
-              targetObject={executionFunction?.createdObjects}
-              targetObjectKey={"createdObjects"}
-              onChange={updateConfig}
+            </Button>
+            <Button
+              onClick={() => {
+                setState({
+                  showNestedObjectView: true,
+                  namePath: [functionID, "created_objects"],
+                });
+              }}
             >
               <AddCircleOutlineSharp className="mt-0.5 mx-1" fontSize="small" />{" "}
               New
-            </FunctionInput>
-            <FunctionInput
-              validator={config?.updatedObjects}
-              targetObject={executionFunction?.updatedObjects}
-              targetObjectKey={"updatedObjects"}
-              onChange={updateConfig}
+            </Button>
+            <Button
+              onClick={() => {
+                setState({
+                  showNestedObjectView: true,
+                  namePath: [functionID, "updated_objects"],
+                });
+              }}
             >
               <UpdateSharp className="mt-0.5 mx-1" fontSize="small" /> Updates
-            </FunctionInput>
-            <FunctionInput
-              validator={config?.deletedObjects}
-              targetObject={executionFunction?.deletedObjects}
-              targetObjectKey={"deletedObjects"}
-              onChange={updateConfig}
+            </Button>
+            <Button
+              onClick={() => {
+                setState({
+                  showNestedObjectView: true,
+                  namePath: [functionID, "deleted_objects"],
+                });
+              }}
             >
               <DeleteSharp className="mt-0.5 mx-1" fontSize="small" /> Deleted
-            </FunctionInput>
+            </Button>
           </div>
         </p>
+
+        {state.showNestedObjectView && (
+          <ShowNestedObjectView
+            executedFunction={existingConfig}
+            namePath={state.namePath}
+            onClose={() => setState({ showNestedObjectView: false })}
+            onChange={onChange}
+            open={true}
+          />
+        )}
 
         {/* <p className={`text-mg font-semibold`}>{executionFunction?.functionMeta?.name}</p> */}
         <div
@@ -165,20 +176,30 @@ export const FunctionTestCreate: React.FC<FunctionTestCreateProps> = React.memo(
           <div className="-ml-5 pl-7">
             {showChildren ? (
               <div className="">
-                {config?.childFunctionExecutions?.map((_, i) => (
+                {config?.childFunctions?.map((_, i) => (
                   <FunctionTestCreate
-                    existingConfig={config!.childFunctionExecutions[i]}
+                    namePath={[
+                      ...namePath,
+                      `functions.${i}.${_.config.targetValue.executedFunctionMeta.name}`,
+                    ]}
+                    existingConfig={config!.childFunctions[i]}
                     onChange={(f) => {
-                      const arr = config!.childFunctionExecutions;
+                      const arr = config!.childFunctions;
                       arr[i] = f;
-                      onChange({
-                        ...existingConfig,
-                        testCaseValidationConfig: {
-                          ...existingConfig.testCaseValidationConfig,
-                          childFunctionExecutions: arr,
-                        } as any,
-                        // TODO Typing
-                      });
+                      onChange(
+                        new FunctionValidator({
+                          ...existingConfig.config,
+                          targetValue: {
+                            ...existingConfig.config.targetValue,
+                            validatorConfig: {
+                              ...existingConfig.config.targetValue
+                                .validatorConfig,
+                              childFunctions: [...arr],
+                            },
+                          },
+                          // TODO Typing
+                        })
+                      );
                     }}
                   />
                 ))}
@@ -191,45 +212,46 @@ export const FunctionTestCreate: React.FC<FunctionTestCreateProps> = React.memo(
   }
 );
 
-const FunctionInput: React.FC<PropsWithChildren<any>> = ({
-  targetObject,
-  targetObjectKey,
-  validator,
-  onChange,
-  children,
-}) => {
-  const ObjectConfigEditorComponent = useCallback(() => {
-    return (
-      <>
-        <GenericObjectInputView
-          name={"Input"}
-          value={targetObject}
-          onChange={(v) => onChange({ [targetObjectKey]: v })}
-          //   peString={`${executionFunction?.entity?.name}.${executionFunction?.entity?.reference_id}.Input`}
-          validator={validator}
-        />
-      </>
-    );
-  }, [validator, targetObject]);
+const ShowNestedObjectView: React.FC<{
+  onChange: (o: any) => void;
+  onClose: () => void;
+  open: boolean;
+  executedFunction: FunctionValidator;
+  namePath: string[];
+}> = ({ onChange, open, onClose, namePath, executedFunction }) => {
+  const [state, setState] = useGeneralState<{
+    namePath: string[];
+  }>({
+    namePath: [...(namePath || [])],
+  });
 
-  const {
-    setState: setStoreState,
-    state: { SidePanelComponents },
-  } = useContext(StoreContext);
+  useEffect(() => {
+    setState({ namePath });
+  }, [namePath, setState]);
 
   return (
-    <div
-      className="flex items-center cursor-pointer mx-1 text-blue-500"
-      onClick={() => {
-        setStoreState({
-          SidePanelComponents: [
-            ...SidePanelComponents,
-            ObjectConfigEditorComponent,
-          ],
-        });
-      }}
-    >
-      {children}
-    </div>
+    <>
+      {open && (
+        <NestedObjectView
+          open={true}
+          onClose={onClose}
+          objectPath={state.namePath}
+          onObjectPathChange={(o: string[]) => setState({ namePath: [...o] })}
+          getChildren={getChildrenForObject}
+          ListItemView={ObjectListItemView}
+          DetailView={GeneralObjectDetailView}
+          title={executedFunction.config.targetValue.executedFunctionMeta.name}
+          label="Function"
+          initialObjects={[
+            {
+              id: `functions.[0].${executedFunction.config.targetValue.executedFunctionMeta.name}`,
+              name: `${executedFunction.config.targetValue.executedFunctionMeta.name}`,
+              object: executedFunction,
+              onChange: (o: any) => onChange(o),
+            },
+          ]}
+        />
+      )}
+    </>
   );
 };

@@ -116,3 +116,13 @@ export class Validator {
     this.config = { ...this.config, ...obj };
   }
 }
+
+
+
+export const VALIDATOR_OBJECT_TYPES = {
+  test_case_config: Symbol.for('test_case_config'),
+  function_validator_config: Symbol.for('function_validator_config'),
+  object_validator_config: Symbol.for('object_validator_config'),
+  array_validator_config: Symbol.for('array_validator_config'),
+  literal_validator_config: Symbol.for('literal_validator_config'),
+}

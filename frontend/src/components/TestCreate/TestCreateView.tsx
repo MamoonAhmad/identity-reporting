@@ -1,28 +1,26 @@
 import React from "react";
-import { TestConfig, TestConfigForFunction } from "../TestRun/TestRunView";
 
 import { Box, TextField, Typography } from "@mui/material";
 
-import { SidePanel } from "../SidePanel";
 import { FunctionTestCreate } from "./FunctionTestCreate";
 import Tabs from "@mui/material/Tabs";
 import Tab from "@mui/material/Tab";
+import { FunctionValidator } from "../../validators/function";
+import { TestValidator } from "../../validators/test";
 
 export type TestCreateViewProps1 = {
-  config: TestConfig;
-  onChange: (c: TestConfig) => void;
+  config: TestValidator;
+  onChange: (c: TestValidator) => void;
 };
 export const TestCreateView: React.FC<TestCreateViewProps1> = ({
   config,
   onChange,
 }) => {
-
   const [value, setValue] = React.useState(0);
 
-  const handleChange = (event: React.SyntheticEvent, newValue: number) => {
+  const handleChange = (_: React.SyntheticEvent, newValue: number) => {
     setValue(newValue);
   };
-
 
   return (
     <Box sx={{ width: "100%" }}>
@@ -32,46 +30,57 @@ export const TestCreateView: React.FC<TestCreateViewProps1> = ({
           onChange={handleChange}
           aria-label="basic tabs example"
         >
-          <Tab label="Basic Information" {...a11yProps(0)} />
-          <Tab label="Configuration" {...a11yProps(1)} />
+          <Tab label="Configuration" {...a11yProps(0)} />
+          <Tab label="Basic Information" {...a11yProps(1)} />
         </Tabs>
       </Box>
+
       <CustomTabPanel value={value} index={0}>
+        <ExecutedFunctionsConfigurator
+          existingFunctionConfig={config.config.functions}
+          onChange={(functions) => {
+            const cc: TestValidator = new TestValidator({
+              ...config.config,
+              functions,
+            });
+            onChange(cc);
+          }}
+        />
+      </CustomTabPanel>
+      <CustomTabPanel value={value} index={1}>
         <TextField
           label="Test Case Name"
           onChange={(e) => {
-            onChange({ ...config, name: e.target.value });
+            onChange(
+              new TestValidator({ ...config.config, name: e.target.value })
+            );
           }}
-          value={config.name}
+          value={config.config.name}
           fullWidth
         />
         <TextField
           sx={{ mt: 2, mb: 3 }}
           label="Test Case Description"
           onChange={(e) => {
-            onChange({ ...config, description: e.target.value });
+            onChange(
+              new TestValidator({
+                ...config.config,
+                description: e.target.value,
+              })
+            );
           }}
-          value={config.description}
+          value={config.config.description}
           multiline
           fullWidth
         />
-      </CustomTabPanel>
-      <CustomTabPanel value={value} index={1}>
-      <ExecutedFunctionsConfigurator
-        existingFunctionConfig={config.testCases}
-        onChange={(c) => {
-          const cc: TestConfig = { ...config, testCases: c };
-          onChange(cc);
-        }}
-      />
       </CustomTabPanel>
     </Box>
   );
 };
 
 export type ExecutedFunctionsConfiguratorProps = {
-  existingFunctionConfig: TestConfigForFunction[];
-  onChange: (c: TestConfigForFunction[]) => void;
+  existingFunctionConfig: FunctionValidator[];
+  onChange: (c: FunctionValidator[]) => void;
 };
 
 export const ExecutedFunctionsConfigurator: React.FC<
@@ -82,16 +91,18 @@ export const ExecutedFunctionsConfigurator: React.FC<
       <div className="flex flex-col items-start">
         {existingFunctionConfig?.map((e, i) => (
           <FunctionTestCreate
+            namePath={[
+              `functions.${i}.${e.config.targetValue.executedFunctionMeta.name}`,
+            ]}
             existingConfig={e}
-            onChange={(c) => {
+            onChange={(c: FunctionValidator) => {
               const arr = existingFunctionConfig;
-              arr[i] = c as any;
+              arr[i] = c;
               onChange([...arr]);
             }}
           />
         ))}
       </div>
-      <SidePanel />
     </>
   );
 };
@@ -128,3 +139,52 @@ function a11yProps(index: number) {
     "aria-controls": `simple-tabpanel-${index}`,
   };
 }
+
+
+// Fix Validators
+// Fix the entity execution
+// create small field decorators ?
+// all the values in dict inout and output ?
+// how to save the objects copies efficiently input output changes
+// field options
+// IO Driver
+// control configs for how much loggin. input output
+// unit tests backend
+// unit tests frontend
+// default parameters
+// Object reference
+// created updated and deleted objects match
+/**
+ * Test Creation Tool {
+ *
+ *  name a test case
+ *  copy test json
+ *  create test case from logs
+ *  provide default input
+ *  a way to save the test case
+ *   options for value validator like ( is set )
+ *  literal: has a non null value, should equal '', custom value (type mismatch ?)
+ *  array: Exact Keys, Ignore
+ *  // when custom value is inserted, parse it and show it in edit mode
+ *  //
+ *
+ *  exeception validator
+ *  log validator ?
+ *  created objects validator
+ *  updated and deleted validator
+ *
+ *  unit tests
+ *
+ * }
+ *
+ * Test Runner Tool {
+ *
+ *  a way to run the test case
+ *  a way to run multiple test cases
+ *  when a test case fails, find a way to update the test case
+ *
+ *
+ *   uni tests
+ *
+ * }
+ */
