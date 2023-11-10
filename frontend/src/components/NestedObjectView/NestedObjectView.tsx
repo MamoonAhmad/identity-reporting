@@ -139,7 +139,7 @@ export const NestedObjectView: React.FC<
           {selectedObject && (
             <Box
               sx={{
-                width: 200,
+                width: 500,
                 height: 400,
                 padding: 2,
                 bgcolor: "ButtonShadow",

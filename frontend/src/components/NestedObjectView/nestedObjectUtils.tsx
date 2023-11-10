@@ -159,16 +159,17 @@ export const getChildrenForObject = (
         id: `childFunction.${i}.${config.executedFunctionMeta.name}`,
         object: f as any,
         onChange: (v: any) => {
-          config.validatorConfig!.childFunctions[i] = v;
+          o.config.targetValue.validatorConfig.childFunctions[i] = v;
           onChange(
             new FunctionValidator({
               ...o.config,
               targetValue: {
-                ...config,
+                ...o.config.targetValue,
                 validatorConfig: {
-                  ...config.validatorConfig,
+                  ...(o?.config?.targetValue?.validatorConfig || {}),
                   childFunctions: [
-                    ...config.validatorConfig!.childFunctions,
+                    ...(o?.config?.targetValue?.validatorConfig
+                      ?.childFunctions || []),
                   ],
                 },
               },

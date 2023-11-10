@@ -247,7 +247,9 @@ const ShowNestedObjectView: React.FC<{
               id: `functions.[0].${executedFunction.config.targetValue.executedFunctionMeta.name}`,
               name: `${executedFunction.config.targetValue.executedFunctionMeta.name}`,
               object: executedFunction,
-              onChange: (o: any) => onChange(o),
+              onChange: (o: any) => {
+                onChange(o)
+              },
             },
           ]}
         />

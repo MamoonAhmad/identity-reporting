@@ -117,30 +117,32 @@ export const UpdateTestView: React.FC<any> = () => {
         </Button>
       </Box>
 
-      <NestedObjectView
-        open={state.runTest}
-        onClose={() => setState({ runTest: false })}
-        objectPath={state.objectPath}
-        onObjectPathChange={(o) => setState({ objectPath: [...o] })}
-        getChildren={getChildrenForObject}
-        ListItemView={TestRunListItemView}
-        DetailView={GenericTestDetailRunView}
-        title="Configure Test"
-        label="some"
-        initialObjects={state.config.config.functions.map((f, i) => {
-          try {
-            f.match(state.executedFunctions[i]);
-          } catch (e) {
-            console.log(e);
-          }
-          return {
-            id: `function.${i}.${f.config.targetValue.executedFunctionMeta.name}`,
-            name: `${f.config.targetValue.executedFunctionMeta.name}`,
-            object: f,
-            onChange: () => undefined,
-          };
-        })}
-      />
+      {state.runTest && (
+        <NestedObjectView
+          open={state.runTest}
+          onClose={() => setState({ runTest: false })}
+          objectPath={state.objectPath}
+          onObjectPathChange={(o) => setState({ objectPath: [...o] })}
+          getChildren={getChildrenForObject}
+          ListItemView={TestRunListItemView}
+          DetailView={GenericTestDetailRunView}
+          title="Configure Test"
+          label="some"
+          initialObjects={state.config.config.functions.map((f, i) => {
+            try {
+              f.match(state.executedFunctions[i]);
+            } catch (e) {
+              console.log(e);
+            }
+            return {
+              id: `function.${i}.${f.config.targetValue.executedFunctionMeta.name}`,
+              name: `${f.config.targetValue.executedFunctionMeta.name}`,
+              object: f,
+              onChange: () => undefined,
+            };
+          })}
+        />
+      )}
     </>
   );
 };
