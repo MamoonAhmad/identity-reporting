@@ -3,8 +3,13 @@ import { Validator, ValidatorConfig, ValidatorConfigJSON } from "./base";
 
 type ObjectValue = { [key: string]: any } | null;
 
+export const DEFAULT_OBJECT_VALIDATOR_CONFIG = {
+  strictEqual: true,
+};
+
 export type ObjectValidatorConfig = Omit<ValidatorConfig, "targetValue"> & {
   targetValue: { [key: string]: Validator } | null;
+  strictEqual: boolean;
 };
 
 export type ObjectValidatorConfigJSON = Omit<
@@ -12,10 +17,18 @@ export type ObjectValidatorConfigJSON = Omit<
   "targetValue"
 > & {
   targetValue: { [key: string]: ValidatorConfigJSON } | null;
+  strictEqual?: boolean;
 };
 
 export class ObjectValidator extends Validator {
   declare config: ObjectValidatorConfig;
+
+  constructor(config: ObjectValidatorConfig) {
+    super({
+      ...DEFAULT_OBJECT_VALIDATOR_CONFIG,
+      ...(config || {}),
+    });
+  }
 
   receivedValue: ObjectValue | null = null;
 
@@ -39,7 +52,20 @@ export class ObjectValidator extends Validator {
     }
   }
   // eslint-disable-next-line @typescript-eslint/no-empty-function
-  validateStrictEquality() {}
+  validateStrictEquality() {
+    if (
+      this.config.strictEqual &&
+      Object.keys(this.config.targetValue || {}).length !==
+        Object.keys(this.receivedValue || {}).length
+    ) {
+      throw new Error("Object has extra attributes.");
+    }
+  }
+
+  validate(): void {
+    this.validateEquality()
+    this.validateStrictEquality()
+  }
 
   json(): ObjectValidatorConfigJSON {
     if (!this.config.targetValue) {
@@ -55,7 +81,7 @@ export class ObjectValidator extends Validator {
 
   static initializeFromJSON(jsonValue: ObjectValidatorConfigJSON) {
     if (!jsonValue?.targetValue) {
-      return new ObjectValidator({ ...jsonValue });
+      return new ObjectValidator({ ...jsonValue, targetValue: null });
     }
     const jsonObject: ObjectValidatorConfig["targetValue"] = {};
     Object.keys(jsonValue.targetValue || {}).forEach((k) => {

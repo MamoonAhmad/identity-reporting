@@ -39,10 +39,12 @@ export type FunctionValidatorValueJSON = {
 
 export type FunctionValidatorConfig = Omit<ValidatorConfig, "targetValue"> & {
   targetValue: FunctionValidatorValue;
+  isCalled: boolean;
 };
 
 export type FunctionValidatorJSON = Omit<ValidatorConfigJSON, "targetValue"> & {
   targetValue: FunctionValidatorValueJSON;
+  isCalled: boolean;
 };
 
 export class FunctionValidator extends Validator {
@@ -108,6 +110,8 @@ export class FunctionValidator extends Validator {
       strictEqual: true,
       checkIsSet: false,
       expressionValue: null,
+      dataType: "function",
+      isCalled: true,
       targetValue: {
         executedFunctionMeta: {
           ...executedFunction,
@@ -135,46 +139,36 @@ export class FunctionValidator extends Validator {
 
     return new FunctionValidator(config);
   }
-  validateEquality(): void {
-    this.validateFunction();
-  }
 
-  validateStrictEquality(): void {
-    this.validateFunction();
-  }
-
-  private validateFunction() {
+  validate() {
     this.error = "";
     const config = this.config.targetValue.validatorConfig;
 
-    this.runValidator(() => config?.input.match(this.receivedValue.input_data));
-    this.runValidator(() =>
-      config?.output.match(this.receivedValue.output_data)
-    );
-    this.runValidator(() =>
-      config?.createdObjects.match(this.receivedValue.createdObjects)
-    );
-    this.runValidator(() =>
-      config?.updatedObjects.match(this.receivedValue.updatedObjects)
-    );
-    this.runValidator(() =>
-      config?.deletedObjects.match(this.receivedValue.deletedObjects)
-    );
+    if(this.config.ignore) {
+      return
+    }
+    this.runValidator(config.input, this.receivedValue?.input_data)
+    this.runValidator(config.output, this.receivedValue?.output_data)
+    this.runValidator(config.createdObjects, this.receivedValue?.createdObjects)
+    this.runValidator(config.updatedObjects, this.receivedValue?.updatedObjects)
+    this.runValidator(config.deletedObjects, this.receivedValue?.deletedObjects)
 
-    config?.childFunctions.map((f, i) => {
-      this.runValidator(() => f.match(this.receivedValue?.childFunctions?.[i]));
-    });
+    config.childFunctions?.forEach((f, i) => {
+      this.runValidator(f, this.receivedValue?.childFunctions?.[i])
+    })
 
     if (this.error) {
       throw new Error(this.error);
+    } else {
+      this.isValid = true
     }
   }
 
-  private runValidator(runner: () => void) {
-    try {
-      runner();
-    } catch (e) {
-      this.error = e?.toString();
+  private runValidator(validator: Validator, recievedValue: any) {
+    validator.match(recievedValue)
+    if(!validator.isValid) {
+      this.isValid = false
+      this.error = 'Failed to validate function.'
     }
   }
 }

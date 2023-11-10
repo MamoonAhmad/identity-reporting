@@ -91,6 +91,7 @@ export const ExecutedFunctionsConfigurator: React.FC<
       <div className="flex flex-col items-start">
         {existingFunctionConfig?.map((e, i) => (
           <FunctionTestCreate
+            key={e.config?.targetValue?.executedFunctionMeta?.id}
             namePath={[
               `functions.${i}.${e.config.targetValue.executedFunctionMeta.name}`,
             ]}
@@ -139,7 +140,6 @@ function a11yProps(index: number) {
     "aria-controls": `simple-tabpanel-${index}`,
   };
 }
-
 
 // Fix Validators
 // Fix the entity execution

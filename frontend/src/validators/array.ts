@@ -1,71 +1,108 @@
 import { getValidatorFromJSON } from "../helpers/function";
-import { Validator, ValidatorConfig, ValidatorConfigJSON } from "./base"
+import { Validator, ValidatorConfig, ValidatorConfigJSON } from "./base";
+export const DEFAULT_ARRAY_VALIDATOR_CONFIG = {
+  matchOrder: true,
+};
 
-export type ArrayValidatorConfig = Omit<ValidatorConfig, 'targetValue'> & {
-    targetValue: Validator[] | null
-    checkLength: boolean;
-    matchOrder: boolean;
-}
-export type ArrayValidatorConfigJSON = Omit<ArrayValidatorConfig, 'targetValue'> & {
-    targetValue: ValidatorConfigJSON[] | null
-    checkLength: boolean;
-    matchOrder: boolean;
-}
+export type ArrayValidatorConfig = Omit<ValidatorConfig, "targetValue"> & {
+  targetValue: Validator[] | null;
+  matchOrder: boolean;
+};
+export type ArrayValidatorConfigJSON = Omit<
+  ArrayValidatorConfig,
+  "targetValue"
+> & {
+  targetValue: ValidatorConfigJSON[] | null;
+};
 
-export class ArrayValidator extends Validator{
-    strictEqual = false
-    declare config: ArrayValidatorConfig
-    receivedValue: any[] | null = null
-    
-    
-        // if(this.checkOrder) {
-        //     this.targetValue.forEach((m, i) => {
-        //         m.match(value[i])
-        //         if(!m.isValid) {
-        //             this.isValid = false
-        //         }
-        //     })
-        // }
-        
+export class ArrayValidator extends Validator {
+  strictEqual = false;
+  declare config: ArrayValidatorConfig;
+  receivedValue: any[] | null = null;
 
-    json(): ArrayValidatorConfigJSON {
-        const newTarget = this.config?.targetValue?.map(k => k.json()) || null
-        return {...this.config, targetValue: newTarget}
+  constructor(config: ArrayValidatorConfig) {
+    super({ ...DEFAULT_ARRAY_VALIDATOR_CONFIG, ...(config || {}) });
+  }
+
+  // if(this.checkOrder) {
+  //     this.targetValue.forEach((m, i) => {
+  //         m.match(value[i])
+  //         if(!m.isValid) {
+  //             this.isValid = false
+  //         }
+  //     })
+  // }
+
+  json(): ArrayValidatorConfigJSON {
+    const newTarget = this.config?.targetValue?.map((k) => k.json()) || null;
+    return { ...this.config, targetValue: newTarget };
+  }
+
+  validate(): void {
+    this.error = "";
+    if (
+      (!this.config.targetValue && this.receivedValue) ||
+      (Array.isArray(this.config.targetValue) &&
+        !Array.isArray(this.receivedValue)) ||
+      (!Array.isArray(this.config.targetValue) &&
+        Array.isArray(this.receivedValue))
+    ) {
+      throw new Error(`Received value does not match the expected value.`);
+    }
+    if (
+      this.config.strictEqual &&
+      this.config.targetValue?.length !== this.receivedValue?.length
+    ) {
+      throw new Error(
+        `Received array has more values than the expected array.`
+      );
     }
 
-    validateEquality() {
-        if((this.config.targetValue && !this.receivedValue) || !Array.isArray(this.receivedValue)) {
-            throw new Error(`Expected an array but got ${JSON.stringify(this.receivedValue)}.`)
+    if (this.config.matchOrder) {
+      this.config.targetValue?.forEach((v, i) => {
+        try {
+          v.match(this.receivedValue?.[i]);
+        } catch (e) {
+          this.error = e?.toString() || "";
         }
-
-        let hasError = false
-        this.config.targetValue?.forEach((m, i) => {
-            m.match(this.receivedValue?.[i])
-            if(!m.isValid) hasError = true
-        })
-        if (hasError) {
-            throw new Error(`One or more elements in the array did not meet expectations.`)
+      });
+    } else {
+      const indexMap: { [key: number]: true } = {};
+      for (let a = 0; a < this.config.targetValue!.length; a++) {
+        const validator = this.config.targetValue![a];
+        for (let b = 0; b < this.receivedValue!.length; b++) {
+          if (!indexMap[b]) {
+            validator.match(this.receivedValue![b]);
+            if (validator.isValid) {
+              indexMap[b] = true;
+              break;
+            }
+          }
         }
+        if (!validator.isValid) {
+          validator.error =
+            "Did not match with any value in the received array.";
+        }
+      }
     }
+  }
 
-    validateStrictEquality() {
-        if(this.config.targetValue && this.config.targetValue?.length !== this.receivedValue?.length) {
-            throw new Error(`Length of the array does not match. Expected array size is ${this.config.targetValue.length}} but received an array of length ${this.receivedValue?.length}.`)
-        }
+  static initializeFromJSON(jsonValue: ArrayValidatorConfigJSON) {
+    if (!jsonValue?.targetValue) {
+      return new ArrayValidator({ ...jsonValue, targetValue: null });
     }
-
-    static initializeFromJSON (jsonValue: ArrayValidatorConfigJSON) {
-        if(!jsonValue?.targetValue) {
-            return new ArrayValidator(jsonValue)
-        }
-        if(!Array.isArray(jsonValue?.targetValue)) {
-            throw new Error('Received an invalid value in targetValue instead of an array.')
-        }
-        const newTarget = jsonValue?.targetValue?.map(v => getValidatorFromJSON(v))
-
-        return new ArrayValidator({
-            ...jsonValue,
-            targetValue: newTarget
-        })
+    if (!Array.isArray(jsonValue?.targetValue)) {
+      throw new Error(
+        "Received an invalid value in targetValue instead of an array."
+      );
     }
+    const newTarget = jsonValue?.targetValue?.map((v) =>
+      getValidatorFromJSON(v)
+    );
+
+    return new ArrayValidator({
+      ...jsonValue,
+      targetValue: newTarget,
+    });
+  }
 }

@@ -10,23 +10,31 @@ import {
 } from "../validators";
 
 export const createExecutedFunctions = (functions: ExecutedFunction1Type[]) => {
-  const fs: ExecutedFunction1Type[] = functions.map((f) => ({
-    ...f,
-    createdObjects: [],
-    updatedObjects: [],
-    deletedObjects: [],
-    childFunctions: []
-  }));
+  const map: any = {};
+  const fs: ExecutedFunction1Type[] = functions.map((ff) => {
+    const f = {...ff}
+    const newID = new Date().getTime() + f.name + Math.random();
+    map[f.id] = newID;
+    f.id = newID;
+    return {
+      ...f,
+      createdObjects: [],
+      updatedObjects: [],
+      deletedObjects: [],
+      childFunctions: [],
+    };
+  });
   const processedFunctions: ExecutedFunction1Type[] = [];
   const functionWithoutParents = fs?.filter((f) => !f.parent_id);
 
   functionWithoutParents.forEach((func) => {
     const f = { ...func };
     processedFunctions.push(f);
-    const childFunctions = fs.filter((ff) => ff.parent_id === f.id);
+    const childFunctions = fs.filter((ff) => map[ff.parent_id || ""] === f.id);
+    console.log(childFunctions, map, 'child')
     f.childFunctions = childFunctions;
   });
-
+  console.log(processedFunctions, functions, 'process')
   return processedFunctions;
 };
 
@@ -107,5 +115,3 @@ export const getValidatorFromJSON = (JSON: ValidatorConfigJSON): Validator => {
 
   return Validator.initializeFromJSON(JSON);
 };
-
-
