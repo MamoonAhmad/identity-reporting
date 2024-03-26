@@ -16,31 +16,28 @@ import ListItem from "@mui/material/ListItem";
 import ListItemButton from "@mui/material/ListItemButton";
 import ListItemIcon from "@mui/material/ListItemIcon";
 import ListItemText from "@mui/material/ListItemText";
-import { CodeSharp, TimelineSharp } from "@mui/icons-material";
-import { useGeneralState } from "../helpers/useGeneralState";
+import { CodeSharp } from "@mui/icons-material";
 import { Container } from "@mui/material";
 import { Outlet, useNavigate } from "react-router-dom";
+import { TestCaseRoutes } from "../entities/TestCase/routes";
+import { TestRunRoutes } from "../entities/TestRun/routes";
+import { FunctionExecutionRoutes } from "../entities/FunctionExecution/routes";
 
-type DrawerOption = {
-  label: string;
-  Icon: React.FC;
-  route: string;
-};
-type DrawerConfig = {
-  logs: DrawerOption;
-  test_cases: DrawerOption;
-};
-
-const DrawerOptions: DrawerConfig = {
-  logs: {
-    label: "Logs",
-    Icon: TimelineSharp,
-    route: "logs",
+const DrawerOptions: any = {
+  executed_functions: {
+    label: "Executed Functions",
+    Icon: CodeSharp,
+    route: FunctionExecutionRoutes.FunctionExecutionList,
   },
   test_cases: {
     label: "Test Cases",
     Icon: CodeSharp,
-    route: "test_case",
+    route: TestCaseRoutes.TestCaseList,
+  },
+  test_runs: {
+    label: "Test Runs",
+    Icon: CodeSharp,
+    route: TestRunRoutes.TestRunList,
   },
 };
 
@@ -99,9 +96,12 @@ export default function PersistentDrawerLeft() {
   const theme = useTheme();
   const [open, setOpen] = React.useState(false);
 
-  const [state, setState] = useGeneralState<{
-    currentDrawerOption: keyof DrawerConfig;
-  }>({ currentDrawerOption: "test_cases" });
+  const [state, setState] = React.useReducer(
+    (p: any, c: any) => ({ ...p, ...c }),
+    {
+      currentDrawerOption: "test_cases",
+    }
+  );
 
   const handleDrawerOpen = () => {
     setOpen(true);
@@ -157,15 +157,13 @@ export default function PersistentDrawerLeft() {
         <Divider />
         <List>
           {Object.keys(DrawerOptions).map((key) => {
-            const { Icon, label, route } = DrawerOptions[
-              key as keyof DrawerConfig
-            ] as any as DrawerOption;
+            const { Icon, label, route } = DrawerOptions[key];
             return (
               <ListItem
                 key={key}
                 disablePadding
                 onClick={() => {
-                  setState({ currentDrawerOption: key as keyof DrawerConfig });
+                  setState({ currentDrawerOption: key });
                   navigate(route);
                 }}
               >

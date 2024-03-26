@@ -1,24 +1,21 @@
 import { ListPage } from "../../components/UICrud";
-import axios from "axios";
+import { TestCaseServices } from "./services";
+import { TestCaseRoutes } from "./routes";
 
 export const TestCaseList: React.FC<any> = () => {
   return (
     <>
       <ListPage
+        pageTitle="Test Cases"
         loader={async () => {
-          const res = await axios.get(
-            "http://localhost:8002/get-executed-functions"
-          );
-          return res.data;
+          return await TestCaseServices.getAllTestCases();
         }}
         keyColumnMap={{
-          name: "Function Name",
+          name: "Name",
           description: "Description",
-          startTime: "Started At",
-          endTime: "Ended At",
         }}
         actions={{
-          view: (o) => `/view-function-execution/${o._id}`,
+          view: (o) => TestCaseRoutes.ViewTestCase.replace("*", o._id),
           delete: (o) => `/delete-function-execution/${o._id}`,
         }}
       />

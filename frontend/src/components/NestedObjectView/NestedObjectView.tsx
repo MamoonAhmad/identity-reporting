@@ -1,208 +1,123 @@
-import {
-  Box,
-  Dialog,
-  DialogContent,
-  DialogTitle,
-  IconButton,
-  List,
-  TextField,
-  Typography,
-  useTheme,
-} from "@mui/material";
-import React, { useMemo } from "react";
-import { useGeneralState } from "../../helpers/useGeneralState";
-import { CloseSharp } from "@mui/icons-material";
+import { Box, List, TextField, useTheme } from "@mui/material";
+import React, { useEffect, useMemo, useReducer, useRef, useState } from "react";
 
-export type NestedObjectUIListItem = {
-  name: string;
-  object: any;
-  onChange: (object: any) => void;
+/** Explorer
+ * getChildren: (o) => {id: string, name: string}
+ * object: any
+ * DetailView: React.FC<{object: any}>
+ * selectedObjectPath: string[]
+ * onSelectedObjectPathChange: (selectedObjectPath: string[]) => void
+ */
+
+export type NestedObjectColumnItem = {
   id: string;
-};
-
-type APIProps = {
-  getChildren: (
-    name: string,
-    o: any,
-    onChange: (o: any) => void
-  ) => NestedObjectUIListItem[] | null;
-  ListItemView: React.FC<{
-    onSelect: () => void;
-    config: NestedObjectUIListItem;
-    selected: boolean;
-  }>;
-  DetailView: React.FC<{
-    config: NestedObjectUIListItem;
-  }>;
-
-  onObjectPathChange: (a: string[]) => void;
+  name: string;
+  selected: boolean;
+  object: any;
   objectPath: string[];
 };
 
-export const NestedObjectView: React.FC<
-  {
-    open: boolean;
-    onClose: () => void;
-    title: string;
-
-    label: string;
-
-    initialObjects: NestedObjectUIListItem[];
-  } & APIProps
-> = ({
-  open,
-  onClose,
-  initialObjects,
-  onObjectPathChange,
-  objectPath,
-  title,
-  label,
-  getChildren,
-  ListItemView,
-  DetailView,
-}) => {
-  const { columns, selectedObject } = useMemo(() => {
-    const cols = [initialObjects];
-    let selectedObject = null;
-
-    objectPath?.forEach((objectID, i) => {
-      const currentColumnSelectedObject = cols[i]?.find(
-        (o) => o.id === objectID
-      );
-      if (!currentColumnSelectedObject) {
-        return;
+export const NestedObjectColumns: React.FC<{
+  objects: NestedObjectColumnItem[][];
+  onObjectSelected: (nestedObject: NestedObjectColumnItem) => void;
+  DetailView: React.FC<{ object: any }>;
+  ListItemView: React.FC<{ object: any; selectObject: () => void }>;
+}> = ({ objects, onObjectSelected, DetailView, ListItemView }) => {
+  const selectedObject = useMemo(() => {
+    for (let a = objects.length - 1; a >= 0; a--) {
+      const selected = objects[a].find((i) => i.selected);
+      if (selected) {
+        return selected;
       }
-      const children = getChildren(
-        currentColumnSelectedObject.name,
-        currentColumnSelectedObject.object,
-        currentColumnSelectedObject.onChange
-      );
-      if (children && children.length) {
-        cols.push(children);
-      }
-      if (!objectPath[i + 1]) {
-        selectedObject = currentColumnSelectedObject;
-      }
-    });
+    }
+    return undefined;
+  }, [objects]);
 
-    return { columns: cols, selectedObject };
-  }, [initialObjects, objectPath, getChildren]);
+  const boxRef = useRef<any>(null);
+
+  useEffect(() => {
+    // Scroll to the end of the box when component mounts
+    if (boxRef.current) {
+      boxRef.current.scrollLeft =
+        boxRef.current.scrollWidth - boxRef.current.clientWidth;
+    }
+  }, [objects]);
 
   return (
-    <Dialog open={open} onClose={onClose} fullWidth maxWidth={"xl"}>
-      <DialogTitle>{title}</DialogTitle>
+    <Box
+      sx={{
+        display: "flex",
+        flexWrap: "nowrap",
+        alignItems: "stretch",
+        justifyContent: "space-between",
+        height: 400,
+        width: "100%",
+      }}
+    >
       <Box
         sx={{
-          position: "absolute",
-          right: 10,
-          top: 10,
+          flexGrow: 1,
+          overflowX: "scroll",
+          display: "flex",
+          flexWrap: "nowrap",
+          alignItems: "stretch",
         }}
+        ref={boxRef}
       >
-        <IconButton onClick={() => onClose()}>
-          <CloseSharp />
-        </IconButton>
+        {objects.map((o) => (
+          <NestedObjectColumn
+            {...{ ListItemView, objects: o, onObjectSelected }}
+          />
+        ))}
       </Box>
-      <DialogContent>
+      {selectedObject && (
         <Box
           sx={{
-            display: "flex",
-            flexWrap: "nowrap",
-            alignItems: "stretch",
-            justifyContent: "space-between",
+            width: 500,
             height: 400,
-            width: "100%",
+            padding: 2,
+            bgcolor: "ButtonShadow",
+            overflow: "scroll",
           }}
         >
-          <Box
-            sx={{
-              flexGrow: 1,
-              overflowX: "scroll",
-              display: "flex",
-              flexWrap: "nowrap",
-              alignItems: "stretch",
-            }}
-          >
-            {columns?.map((_, i) => {
-              return (
-                <NestedObjectColumn
-                  {...{ objectPath, onObjectPathChange }}
-                  nestedObjects={columns}
-                  label={label}
-                  getChildren={getChildren}
-                  index={i}
-                  ListItemView={ListItemView}
-                  DetailView={DetailView}
-                />
-              );
-            })}
-          </Box>
-          {selectedObject && (
-            <Box
-              sx={{
-                width: 500,
-                height: 400,
-                padding: 2,
-                bgcolor: "ButtonShadow",
-                overflow: "scroll",
-              }}
-            >
-              <DetailView config={selectedObject} />
-            </Box>
-          )}
+          <DetailView object={selectedObject} />
         </Box>
-      </DialogContent>
-    </Dialog>
+      )}
+    </Box>
   );
 };
 
-export type NestedObjectColumnObjectType<T = any> = {
-  ObjectIcon?: JSX.Element;
-  ObjectDetail: React.FC<any>;
-
-  objectName: string;
-  objectDescription?: string; // #TODO - Think about it
-
-  hasChildren: boolean;
-  getChildren?: (o: T) => NestedObjectColumnObjectType[];
-
-  onChange: (o: T) => void;
-  object: T;
-
-  selected: boolean;
-};
-
-type NestedObjectColumnProps = {
-  label?: string;
-  index: number;
-  nestedObjects: NestedObjectUIListItem[][];
-} & APIProps;
-const NestedObjectColumn: React.FC<NestedObjectColumnProps> = ({
-  objectPath,
-  onObjectPathChange,
-  nestedObjects,
-  index,
-  ListItemView,
-}) => {
+const NestedObjectColumn: React.FC<{
+  objects: NestedObjectColumnItem[];
+  onObjectSelected: (nestedObject: NestedObjectColumnItem) => void;
+  ListItemView: React.FC<{
+    object: NestedObjectColumnItem;
+    selectObject: () => void;
+  }>;
+}> = ({ objects, onObjectSelected, ListItemView }) => {
   const theme = useTheme();
 
-  const currentSelectedID = objectPath?.[index];
-  const parentObject: NestedObjectUIListItem | null =
-    index <= 0
-      ? null
-      : nestedObjects[index - 1].find((o) => o.id === objectPath?.[index - 1])!;
+  const [state, setState] = useReducer((p: any, c: any) => ({ ...p, ...c }), {
+    searchText: "",
+  });
 
-  const [state, setState] = useGeneralState({ searchText: "" });
+  const getObjects = () => {
+    if (state.searchText) {
+      return objects.filter((o) => o.name.includes(state.searchText));
+    }
+    return objects;
+  };
 
-  const objects = state.searchText
-    ? nestedObjects[index]?.filter((o) =>
-        o.name.toLowerCase().includes(state.searchText?.toLocaleLowerCase())
-      )
-    : nestedObjects[index];
+  useEffect(() => {
+    setState({ searchText: "" });
+  }, [objects]);
 
   return (
     <Box
       minWidth={200}
       maxWidth={400}
+      maxHeight={400}
+      overflow={"scroll"}
       display={"flex"}
       flexDirection={"column"}
       flexShrink={0}
@@ -234,24 +149,11 @@ const NestedObjectColumn: React.FC<NestedObjectColumnProps> = ({
           onChange={(e) => setState({ searchText: e.target.value })}
           value={state.searchText}
         ></TextField>
-        <Typography variant="caption" height={20}>
-          {parentObject?.name || ""}
-        </Typography>
       </Box>
       <List>
-        {objects?.map((o) => {
-          const selected = currentSelectedID === o.id;
+        {getObjects()?.map((o) => {
           return (
-            <ListItemView
-              onSelect={() => {
-                console.log("this is pressed", o);
-                const newNames = objectPath.slice(0, index + 1);
-                newNames[index] = o.id;
-                onObjectPathChange([...newNames]);
-              }}
-              selected={selected}
-              config={o}
-            />
+            <ListItemView selectObject={() => onObjectSelected(o)} object={o} />
           );
         })}
       </List>
