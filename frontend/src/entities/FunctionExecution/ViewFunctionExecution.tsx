@@ -1,18 +1,21 @@
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { ViewPage } from "../../components/UICrud/ViewPage";
 import { FunctionExecutionServices } from "./services";
 import { ExecutedFunction } from "../../components/NestedObjectView/someutil";
 import { useMemo } from "react";
-import { Grid } from "@mui/material";
+import { Button, Grid } from "@mui/material";
 import { Flowchart } from "../../components/FlowChart";
 import { ReactFlowFunctionNode } from "./components/ReactFlowFunctionNode";
 import {
   createEdgesForFunction,
   createNodesForFunctions,
 } from "./utils/reactflow";
+import { AddSharp } from "@mui/icons-material";
+import { TestCaseRoutes } from "../TestCase/routes";
 
 export const ViewFunctionExecution = () => {
   const params = useParams();
+  const navigate = useNavigate();
   const objectID = params?.["*"];
   if (!objectID) {
     return <>Function ID not present in param.</>;
@@ -24,6 +27,23 @@ export const ViewFunctionExecution = () => {
         await FunctionExecutionServices.getFunctionExecutionById(objectID)
       }
       Content={P}
+      HeaderActions={() => {
+        return (
+          <Button
+            variant="outlined"
+            onClick={() =>
+              navigate(
+                TestCaseRoutes.CreateTestFromExecutedFunction.replace(
+                  "*",
+                  objectID
+                )
+              )
+            }
+          >
+            <AddSharp /> Create Test Case
+          </Button>
+        );
+      }}
     ></ViewPage>
   );
 };

@@ -1,8 +1,10 @@
 {
-  "name": "test-receive",
+  "name": "identity-server",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "bin": {
+    "identity-server": "./cli.js"
+  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -10,6 +12,7 @@
   "license": "ISC",
   "dependencies": {
     "cors": "^2.8.5",
+    "cross-spawn": "^7.0.3",
     "express": "^4.18.3",
     "mongoose": "^8.2.0"
   },

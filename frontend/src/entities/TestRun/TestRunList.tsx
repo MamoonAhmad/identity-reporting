@@ -26,7 +26,7 @@ export const TestRunList: React.FC<any> = () => {
           endTime: ({ object }) => object.executedFunction.endTime,
         }}
         actions={{
-          view: (o) => `/test-run/${o._id}`,
+          view: (o) => `/test-run/test-run/${o._id}`,
           delete: (o) => `/delete-function-execution/${o._id}`,
         }}
       />

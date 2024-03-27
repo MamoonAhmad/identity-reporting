@@ -3,6 +3,7 @@ import { ViewPage } from "../../components/UICrud/ViewPage";
 import { useNavigate, useParams } from "react-router-dom";
 import { TestCaseServices } from "./services";
 import { ConfigureTestCase } from "./components/ConfigureTestCase";
+import axios from "axios";
 
 export const ViewTestCase = () => {
   const params = useParams();
@@ -16,9 +17,25 @@ export const ViewTestCase = () => {
       title="Function Execution View"
       HeaderActions={({ object }) => {
         return (
-          <Button onClick={() => navigate(`/test-runs/${object._id}`)}>
-            View Test Runs
-          </Button>
+          <>
+            <Button
+              onClick={() => {
+                axios
+                  .post("http://localhost:8002/run-test", {
+                    testCaseId: object._id,
+                  })
+                  .then((res) => {
+                    const testRun = res.data;
+                    navigate("/test-run/test-run/" + testRun._id);
+                  });
+              }}
+            >
+              Run Test
+            </Button>
+            <Button onClick={() => navigate(`/test-runs/${object._id}`)}>
+              View Test Runs
+            </Button>
+          </>
         );
       }}
       dataLoader={async () => {
