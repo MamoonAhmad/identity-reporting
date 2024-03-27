@@ -2,7 +2,7 @@ import { CreateTestFromExecutedFunction } from "./CreateTestFromExecutedFunction
 import { TestCaseList } from "./TestCaseList";
 import { ViewTestCase } from "./ViewTestCase";
 
-const prefixRoute = (route: string) => `test-case/${route}`;
+const prefixRoute = (route: string) => `/test-case/${route}`;
 
 export const TestCaseRoutes = {
   ViewTestCase: prefixRoute("view-test-case/*"),

@@ -37,7 +37,7 @@ const ExecutedFunctionToTestConfigConverter: React.FC<{
     <>
       {converted && (
         <ConfigureTestCase
-          onSave={(t) => navigate(`/configure-test-case/${t._id}`)}
+          onSave={(t) => navigate(`/test-case/view-test-case/${t._id}`)}
           testCase={{
             name: "",
             description: "",

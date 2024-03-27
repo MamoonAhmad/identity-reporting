@@ -8,6 +8,6 @@ import { test_cases } from "./test-cases.js"
 export default function registerTestCaseEndpoints(app) {
 
     app.post('/save-test-case', save_test_case)
-    app.get('/test-case/:id', get_test_case)
+    app.get('/get-test-case/:id', get_test_case)
     app.get('/test-cases', test_cases)
 }

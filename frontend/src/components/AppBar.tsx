@@ -16,12 +16,13 @@ import ListItem from "@mui/material/ListItem";
 import ListItemButton from "@mui/material/ListItemButton";
 import ListItemIcon from "@mui/material/ListItemIcon";
 import ListItemText from "@mui/material/ListItemText";
-import { CodeSharp } from "@mui/icons-material";
+import { CodeSharp, SettingsSharp } from "@mui/icons-material";
 import { Container } from "@mui/material";
 import { Outlet, useNavigate } from "react-router-dom";
 import { TestCaseRoutes } from "../entities/TestCase/routes";
 import { TestRunRoutes } from "../entities/TestRun/routes";
 import { FunctionExecutionRoutes } from "../entities/FunctionExecution/routes";
+import { ConfigRoutes } from "../entities/Config/routes";
 
 const DrawerOptions: any = {
   executed_functions: {
@@ -38,6 +39,11 @@ const DrawerOptions: any = {
     label: "Test Runs",
     Icon: CodeSharp,
     route: TestRunRoutes.TestRunList,
+  },
+  config: {
+    label: "Settings",
+    Icon: SettingsSharp,
+    route: ConfigRoutes.ViewConfig,
   },
 };
 
