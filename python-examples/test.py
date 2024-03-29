@@ -3,7 +3,7 @@ import sys
 
 
 
-
+print("Running test")
 res = run_test()
 
 

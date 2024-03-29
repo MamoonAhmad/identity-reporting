@@ -8,6 +8,7 @@ import fs from 'fs'
 import path from 'path'
 import spawn from 'cross-spawn';
 import { exec, execSync } from 'child_process';
+import { v4 } from 'uuid';
 
 
 const app = express();
@@ -260,7 +261,7 @@ app.post('/save-test-run', async (req, res) => {
 
     const testRunPath = `${IDENTITY_DIRECTORY}/testRuns/`
 
-    const { traceID, environmentName, testCaseId } = body;
+    const { traceID, environmentName, testSuiteId, testCaseId, testRunId } = body;
     if (body.type === 'function_trace') {
         let functions = body.data;
         functions = functions.map(f => ({ ...f, traceID, environmentName, _id: f.functionID }))
@@ -283,26 +284,27 @@ app.post('/save-test-run', async (req, res) => {
 
         const testCasePath = `${IDENTITY_DIRECTORY}/testCases/`
 
-        const result = fs.readFileSync(`${testCasePath}${testCaseId}.json`)
-        const testCase = JSON.parse(result.toString());
+        const result = fs.readFileSync(`${testCasePath}${testSuiteId}.json`)
+        const testSuite = JSON.parse(result.toString());
 
-        const testRuns = functionsToSave.map(f => ({
-            executedFunction: f,
-            testCase,
-            _id: new Date().getTime().toString()
-        }))
+        let testRun = null
+        if (!fs.existsSync(`${testRunPath}${testRunId}.json`)) {
+            testRun = { ...testSuite, _id: testRunId }
+        } else {
+            const r = fs.readFileSync(`${testRunPath}${testRunId}.json`)
+            testRun = JSON.parse(r.toString())
+        }
 
-        const promises = testRuns.map(tr => {
-            return (async () => {
 
-                const fileName = `${testRunPath}${tr._id}.json`;
-                fs.writeFileSync(fileName, JSON.stringify(tr))
+        const testCase = testRun.tests?.find(tc => tc.id === testCaseId)
+        if (!testCase) {
+            return res.status(500).json({ error: "Invalid test case id." });
+        }
+        testCase.executedFunction = functionsToSave[0]
 
-            })()
-        })
+        fs.writeFileSync(`${testRunPath}${testRunId}.json`, JSON.stringify(testRun));
 
-        const results = await Promise.all(promises)
-        res.json(results)
+        res.json(testRun)
 
     }
 
@@ -344,28 +346,26 @@ app.post("/run-test", async (req, res) => {
         args = [`--testCaseId="${testCaseId}"`]
     }
 
+    const testRunPath = `${IDENTITY_DIRECTORY}/testRuns/`
+    const testRunId = v4()
 
     const settingsData = fs.readFileSync(`${IDENTITY_DIRECTORY}/config.json`)
     let settings = JSON.parse(settingsData.toString())
 
     const cwd = process.cwd();
-    console.log(`executing cd "${cwd}"; ${settings.command} --testCaseId="${testCaseId}"`)
+    console.log(`executing cd "${cwd}"; ${settings.command} --testSuiteId="${testCaseId}" --testRunId="${testRunId}"`)
 
-    const result = exec(`cd "${cwd}"; ${settings.command} --testCaseId="${testCaseId}"`, (err, stdout, stderr) => {
+    const result = exec(`cd "${cwd}"; ${settings.command} --testSuiteId="${testCaseId}" --testRunId="${testRunId}"`, (err, stdout, stderr) => {
         console.log(stdout.toString())
         if (err) {
             console.error(err)
             return res.status(500).json({ error: err.message })
         }
 
-        if (testCaseId) {
-            getTestRuns().then(testRuns => {
-                const testRun = testRuns.find(t => t?.testCase?._id === testCaseId)
-                return res.json(testRun)
-            })
-        } else {
-            res.json({})
-        }
+        const r = fs.readFileSync(`${testRunPath}${testRunId}.json`)
+        const testRun = JSON.parse(r.toString())
+        return res.json(testRun)
+
     })
 
 
