@@ -42,9 +42,16 @@ const ExecutedFunctionToTestConfigConverter: React.FC<{
             name: "",
             description: "",
             functionMeta: object,
-            inputToPass: object.input,
+
             _id: undefined as any,
-            config: converted,
+            tests: [
+              {
+                name: object.name,
+                config: converted,
+                inputToPass: object.input,
+                id: new Date().getTime().toString(),
+              },
+            ],
           }}
         />
       )}

@@ -41,7 +41,13 @@ export const ViewTestCase = () => {
       dataLoader={async () => {
         return await TestCaseServices.getTestCaseById(objectID);
       }}
-      Content={({ object }) => <ConfigureTestCase testCase={object} />}
+      Content={({ object }) => (
+        <ConfigureTestCase
+          testCase={{
+            ...object,
+          }}
+        />
+      )}
     ></ViewPage>
   );
 };

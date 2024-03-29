@@ -6,7 +6,6 @@ import {
 import {
   FunctionTestResult,
   GenericObjectTestResult,
-  TestResult,
 } from "../../../components/NestedObjectView/matcher";
 import { Box, Button, Chip, Grid, Typography } from "@mui/material";
 import {
@@ -93,16 +92,16 @@ const getGenericObjectTestResultChildren = (
 };
 
 const getColumns = (
-  obj: TestResult,
+  obj: FunctionTestResult,
   objectPath: string[]
 ): NestedObjectColumnItem[][] => {
   const columns: NestedObjectColumnItem[][] = [
     [
       {
-        id: obj.functionMeta.name,
-        name: obj.functionMeta.name,
-        object: obj.result,
-        objectPath: [obj.functionMeta.name],
+        id: obj.name,
+        name: obj.name,
+        object: obj,
+        objectPath: [obj.name],
         selected: true,
       },
     ],
@@ -128,11 +127,11 @@ const getColumns = (
   return columns;
 };
 
-export const TestResultColumns: React.FC<{ object: TestResult }> = ({
+export const TestResultColumns: React.FC<{ object: FunctionTestResult }> = ({
   object,
 }) => {
   const [columns, setColumns] = useState<NestedObjectColumnItem[][]>(
-    getColumns(object, [object.functionMeta.name])
+    getColumns(object, [object.name])
   );
   return (
     <NestedObjectColumns

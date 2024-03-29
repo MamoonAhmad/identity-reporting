@@ -1,16 +1,29 @@
-import assert from "assert";
-import { TestCase } from "../../views/test_case/_TestConfig";
 import {
   ExecutedFunction,
   FunctionTestConfig,
   ObjectTestConfig,
 } from "./someutil";
+import {
+  TestCaseForFunction,
+  TestSuiteForFunction,
+} from "../../entities/TestCase/components/ConfigureTestCase";
 
+export type TestRunForTestSuite = Omit<TestSuiteForFunction, "tests"> & {
+  tests: (TestCaseForFunction & {
+    executedFunction: ExecutedFunction;
+  })[];
+};
+
+export type TestResultForCase = {
+  result: FunctionTestResult;
+  successful: boolean;
+  expectation: string;
+};
 export type TestResult = {
   testCaseName: string;
   testCaseDescription: string;
   functionMeta: ExecutedFunction;
-  result: FunctionTestResult;
+  result: TestResultForCase[];
 };
 
 export type FunctionTestResult = BaseTestResult & {
@@ -20,7 +33,6 @@ export type FunctionTestResult = BaseTestResult & {
   output: GenericObjectTestResult;
   executedSuccessfully: boolean;
   thrownError?: string;
-
   children: FunctionTestResult[];
 };
 
@@ -55,16 +67,21 @@ export type LiteralTestResult = BaseTestResult & {
 };
 
 export const matchExecutionWithTestConfig = (
-  executedFunction: ExecutedFunction,
-  testCase: TestCase
+  testRun: TestRunForTestSuite
 ): TestResult => {
-  const res = matchFunctionWithConfig(executedFunction, testCase.config);
+  const results = testRun.tests.map((t) => {
+    return matchFunctionWithConfig(t.executedFunction, t.config);
+  });
 
   return {
-    testCaseName: testCase.name,
-    testCaseDescription: testCase.description,
-    functionMeta: testCase.functionMeta,
-    result: res,
+    testCaseName: testRun.name,
+    testCaseDescription: testRun.description,
+    functionMeta: testRun.functionMeta,
+    result: results.map((r, i) => ({
+      expectation: testRun.tests[i].name,
+      result: r,
+      successful: r.successful,
+    })),
   };
 };
 
