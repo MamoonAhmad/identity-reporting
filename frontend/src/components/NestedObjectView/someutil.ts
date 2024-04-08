@@ -64,6 +64,9 @@ export type ExecutedFunction = {
   executedSuccessfully: boolean;
   traceID: string;
   environmentName: string;
+  moduleName: string;
+  fileName: string;
+  executionContext: Record<string, any>
   children?: ExecutedFunction[];
 };
 
@@ -102,6 +105,10 @@ export type FunctionTestConfig = {
   _version: number;
   isRootFunction: boolean;
   functionMeta: ExecutedFunction;
+  isMocked?: boolean;
+  mockedOutput?: any;
+  mockedErrorMessage?: string;
+  functionCallCount: number;
   input: ObjectTestConfig;
   output: ObjectTestConfig;
   shouldThrowError?: boolean;
@@ -283,10 +290,22 @@ export const getColumns = (
   return columns;
 };
 
+type FunctionTestConfigContext = {
+  functionCallCountMap: {
+    [key: string]: number;
+  };
+};
+
 export const getFunctionTestConfigForExecutedFunction = (
   f: ExecutedFunction,
-  isRootFunction = true
+  isRootFunction = true,
+  context: FunctionTestConfigContext = { functionCallCountMap: {} }
 ): FunctionTestConfig => {
+  const functionKey = `${f.fileName}-${f.name}`;
+  if (!context.functionCallCountMap[functionKey]) {
+    context.functionCallCountMap[functionKey] = 0;
+  }
+  context.functionCallCountMap[functionKey]++;
   return {
     _type: "FunctionTestConfig",
     _version: 1,
@@ -297,6 +316,7 @@ export const getFunctionTestConfigForExecutedFunction = (
     shouldThrowError: !!f.error,
     expectedErrorMessage: f.error,
     ignoreChildren: false,
+    functionCallCount: context.functionCallCountMap[functionKey],
     children: [
       ...(f.children?.map((ff) =>
         getFunctionTestConfigForExecutedFunction(ff, false)

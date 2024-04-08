@@ -7,11 +7,22 @@ import {
   FunctionTestResult,
   GenericObjectTestResult,
 } from "../../../components/NestedObjectView/matcher";
-import { Box, Button, Chip, Grid, Typography } from "@mui/material";
+import {
+  Box,
+  Button,
+  Chip,
+  Grid,
+  List,
+  ListItem,
+  ListItemIcon,
+  ListItemText,
+  Typography,
+} from "@mui/material";
 import {
   CloseSharp,
   DoneSharp,
   KeyboardArrowRightSharp,
+  ReplaySharp,
 } from "@mui/icons-material";
 
 type GenericTestResult = FunctionTestResult | GenericObjectTestResult;
@@ -161,7 +172,9 @@ export const TestResultColumns: React.FC<{ object: FunctionTestResult }> = ({
             onClick={() => selectObject()}
           >
             <Box sx={{ mx: 2 }}>
-              {object.object?.successful ? (
+              {object?.object?.executionContext?.isMocked ? (
+                <ReplaySharp />
+              ) : object.object?.successful ? (
                 <DoneSharp color="success" />
               ) : (
                 <CloseSharp color="error" />
@@ -199,7 +212,11 @@ export const TestResultDetailView: React.FC<{
         </Grid>
 
         <Grid xs={12} sx={{ mt: 2 }}>
-          <TestResultSuccessView object={resultObject} />
+          {resultObject.successful ? (
+            <TestResultSuccessView object={resultObject} />
+          ) : (
+            <TestResultFailView object={resultObject} />
+          )}
         </Grid>
       </Grid>
     </>
@@ -250,32 +267,127 @@ const TestResultSuccessView: React.FC<{ object: GenericTestResult }> = ({
   } else if (object._type === "FunctionTestResult") {
     return (
       <>
-        <Grid xs={12} display={"flex"} alignItems={"center"}>
+        <Grid
+          xs={12}
+          display={"flex"}
+          alignItems={"center"}
+          justifyContent={"flex-start"}
+        >
           <Typography variant="subtitle1">Result:</Typography>
           <Typography sx={{ ml: 1 }} variant="body1" color={"green"}>
             Successfully matched with config.
           </Typography>
         </Grid>
-        <Grid xs={12} display={"flex"} alignItems={"center"}>
+        <Grid
+          xs={12}
+          display={"flex"}
+          alignItems={"center"}
+          justifyContent={"flex-start"}
+        >
           {object.executedSuccessfully ? (
-            <Typography sx={{ ml: 1 }} variant="body1" color={"green"}>
+            <Typography variant="body1" color={"green"}>
               Function successfully executed.
             </Typography>
           ) : (
             <>
-              <Typography sx={{ ml: 1 }} variant="body1" color={"red"}>
-                Thrown Error: {object.thrownError}
+              <Typography align="left">
+                <Typography variant="body1">Thrown Error: </Typography>
+                <Typography variant="body1" color={"red"}>
+                  {object.thrownError}
+                </Typography>
               </Typography>
             </>
           )}
         </Grid>
-        {object.children.length && (
+        {object.children.length ? (
           <Grid xs={12} display={"flex"} alignItems={"center"}>
             <Typography sx={{ ml: 1 }} variant="body1" color={"green"}>
               All child functions matched with config.
             </Typography>
           </Grid>
-        )}
+        ) : null}
+      </>
+    );
+  }
+  return null;
+};
+
+const TestResultFailView: React.FC<{ object: GenericTestResult }> = ({
+  object,
+}) => {
+  if (object._type === "ObjectTestResult" && object.type === "literal") {
+    return (
+      <>
+        <Grid xs={12} display={"flex"} alignItems={"center"}>
+          <Typography variant="subtitle1">Result:</Typography>
+          <Typography sx={{ ml: 1 }} variant="body1" color={"red"}>
+            Value did not match the config.
+          </Typography>
+        </Grid>
+        <Grid xs={12} display={"flex"} alignItems={"center"}>
+          <Typography variant="subtitle1">Operator:</Typography>
+          <Typography sx={{ ml: 1 }} variant="body1" color="orange">
+            {object.operator?.toUpperCase()}
+          </Typography>
+        </Grid>
+        <Grid
+          xs={12}
+          display={"flex"}
+          alignItems={"center"}
+          justifyContent={"flex-start"}
+        >
+          <Typography variant="subtitle1">Expected Value:</Typography>
+          <Typography sx={{ ml: 1 }} variant="body1" color="green">
+            {String(object.expectedValue)}
+          </Typography>
+        </Grid>
+        <Grid
+          xs={12}
+          display={"flex"}
+          alignItems={"center"}
+          justifyContent={"flex-start"}
+        >
+          <Typography variant="subtitle1">Received Value:</Typography>
+          <Typography sx={{ ml: 1 }} variant="body1" color="red">
+            {String(object.receivedValue)}
+          </Typography>
+        </Grid>
+      </>
+    );
+  } else if (object._type === "ObjectTestResult") {
+    return (
+      <>
+        <Grid xs={12} display={"flex"} alignItems={"center"}>
+          <Typography sx={{ ml: 1 }} variant="body1">
+            Received value matched the config.
+          </Typography>
+        </Grid>
+      </>
+    );
+  } else if (object._type === "FunctionTestResult") {
+    return (
+      <>
+        <Grid
+          xs={12}
+          display={"flex"}
+          alignItems={"center"}
+          justifyContent={"flex-start"}
+        >
+          <Typography variant="subtitle1">Result:</Typography>
+          <Typography sx={{ ml: 1 }} variant="body1" color={"red"}>
+            Did not match with config.
+          </Typography>
+        </Grid>
+        <List>
+          {object.failureReasons?.map((r) => (
+            <ListItem>
+              <ListItemIcon>
+                <CloseSharp color="error" fontSize="medium" />
+              </ListItemIcon>
+              <ListItemText>{r}</ListItemText>
+            </ListItem>
+          ))}
+        </List>
       </>
     );
   }

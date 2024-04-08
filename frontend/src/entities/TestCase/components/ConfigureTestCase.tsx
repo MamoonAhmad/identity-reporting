@@ -11,9 +11,13 @@ import {
   hasChildren,
 } from "../../../components/NestedObjectView/someutil";
 import { AddSharp, KeyboardArrowRightSharp } from "@mui/icons-material";
-import { NestedObjectTestConfigView } from "./NestedObjectTestConfigViews";
-import { useEffect, useReducer, useState } from "react";
+import {
+  NestedObjectContextProvider,
+  NestedObjectTestConfigView,
+} from "./NestedObjectTestConfigViews";
+import { useEffect, useMemo, useReducer, useState } from "react";
 import axios from "axios";
+import { TestCaseServices } from "../services";
 
 export type TestSuiteForFunction = {
   _id: string;
@@ -27,7 +31,17 @@ export type TestCaseForFunction = {
   id: string;
   inputToPass: any;
   name: string;
+  mocks: {
+    [functionName: string]: FunctionMockConfig;
+  };
   config: FunctionTestConfig;
+};
+
+export type FunctionMockConfig = {
+  [callCount: number]: {
+    output?: any;
+    errorToThrow?: string;
+  };
 };
 
 export const ConfigureTestCase: React.FC<{
@@ -97,6 +111,7 @@ export const ConfigureTestCase: React.FC<{
                     testCase.functionMeta,
                     true
                   ),
+                  mocks: {},
                   inputToPass: testCase.functionMeta.input,
                   name: testCase.functionMeta.name,
                   id: new Date().getTime().toString(),
@@ -147,15 +162,14 @@ const TestConfigColumns: React.FC<{ object: TestCaseForFunction }> = ({
   const [columns, setColumns] = useState<NestedObjectColumnItem[][]>([]);
 
   useEffect(() => {
-    setState({ ...functionTestConfig });
-    if (functionTestConfig.config) {
-      setColumns(
-        getColumns(functionTestConfig.config, [
-          functionTestConfig.config.functionMeta.name,
-        ])
-      );
-    }
+    setState({ ...functionTestConfig, mocks: functionTestConfig.mocks || {} });
   }, [functionTestConfig]);
+
+  useEffect(() => {
+    if (state.config) {
+      setColumns(getColumns(state.config, [state.config.functionMeta.name]));
+    }
+  }, [state.config]);
 
   useEffect(() => {
     if (state && Object.keys(state).length) {
@@ -164,6 +178,35 @@ const TestConfigColumns: React.FC<{ object: TestCaseForFunction }> = ({
       });
     }
   }, [state]);
+
+  const mockFunction = (f: FunctionTestConfig) => {
+    if (!functionTestConfig.mocks) {
+      functionTestConfig.mocks = {};
+    }
+    functionTestConfig.mocks![f.functionMeta.name] = {
+      [f.functionCallCount]: {
+        errorToThrow: f.functionMeta.error,
+        output: f.functionMeta.output,
+      },
+    };
+    setState({
+      mocks: {
+        ...functionTestConfig.mocks,
+      },
+    });
+  };
+
+  const unMockFunction = (f: FunctionTestConfig) => {
+    if (!functionTestConfig.mocks) {
+      functionTestConfig.mocks = {};
+    }
+    delete functionTestConfig.mocks![f.functionMeta?.name];
+    setState({
+      mocks: {
+        ...functionTestConfig.mocks,
+      },
+    });
+  };
 
   if (!functionTestConfig.config) {
     return null;
@@ -181,60 +224,107 @@ const TestConfigColumns: React.FC<{ object: TestCaseForFunction }> = ({
         }}
         sx={{ my: 3 }}
       />
-      <TextField
-        value={JSON.stringify(state.inputToPass)}
-        fullWidth
-        onChange={(e) => {
-          try {
-            const object = JSON.parse(e.target.value);
-            setState({ inputToPass: object });
-            setInternalState({ inputToPassError: false });
-          } catch (e) {
-            setInternalState({ inputToPassError: true });
-          }
-        }}
-        multiline
-        error={internalState?.inputToPassError}
-        label="Input to pass to the function for this test"
-      />
+      <Grid
+        width={"100%"}
+        display={"flex"}
+        alignItems={"center"}
+        sx={{ my: 1 }}
+      >
+        <TextField
+          value={JSON.stringify(state.inputToPass)}
+          sx={{ flexGrow: 1 }}
+          onChange={(e) => {
+            try {
+              const object = JSON.parse(e.target.value);
+              setState({ inputToPass: object });
+              setInternalState({ inputToPassError: false });
+            } catch (e) {
+              setInternalState({ inputToPassError: true });
+            }
+          }}
+          multiline
+          error={internalState?.inputToPassError}
+          label="Input to pass to the function for this test"
+        />
+        <Button
+          onClick={() => {
+            TestCaseServices.runFunctionWithInput(
+              functionTestConfig.config.functionMeta,
+              state.inputToPass
+            ).then((res) => {
+              setState({
+                config: getFunctionTestConfigForExecutedFunction(
+                  res.executedFunction,
+                  true
+                ),
+              });
+              console.log(res);
+            });
+          }}
+        >
+          Run Function with This Input
+        </Button>
+      </Grid>
 
-      <NestedObjectColumns
-        objects={columns}
-        onObjectSelected={(o) => {
-          setColumns(getColumns(functionTestConfig.config, o.objectPath));
-        }}
-        DetailView={NestedObjectTestConfigView}
-        ListItemView={({ object, selectObject }) => {
+      <Grid
+        width={"100%"}
+        display={"flex"}
+        alignItems={"flex-start"}
+        flexDirection={"column"}
+        bgcolor={"lightblue"}
+        sx={{ my: 1, p: 1 }}
+      >
+        <Typography variant="h6">Mocks</Typography>
+        {!state.mocks && "No mocks configured for this test case."}
+        {Object.keys(state.mocks || {}).map((k) => {
           return (
-            <Button
-              sx={{
-                width: "100%",
-                height: 20,
-                backgroundColor: object.selected ? "cyan" : "white",
-                color: object.selected ? "white" : "cyan",
-                "&:hover": {
-                  backgroundColor: "cyan",
-                  color: "white",
-                },
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "flex-start",
-                cursor: "pointer",
-                textTransform: "none",
-              }}
-              onClick={() => selectObject()}
-            >
-              <Typography
-                variant="body1"
-                sx={{ flexGrow: 1, textAlign: "left" }}
-              >
-                {object.name}
-              </Typography>
-              {hasChildren(object.object) ? <KeyboardArrowRightSharp /> : ""}
-            </Button>
+            <>
+              <Grid xs={12}>
+                <Typography variant="body2">{k}</Typography>
+              </Grid>
+            </>
           );
-        }}
-      />
+        })}
+      </Grid>
+      <NestedObjectContextProvider {...{ mockFunction, unMockFunction }}>
+        <NestedObjectColumns
+          objects={columns}
+          onObjectSelected={(o) => {
+            setColumns(getColumns(functionTestConfig.config, o.objectPath));
+          }}
+          DetailView={NestedObjectTestConfigView}
+          ListItemView={({ object, selectObject }) => {
+            return (
+              <Button
+                sx={{
+                  width: "100%",
+                  height: 20,
+                  backgroundColor: object.selected ? "cyan" : "white",
+                  color: object.selected ? "white" : "cyan",
+                  "&:hover": {
+                    backgroundColor: "cyan",
+                    color: "white",
+                  },
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "flex-start",
+                  cursor: "pointer",
+                  textTransform: "none",
+                }}
+                onClick={() => selectObject()}
+              >
+                <Typography
+                  variant="body1"
+                  sx={{ flexGrow: 1, textAlign: "left" }}
+                >
+                  {object.name}
+                </Typography>
+                {hasChildren(object.object) ? <KeyboardArrowRightSharp /> : ""}
+              </Button>
+            );
+          }}
+        />
+      </NestedObjectContextProvider>
     </>
   );
 };

@@ -1,4 +1,6 @@
-from example1 import mul
+from example1 import mul, create_ticket_and_item
 
 
-mul(None, 30)
+
+
+create_ticket_and_item()

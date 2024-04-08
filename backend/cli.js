@@ -398,7 +398,57 @@ app.post("/run-test", async (req, res) => {
 })
 
 
+app.post("/run-function-with-input", async (req, res) => {
 
+    const { name, fileName, packageName, environmentName, moduleName, inputToPass } = req.body
+
+    const runFileId = v4()
+
+    const runFileName = `${IDENTITY_DIRECTORY}/${runFileId}.json`
+
+    fs.writeFileSync(runFileName, JSON.stringify({
+        name, fileName, packageName, environmentName, moduleName, inputToPass,
+        type: "run_function"
+    }))
+
+    const settingsData = fs.readFileSync(`${IDENTITY_DIRECTORY}/config.json`)
+    let settings = JSON.parse(settingsData.toString())
+
+    const cwd = process.cwd();
+    console.log(`executing cd "${cwd}"; ${settings.command} --runFile="${runFileId}"`)
+
+    const result = exec(`cd "${cwd}"; ${settings.command} --runFile="${runFileId}"`, (err, stdout, stderr) => {
+        console.log(stdout.toString())
+        if (err) {
+            console.error(err)
+            return res.status(500).json({ error: err.message })
+        }
+
+        const r = fs.readFileSync(runFileName)
+        const functionRun = JSON.parse(r.toString())
+        fs.unlinkSync(runFileName)
+
+        let functions = functionRun?.executedFunction?.data;
+        functions = functions.map(f => ({ ...f, _id: f.functionID }))
+
+        const functionMap = {}
+        functions.filter(f => !f.parentID).forEach(f => {
+            functionMap[f.functionID] = {
+                ...f,
+                children: []
+            }
+        })
+        functions.filter(f => !!f.parentID).forEach(f => {
+            functionMap[f.parentID].children.push(f)
+        })
+
+        const functionsToSave = Object.values(functionMap)[0]
+
+        res.json({ executedFunction: functionsToSave })
+
+    })
+
+})
 
 
 

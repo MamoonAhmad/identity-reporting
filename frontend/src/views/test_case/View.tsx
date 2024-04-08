@@ -266,6 +266,7 @@ const functionTestConfig: FunctionTestConfig = {
   _type: "FunctionTestConfig",
   _version: 1,
   isRootFunction: true,
+  functionCallCount: 1,
   functionMeta: {
     name: "do_add_line_item",
     _id: "1x1",

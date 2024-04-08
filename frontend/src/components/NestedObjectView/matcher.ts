@@ -33,6 +33,7 @@ export type FunctionTestResult = BaseTestResult & {
   output: GenericObjectTestResult;
   executedSuccessfully: boolean;
   thrownError?: string;
+  executionContext: Record<string, any>
   children: FunctionTestResult[];
 };
 
@@ -93,6 +94,29 @@ const matchFunctionWithConfig = (
   const failureReasons = [];
   let inputResult: GenericObjectTestResult | null = null;
 
+  if (config.shouldThrowError && executedFunction.executedSuccessfully) {
+    successful = false;
+    failureReasons.push(
+      `Function is expected to throw an error '${config.expectedErrorMessage}'`
+    );
+  }
+
+  if (
+    config.shouldThrowError &&
+    !executedFunction.executedSuccessfully &&
+    executedFunction.error !== config.expectedErrorMessage
+  ) {
+    successful = false;
+    failureReasons.push(
+      `Function is expected to throw an error '${config.expectedErrorMessage}'`
+    );
+  }
+
+  if (!config.shouldThrowError && !executedFunction.executedSuccessfully) {
+    successful = false;
+    failureReasons.push(`Function threw error.`);
+  }
+
   if (!config.isRootFunction) {
     inputResult = matchObjectWithConfig(executedFunction?.input, config.input);
     if (!isResultSuccessful(inputResult)) {
@@ -108,7 +132,7 @@ const matchFunctionWithConfig = (
 
   if (!isResultSuccessful(outputResult)) {
     successful = false;
-    failureReasons.push("Output");
+    failureReasons.push("Output did not match the config.");
   }
 
   const childrenResults = config.children.map((f, i) => {
@@ -137,6 +161,7 @@ const matchFunctionWithConfig = (
     children: childrenResults,
     executedSuccessfully: executedFunction.executedSuccessfully,
     thrownError: executedFunction.error,
+    executionContext: executedFunction.executionContext,
   };
 };
 
