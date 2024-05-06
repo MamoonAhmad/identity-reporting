@@ -13,7 +13,6 @@ import {
   FunctionTestConfig,
   FunctionTestResult,
   convertFunctionTestConfigToNestedObjectUIItems,
-  getChildrenForObject,
   getColumns,
   hasChildren,
 } from "../../components/NestedObjectView/someutil";

@@ -66,7 +66,8 @@ export type ExecutedFunction = {
   environmentName: string;
   moduleName: string;
   fileName: string;
-  executionContext: Record<string, any>
+  executionContext: Record<string, any>;
+  executionID: string;
   children?: ExecutedFunction[];
 };
 
@@ -74,6 +75,7 @@ export type ObjectTestConfig = {
   _type: "ObjectTestConfig";
   _version: number;
   operator: "equal" | "contains";
+  value: any;
   expectedValue: any;
   ignore: boolean;
   type: "object" | "array" | "literal";
@@ -109,14 +111,30 @@ export type FunctionTestConfig = {
   mockedOutput?: any;
   mockedErrorMessage?: string;
   functionCallCount: number;
-  input: ObjectTestConfig;
-  output: ObjectTestConfig;
   shouldThrowError?: boolean;
-  expectedErrorMessage?: string;
-  shouldHaveBeenCalled?: boolean;
-  ignoreChildren?: boolean;
+  assertions: FunctionTestConfigAssertion[];
   children: FunctionTestConfig[];
 };
+export type FunctionTestConfigAssertion = {
+  ioConfig?: {
+    target: "input" | "output";
+    operator: "contains" | "equals";
+    object: any;
+  };
+
+  expectedErrorMessage?: {
+    operator: "contains" | "equals";
+    message: string;
+  };
+
+  shouldThrowError: boolean;
+  customValidator?: {
+    code: EvalAbleCode;
+  };
+  name: string;
+};
+
+export type EvalAbleCode = string;
 
 export type ObjectTestResult = Omit<ObjectTestConfig, "_type"> & {
   _type: "ObjectTestResult";
@@ -144,14 +162,8 @@ export const hasChildren = (
   configObject: FunctionTestConfig | ObjectTestConfig
 ) => {
   if (configObject._type === "FunctionTestConfig") {
-    return true;
-  } else if (
-    configObject._type === "ObjectTestConfig" &&
-    (configObject.type === "object" || configObject.type === "array")
-  ) {
-    return true;
+    return !!configObject?.children?.length && !configObject.isMocked;
   }
-  return false;
 };
 
 export const getChildrenForObject = (
@@ -174,25 +186,6 @@ const getChildrenFromFunctionConfig = (
   objectPath: string[]
 ): NestedObjectColumnItem[] => {
   return [
-    ...(config.isRootFunction
-      ? []
-      : [
-          {
-            id: "input",
-            name: "input",
-            object: config.input,
-            objectPath: [...objectPath, "input"],
-            selected: false,
-          },
-        ]),
-    {
-      id: "output",
-      name: "output",
-      object: config.output,
-      objectPath: [...objectPath, "output"],
-      selected: false,
-    },
-
     // divider
     ...getFunctionTestConfigItems(config.children, objectPath),
   ];
@@ -269,20 +262,33 @@ export const getColumns = (
     ],
   ];
 
-  for (let a = 1; a <= objectPath.length; a++) {
-    const previousSelectedPathID = objectPath[a - 1];
-    const previousSelected = columns[a - 1].find(
-      (o) => o.id === previousSelectedPathID
-    )!;
-    previousSelected.selected = true;
+  const gc = (
+    c: FunctionTestConfig,
+    objectPath: string[]
+  ): NestedObjectColumnItem[] => {
+    return c.children.map((config) => ({
+      id: config.functionMeta.name,
+      name: config.functionMeta.name,
+      object: config,
+      objectPath: [...objectPath, config.functionMeta.name],
+      selected: false,
+    }));
+  };
+  for (let a = 0; a <= objectPath.length; a++) {
+    const currentPathID = objectPath[a];
 
-    const currentChildren = getChildrenForObject(
-      previousSelected.object,
-      previousSelected.objectPath
-    );
+    const currentNode = columns[a].find((c) => c.id === currentPathID)!;
+    if (!currentNode) {
+      break;
+    }
+    currentNode.selected = true;
 
-    if (currentChildren.length) {
-      columns.push(currentChildren);
+    if (currentNode.object?.isMocked) {
+      break;
+    }
+    const children = gc(currentNode.object, currentNode.objectPath);
+    if (children.length) {
+      columns.push(children);
     } else {
       break;
     }
@@ -306,16 +312,48 @@ export const getFunctionTestConfigForExecutedFunction = (
     context.functionCallCountMap[functionKey] = 0;
   }
   context.functionCallCountMap[functionKey]++;
+  const assertions: FunctionTestConfigAssertion[] = [];
+
+  if (f.error) {
+    assertions.push({
+      name: "Assert Error Message",
+      expectedErrorMessage: {
+        operator: "equals",
+        message: f.error,
+      },
+      shouldThrowError: true,
+    });
+  } else {
+    if (!isRootFunction) {
+      assertions.push({
+        name: "Assert Input",
+        ioConfig: {
+          target: "input",
+          operator: "equals",
+          object: f.input,
+        },
+        shouldThrowError: false,
+      });
+    }
+    assertions.push({
+      name: "Assert Output",
+      ioConfig: {
+        target: "output",
+        operator: "equals",
+        object: f.output,
+      },
+      shouldThrowError: false,
+    });
+  }
+
   return {
     _type: "FunctionTestConfig",
     _version: 1,
     functionMeta: f,
     isRootFunction,
-    input: createObjectTestConfigForObject(f.input),
-    output: createObjectTestConfigForObject(f.output),
+
+    assertions,
     shouldThrowError: !!f.error,
-    expectedErrorMessage: f.error,
-    ignoreChildren: false,
     functionCallCount: context.functionCallCountMap[functionKey],
     children: [
       ...(f.children?.map((ff) =>
@@ -333,6 +371,7 @@ export const createObjectTestConfigForObject = (o: any): ObjectTestConfig => {
       ignore: false,
       operator: "equal",
       type: "array",
+      value: o,
       expectedValue: o.map((oo) => createObjectTestConfigForObject(oo)),
       typeSpecificConfig: {},
     };
@@ -343,6 +382,7 @@ export const createObjectTestConfigForObject = (o: any): ObjectTestConfig => {
       ignore: false,
       operator: "equal",
       type: "object",
+      value: o,
       expectedValue: Object.keys(o).reduce((p, k) => {
         return {
           ...p,
@@ -359,6 +399,7 @@ export const createObjectTestConfigForObject = (o: any): ObjectTestConfig => {
       operator: "equal",
       type: "literal",
       expectedValue: o,
+      value: o,
       typeSpecificConfig: {},
     };
   }

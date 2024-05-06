@@ -39,20 +39,33 @@ app.post('/save-function-execution-trace', async (req, res) => {
     const { traceID, environmentName } = body;
     if (body.type === 'function_trace') {
         let functions = body.data;
-        functions = functions.map(f => ({ ...f, traceID, environmentName, _id: f.functionID }))
+        functions = functions.map(f => ({ ...f, traceID, environmentName, _id: f.functionID, children: [] }))
 
-        const functionMap = {}
-        functions.filter(f => !f.parentID).forEach(f => {
-            functionMap[f.functionID] = {
-                ...f,
-                children: []
-            }
-        })
-        functions.filter(f => !!f.parentID).forEach(f => {
-            functionMap[f.parentID].children.push(f)
-        })
 
-        const functionsToSave = Object.values(functionMap)
+        const rootFunctions = functions.filter(f => !f.parentID)
+
+        const findChildrenForFunction = (func) => {
+            const id = func._id
+            const children = functions.filter(f => f.parentID === id)
+            func.children = children.length ? children : null
+            children.forEach(f => findChildrenForFunction(f))
+        }
+        rootFunctions.forEach(f => findChildrenForFunction(f))
+
+        // const functionMap = {}
+        // functions.forEach(f => {
+        //     functionMap[f.functionID] = {
+        //         ...f,
+        //         children: []
+        //     }
+        // })
+        // functions.filter(f => !!f.parentID).forEach(f => {
+        //     const parent = functions.find(ff => ff.id === f.parentID)
+        //     functionMap[f.parentID]?.children.push(parent)
+        // })
+
+        // const functionsToSave = Object.values(functionMap)
+        const functionsToSave = rootFunctions
 
         const promises = functionsToSave.map(f => {
             return new Promise((resolve, reject) => {
@@ -264,20 +277,33 @@ app.post('/save-test-run', async (req, res) => {
     const { traceID, environmentName, testSuiteId, testCaseId, testRunId } = body;
     if (body.type === 'function_trace') {
         let functions = body.data;
-        functions = functions.map(f => ({ ...f, traceID, environmentName, _id: f.functionID }))
+        functions = functions.map(f => ({ ...f, traceID, environmentName, _id: f.functionID, children: [] }))
 
-        const functionMap = {}
-        functions.filter(f => !f.parentID).forEach(f => {
-            functionMap[f.functionID] = {
-                ...f,
-                children: []
-            }
-        })
-        functions.filter(f => !!f.parentID).forEach(f => {
-            functionMap[f.parentID].children.push(f)
-        })
 
-        const functionsToSave = Object.values(functionMap)
+        const rootFunctions = functions.filter(f => !f.parentID)
+
+        const findChildrenForFunction = (func) => {
+            const id = func._id
+            const children = functions.filter(f => f.parentID === id)
+            func.children = children.length ? children : null
+            children.forEach(f => findChildrenForFunction(f))
+        }
+        rootFunctions.forEach(f => findChildrenForFunction(f))
+
+        // const functionMap = {}
+        // functions.forEach(f => {
+        //     functionMap[f.functionID] = {
+        //         ...f,
+        //         children: []
+        //     }
+        // })
+        // functions.filter(f => !!f.parentID).forEach(f => {
+        //     const parent = functions.find(ff => ff.id === f.parentID)
+        //     functionMap[f.parentID]?.children.push(parent)
+        // })
+
+        // const functionsToSave = Object.values(functionMap)
+        const functionsToSave = rootFunctions
 
 
 
