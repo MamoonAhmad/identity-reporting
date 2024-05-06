@@ -28,14 +28,36 @@ export type TestResult = {
 
 export type FunctionTestResult = BaseTestResult & {
   _type: "FunctionTestResult";
-  input: GenericObjectTestResult;
   name: string;
-  output: GenericObjectTestResult;
+  executionID: string;
   executedSuccessfully: boolean;
   thrownError?: string;
+  executionContext: Record<string, any>;
   children: FunctionTestResult[];
+  assertions: AssertionResult[];
 };
 
+export type AssertionResult = {
+  ioConfig?: {
+    target: "input" | "output";
+    operator: "contains" | "equals";
+    object: any;
+    receivedObject: any;
+  };
+
+  expectedErrorMessage?: {
+    operator: "contains" | "equals";
+    message: string;
+    receivedError?: string;
+  };
+
+  customValidator?: {
+    failureReason: string;
+  };
+  name: string;
+  success: boolean;
+  failureReasons: string[];
+};
 export type BaseTestResult = {
   ignored: boolean;
   failureReasons: string[] | null;
@@ -90,27 +112,88 @@ const matchFunctionWithConfig = (
   config: FunctionTestConfig
 ): FunctionTestResult => {
   let successful = true;
-  const failureReasons = [];
-  let inputResult: GenericObjectTestResult | null = null;
 
-  if (!config.isRootFunction) {
-    inputResult = matchObjectWithConfig(executedFunction?.input, config.input);
-    if (!isResultSuccessful(inputResult)) {
-      successful = false;
-      failureReasons.push("Input");
+  const assertionResults: AssertionResult[] = config.assertions.map(
+    (assertion) => {
+      const failureReasons: string[] = [];
+
+      const assertionResult: AssertionResult = {} as any;
+      if (assertion.expectedErrorMessage) {
+        const thrownError = executedFunction.error;
+        const conf = assertion.expectedErrorMessage;
+        if (conf.operator === "equals" && thrownError !== conf.message) {
+          failureReasons.push(`Error message does not match.`);
+        } else if (
+          conf.operator === "contains" &&
+          !thrownError?.includes(conf.message)
+        ) {
+          failureReasons.push(
+            `Error message does not contain "${conf.message}"`
+          );
+        }
+
+        assertionResult.expectedErrorMessage = {
+          message: assertion.expectedErrorMessage.message,
+          operator: assertion.expectedErrorMessage.operator,
+          receivedError: executedFunction.error,
+        };
+      } else if (assertion.ioConfig) {
+        const matchObject = (
+          label: string,
+          operator: string,
+          sourceObject: any,
+          targetObject: any
+        ) => {
+          if (
+            operator === "equals" &&
+            !objectIsEqual(sourceObject, targetObject)
+          ) {
+            failureReasons.push(`${label} does not match the expectation.`);
+          } else if (
+            operator === "contains" &&
+            !objectContains(sourceObject, targetObject)
+          ) {
+            failureReasons.push(`${label} does not match the expectation.`);
+          }
+        };
+
+        if (assertion.ioConfig.target === "input") {
+          matchObject(
+            "Input",
+            assertion.ioConfig.operator,
+            assertion.ioConfig.object,
+            executedFunction.input
+          );
+        } else {
+          matchObject(
+            "Output",
+            assertion.ioConfig!.operator,
+            assertion.ioConfig!.object,
+            executedFunction.output
+          );
+        }
+        assertionResult.ioConfig = {
+          target: assertion.ioConfig.target,
+
+          object: assertion.ioConfig!.object,
+          operator: assertion.ioConfig!.operator,
+          receivedObject:
+            assertion.ioConfig.target === "output"
+              ? executedFunction.output
+              : executedFunction.input,
+        };
+      }
+      assertionResult.name = assertion.name;
+      assertionResult.success = failureReasons.length === 0;
+      assertionResult.failureReasons = failureReasons;
+      if (!assertionResult.success) {
+        successful = false;
+      }
+      return assertionResult;
     }
-  }
-
-  const outputResult = matchObjectWithConfig(
-    executedFunction?.output,
-    config.output
   );
 
-  if (!isResultSuccessful(outputResult)) {
-    successful = false;
-    failureReasons.push("Output");
-  }
-
+  const failureReasons: string[] = [];
   const childrenResults = config.children.map((f, i) => {
     if (executedFunction.children?.[i]) {
       const childResult = matchFunctionWithConfig(
@@ -128,8 +211,6 @@ const matchFunctionWithConfig = (
 
   return {
     _type: "FunctionTestResult",
-    input: inputResult as any,
-    output: outputResult,
     failureReasons: failureReasons,
     successful,
     ignored: false,
@@ -137,6 +218,9 @@ const matchFunctionWithConfig = (
     children: childrenResults,
     executedSuccessfully: executedFunction.executedSuccessfully,
     thrownError: executedFunction.error,
+    executionContext: executedFunction.executionContext,
+    executionID: executedFunction.executionID,
+    assertions: assertionResults,
   };
 };
 
@@ -170,7 +254,7 @@ const matchObject = (obj: any, config: ObjectTestConfig): ObjectTestResult => {
     operator: config.operator,
   };
   Object.keys(config.expectedValue || {}).forEach((k) => {
-    const res = matchObjectWithConfig(obj[k], config.expectedValue[k]);
+    const res = matchObjectWithConfig(obj?.[k], config.expectedValue[k]);
     if (!isResultSuccessful(res)) {
       result.successful = false;
       result.failureReasons!.push(k);
@@ -236,4 +320,34 @@ const matchLiteral = (
 
 const isResultSuccessful = (obj: BaseTestResult) => {
   return obj.ignored || obj.successful;
+};
+
+const objectIsEqual = (src: any, target: any): boolean => {
+  if (Array.isArray(src)) {
+    if (!Array.isArray(target)) {
+      return false;
+    }
+    return src.every((item, i) => objectIsEqual(item, target[i]));
+  } else if (src && typeof src === "object") {
+    return Object.keys(src).every((k) => {
+      return objectIsEqual(src[k], target?.[k]);
+    });
+  } else {
+    return src === target;
+  }
+};
+
+const objectContains = (src: any, target: any): boolean => {
+  if (Array.isArray(src)) {
+    if (!Array.isArray(target)) {
+      return false;
+    }
+    return src.every((item, i) => objectIsEqual(item, target[i]));
+  } else if (src && typeof src === "object") {
+    return Object.keys(src).every((k) => {
+      return objectIsEqual(src[k], target?.[k]);
+    });
+  } else {
+    return src === target;
+  }
 };

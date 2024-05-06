@@ -48,6 +48,7 @@ const ExecutedFunctionToTestConfigConverter: React.FC<{
               {
                 name: object.name,
                 config: converted,
+                mocks: null as any,
                 inputToPass: object.input,
                 id: new Date().getTime().toString(),
               },

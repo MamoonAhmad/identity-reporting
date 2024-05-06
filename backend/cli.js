@@ -39,20 +39,33 @@ app.post('/save-function-execution-trace', async (req, res) => {
     const { traceID, environmentName } = body;
     if (body.type === 'function_trace') {
         let functions = body.data;
-        functions = functions.map(f => ({ ...f, traceID, environmentName, _id: f.functionID }))
+        functions = functions.map(f => ({ ...f, traceID, environmentName, _id: f.functionID, children: [] }))
 
-        const functionMap = {}
-        functions.filter(f => !f.parentID).forEach(f => {
-            functionMap[f.functionID] = {
-                ...f,
-                children: []
-            }
-        })
-        functions.filter(f => !!f.parentID).forEach(f => {
-            functionMap[f.parentID].children.push(f)
-        })
 
-        const functionsToSave = Object.values(functionMap)
+        const rootFunctions = functions.filter(f => !f.parentID)
+
+        const findChildrenForFunction = (func) => {
+            const id = func._id
+            const children = functions.filter(f => f.parentID === id)
+            func.children = children.length ? children : null
+            children.forEach(f => findChildrenForFunction(f))
+        }
+        rootFunctions.forEach(f => findChildrenForFunction(f))
+
+        // const functionMap = {}
+        // functions.forEach(f => {
+        //     functionMap[f.functionID] = {
+        //         ...f,
+        //         children: []
+        //     }
+        // })
+        // functions.filter(f => !!f.parentID).forEach(f => {
+        //     const parent = functions.find(ff => ff.id === f.parentID)
+        //     functionMap[f.parentID]?.children.push(parent)
+        // })
+
+        // const functionsToSave = Object.values(functionMap)
+        const functionsToSave = rootFunctions
 
         const promises = functionsToSave.map(f => {
             return new Promise((resolve, reject) => {
@@ -264,20 +277,33 @@ app.post('/save-test-run', async (req, res) => {
     const { traceID, environmentName, testSuiteId, testCaseId, testRunId } = body;
     if (body.type === 'function_trace') {
         let functions = body.data;
-        functions = functions.map(f => ({ ...f, traceID, environmentName, _id: f.functionID }))
+        functions = functions.map(f => ({ ...f, traceID, environmentName, _id: f.functionID, children: [] }))
 
-        const functionMap = {}
-        functions.filter(f => !f.parentID).forEach(f => {
-            functionMap[f.functionID] = {
-                ...f,
-                children: []
-            }
-        })
-        functions.filter(f => !!f.parentID).forEach(f => {
-            functionMap[f.parentID].children.push(f)
-        })
 
-        const functionsToSave = Object.values(functionMap)
+        const rootFunctions = functions.filter(f => !f.parentID)
+
+        const findChildrenForFunction = (func) => {
+            const id = func._id
+            const children = functions.filter(f => f.parentID === id)
+            func.children = children.length ? children : null
+            children.forEach(f => findChildrenForFunction(f))
+        }
+        rootFunctions.forEach(f => findChildrenForFunction(f))
+
+        // const functionMap = {}
+        // functions.forEach(f => {
+        //     functionMap[f.functionID] = {
+        //         ...f,
+        //         children: []
+        //     }
+        // })
+        // functions.filter(f => !!f.parentID).forEach(f => {
+        //     const parent = functions.find(ff => ff.id === f.parentID)
+        //     functionMap[f.parentID]?.children.push(parent)
+        // })
+
+        // const functionsToSave = Object.values(functionMap)
+        const functionsToSave = rootFunctions
 
 
 
@@ -398,7 +424,57 @@ app.post("/run-test", async (req, res) => {
 })
 
 
+app.post("/run-function-with-input", async (req, res) => {
 
+    const { name, fileName, packageName, environmentName, moduleName, inputToPass } = req.body
+
+    const runFileId = v4()
+
+    const runFileName = `${IDENTITY_DIRECTORY}/${runFileId}.json`
+
+    fs.writeFileSync(runFileName, JSON.stringify({
+        name, fileName, packageName, environmentName, moduleName, inputToPass,
+        type: "run_function"
+    }))
+
+    const settingsData = fs.readFileSync(`${IDENTITY_DIRECTORY}/config.json`)
+    let settings = JSON.parse(settingsData.toString())
+
+    const cwd = process.cwd();
+    console.log(`executing cd "${cwd}"; ${settings.command} --runFile="${runFileId}"`)
+
+    const result = exec(`cd "${cwd}"; ${settings.command} --runFile="${runFileId}"`, (err, stdout, stderr) => {
+        console.log(stdout.toString())
+        if (err) {
+            console.error(err)
+            return res.status(500).json({ error: err.message })
+        }
+
+        const r = fs.readFileSync(runFileName)
+        const functionRun = JSON.parse(r.toString())
+        fs.unlinkSync(runFileName)
+
+        let functions = functionRun?.executedFunction?.data;
+        functions = functions.map(f => ({ ...f, _id: f.functionID }))
+
+        const functionMap = {}
+        functions.filter(f => !f.parentID).forEach(f => {
+            functionMap[f.functionID] = {
+                ...f,
+                children: []
+            }
+        })
+        functions.filter(f => !!f.parentID).forEach(f => {
+            functionMap[f.parentID].children.push(f)
+        })
+
+        const functionsToSave = Object.values(functionMap)[0]
+
+        res.json({ executedFunction: functionsToSave })
+
+    })
+
+})
 
 
 

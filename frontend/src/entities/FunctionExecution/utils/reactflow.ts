@@ -18,20 +18,20 @@ export const createNodesForFunctions = (
   let arr: Node<any, string | undefined>[] = [];
   functions?.forEach((f) => {
     const TOTAL_WIDTH = findTotalWidthForFunction(f);
-    const x = functionOffset + (TOTAL_WIDTH - PER_FUNCTION_WIDTH) / 2;
+    const x = functionOffset + (TOTAL_WIDTH - PER_FUNCTION_WIDTH) / 2 ;
     const y = offsetY;
 
     const obj: Node<any, string | undefined> = {
-      id: f._id,
+      id: String(f._id),
       type: "functionNode",
       position: {
         x,
-        y,
+        y: offsetY,
       },
       width: PER_FUNCTION_WIDTH,
       height: PER_FUNCTION_HEIGHT,
       data: {
-        label: f.name,
+        label: f.name + `${y},${y}`,
         function: f,
         onClick,
         hasParent: !!parentFunction,
@@ -46,7 +46,7 @@ export const createNodesForFunctions = (
           f.children,
           f,
           functionOffset,
-          offsetY + PER_FUNCTION_HEIGHT
+          offsetY + 100
         ),
       ];
     }
@@ -61,12 +61,13 @@ export const createEdgesForFunction = (
 ) => {
   let edges: Edge<any>[] = [];
 
+  
   functions.forEach((f) => {
     if (parentFunction) {
       edges.push({
         id: `${parentFunction._id}->${f._id}`,
-        source: parentFunction._id,
-        target: f._id,
+        source: String(parentFunction._id),
+        target: String(f._id),
         markerEnd: {
           type: MarkerType.ArrowClosed,
           width: 20,

@@ -1,110 +1,464 @@
-import { Checkbox, FormControlLabel, Grid, Typography } from "@mui/material";
+import {
+  Accordion,
+  AccordionDetails,
+  AccordionSummary,
+  Button,
+  FormControlLabel,
+  Grid,
+  Switch,
+  TextField,
+  ToggleButton,
+  ToggleButtonGroup,
+  Typography,
+} from "@mui/material";
 import {
   FunctionTestConfig,
-  ObjectTestConfig,
+  FunctionTestConfigAssertion,
 } from "../../../components/NestedObjectView/someutil";
-import React, { useEffect, useReducer } from "react";
+import React, {
+  PropsWithChildren,
+  useContext,
+  useEffect,
+  useReducer,
+  useState,
+} from "react";
+import { JSONTextField } from "../../../components/JSONTestField";
+import { AddSharp, KeyboardArrowDownSharp } from "@mui/icons-material";
+import { CodeTestField } from "../../../components/CodeTestField";
 
-export const NestedObjectTestConfigView: React.FC<{ object: any }> = ({
-  object,
-}) => {
-  if (object.object._type === "FunctionTestConfig") {
-    return <FunctionConfigView config={object.object} name={object.name} />;
-  } else if (object.object._type === "ObjectTestConfig") {
-    return <ObjectConfigView config={object.object} name={object.name} />;
-  }
-  return null;
+const NestedObjectContext = React.createContext<{
+  mockFunction: (o: FunctionTestConfig) => void;
+  unMockFunction: (o: FunctionTestConfig) => void;
+  refreshColumns: () => void;
+  onConfigUpdate: () => void;
+}>({} as any);
+
+export const NestedObjectContextProvider: React.FC<
+  PropsWithChildren<{
+    mockFunction: (o: FunctionTestConfig) => void;
+    unMockFunction: (o: FunctionTestConfig) => void;
+    refreshColumns: () => void;
+  }>
+> = ({ children, mockFunction, unMockFunction, refreshColumns }) => {
+  const [counter, updateCounter] = useState(0);
+  return (
+    <NestedObjectContext.Provider
+      value={{
+        mockFunction,
+        unMockFunction,
+        refreshColumns,
+        onConfigUpdate: () => updateCounter(counter + 1),
+      }}
+    >
+      {children}
+    </NestedObjectContext.Provider>
+  );
+};
+
+export const NestedObjectTestConfigView: React.FC<{
+  object: any;
+}> = ({ object }) => {
+  return (
+    <>
+      <FunctionConfigView config={object.object} name={object.name} />
+    </>
+  );
 };
 
 const FunctionConfigView: React.FC<{
   config: FunctionTestConfig;
   name: string;
 }> = ({ config, name }) => {
-  const [state, setState] = useReducer((p: any, c: any) => ({ ...p, ...c }), {
-    ...config,
-  }) as [FunctionTestConfig, (c: Partial<FunctionTestConfig>) => void];
-
-  useEffect(() => {
-    const a: any = config;
-    const b: any = state;
-    Object.keys(state).forEach((k) => {
-      if (a[k] !== b[k]) {
-        a[k] = b[k];
-      }
-    });
-  }, [state]);
-
-  useEffect(() => {
-    setState({ ...config });
-  }, [config]);
+  const { mockFunction, onConfigUpdate } = useContext(NestedObjectContext);
 
   return (
     <Grid container>
       <Grid item xs={12} display={"flex"} alignItems={"center"}>
         <Typography variant="h6">{name}</Typography>
       </Grid>
-      <Grid item xs={12} display={"flex"} alignItems={"center"}>
-        <CheckboxWithLabel
-          label="Ignore Children"
-          name="ignoreChildren"
-          value={!!state.ignoreChildren}
-          onChange={setState}
-        />
-      </Grid>
+
+      {config.isMocked && (
+        <MockedFunctionView config={config} onChange={(o) => undefined} />
+      )}
+      {!config.isMocked && (
+        <>
+          <Grid item xs={12} display={"flex"} alignItems={"center"}>
+            <Button
+              onClick={() => {
+                config.isMocked = true;
+                config.mockedOutput = config.functionMeta.output;
+                config.mockedErrorMessage = config.functionMeta?.error;
+                mockFunction({
+                  ...config,
+                  isMocked: true,
+                  mockedOutput: config.functionMeta.output,
+                  mockedErrorMessage: config.functionMeta?.error,
+                });
+                onConfigUpdate();
+              }}
+            >
+              Mock This Function
+            </Button>
+          </Grid>
+          {/* <Grid item xs={12} display={"flex"} alignItems={"center"}>
+            <CheckboxWithLabel
+              label="Ignore Child Function Calls"
+              name="ignoreChildren"
+              value={!!state.ignoreChildren}
+              onChange={setState}
+            />
+          </Grid> */}
+          <Grid
+            item
+            xs={12}
+            display={"flex"}
+            alignItems={"center"}
+            sx={{ my: 1, position: "sticky" }}
+          >
+            <Typography variant="h6" sx={{ flexGrow: 1, textAlign: "left" }}>
+              Assertions
+            </Typography>
+            <Button
+              variant="text"
+              onClick={() => {
+                config.assertions = [
+                  ...config.assertions,
+                  getNewAssertion(config),
+                ];
+                onConfigUpdate();
+              }}
+            >
+              <AddSharp />
+              Add Assertion
+            </Button>
+          </Grid>
+          <Grid item xs={12}>
+            {config.assertions.map((a) => (
+              <AssertionView assertion={a} config={config} />
+            ))}
+          </Grid>
+        </>
+      )}
     </Grid>
   );
 };
 
-const ObjectConfigView: React.FC<{
-  config: ObjectTestConfig;
-  name: string;
-}> = ({ config, name }) => {
-  const [state, setState] = useReducer((p: any, c: any) => ({ ...p, ...c }), {
-    ...config,
-  }) as [ObjectTestConfig, (c: Partial<ObjectTestConfig>) => void];
-
-  useEffect(() => {
-    const a: any = config;
-    const b: any = state;
-    Object.keys(state).forEach((k) => {
-      if (a[k] !== b[k]) {
-        a[k] = b[k];
-      }
-    });
-  }, [state]);
-
-  useEffect(() => {
-    setState({ ...config });
-  }, [config]);
+const AssertionView: React.FC<{
+  assertion: FunctionTestConfigAssertion;
+  config: FunctionTestConfig;
+}> = ({ assertion, config }) => {
+  const { onConfigUpdate } = useContext(NestedObjectContext);
 
   return (
-    <Grid container>
-      <Grid item xs={12} display={"flex"} alignItems={"center"}>
-        <Typography variant="h6">{name}</Typography>
-      </Grid>
-      <Grid item xs={12} display={"flex"} alignItems={"center"}>
-        <CheckboxWithLabel
-          label="Ignore"
-          name="ignore"
-          value={!!state.ignore}
-          onChange={setState}
-        />
-      </Grid>
-    </Grid>
+    <Accordion>
+      <AccordionSummary
+        expandIcon={<KeyboardArrowDownSharp />}
+        sx={{ flexDirection: "row-reverse" }}
+      >
+        {assertion.name}
+      </AccordionSummary>
+      <AccordionDetails>
+        <Grid
+          item
+          xs={12}
+          display={"flex"}
+          flexDirection={"column"}
+          alignItems={"flex-start"}
+        >
+          <FormControlLabel
+            control={<Switch />}
+            label="Custom Validator"
+            value={!!assertion.customValidator}
+            onChange={(_, checked) => {
+              assertion.customValidator = checked
+                ? {
+                    code: "",
+                  }
+                : undefined;
+              onConfigUpdate();
+            }}
+          />
+          {assertion.shouldThrowError && !assertion.customValidator && (
+            <>
+              <Typography variant="body2" sx={{ fontWeight: "bold", mb: 1 }}>
+                Operator
+              </Typography>
+
+              <ToggleButtonGroup
+                value={assertion.expectedErrorMessage?.operator}
+                sx={{ mb: 1 }}
+                color="primary"
+                onChange={(_, op) => {
+                  assertion.expectedErrorMessage = {
+                    ...assertion.expectedErrorMessage!,
+                    operator: op,
+                  };
+                  onConfigUpdate();
+                }}
+                exclusive
+              >
+                <ToggleButton
+                  value={"equals"}
+                  sx={{ textTransform: "capitalize", p: 0.8 }}
+                >
+                  Equals
+                </ToggleButton>
+                <ToggleButton
+                  value={"contains"}
+                  sx={{ textTransform: "capitalize", p: 0.8 }}
+                >
+                  Contains
+                </ToggleButton>
+              </ToggleButtonGroup>
+              <Typography variant="body2" sx={{ fontWeight: "bold", mb: 1 }}>
+                Expected Error Message
+              </Typography>
+              <TextField
+                value={assertion.expectedErrorMessage?.message}
+                fullWidth
+                label="Expected Error Message"
+                onChange={(e) => {
+                  assertion.expectedErrorMessage = {
+                    ...assertion.expectedErrorMessage!,
+                    message: e.target.value,
+                  };
+                  onConfigUpdate();
+                }}
+                sx={{ my: 1 }}
+                multiline
+              />
+            </>
+          )}
+          {!assertion.shouldThrowError && !assertion.customValidator && (
+            <>
+              <Typography variant="body2" sx={{ fontWeight: "bold", mb: 1 }}>
+                Name
+              </Typography>
+              <TextField
+                value={assertion.name}
+                fullWidth
+                onChange={(e) => {
+                  assertion.name = e.target.value;
+                  onConfigUpdate();
+                }}
+                sx={{ mb: 1 }}
+              />
+              <Grid
+                sx={{ display: "flex", alignItems: "center", width: "100%" }}
+              >
+                <Grid
+                  xs={6}
+                  sx={{
+                    display: "flex",
+                    alignItems: "flex-start",
+                    flexDirection: "column",
+                    flexGrow: 1,
+                  }}
+                >
+                  <Typography
+                    variant="body2"
+                    sx={{ fontWeight: "bold", mb: 1 }}
+                  >
+                    Target Object
+                  </Typography>
+
+                  <ToggleButtonGroup
+                    value={assertion.ioConfig?.target}
+                    color="primary"
+                    onChange={(_, op) => {
+                      if (op === null) {
+                        return;
+                      }
+                      assertion.ioConfig = {
+                        ...assertion.ioConfig!,
+                        target: op,
+                        object:
+                          op === "input"
+                            ? config.functionMeta.input
+                            : config.functionMeta.output,
+                      };
+                      onConfigUpdate();
+                    }}
+                    exclusive
+                  >
+                    <ToggleButton
+                      value={"input"}
+                      sx={{ textTransform: "capitalize", p: 0.8 }}
+                      disabled={config.isRootFunction}
+                    >
+                      Input
+                    </ToggleButton>
+                    <ToggleButton
+                      value={"output"}
+                      sx={{ textTransform: "capitalize", p: 0.8 }}
+                    >
+                      Output
+                    </ToggleButton>
+                  </ToggleButtonGroup>
+                </Grid>
+                <Grid
+                  sx={{
+                    display: "flex",
+                    flexGrow: 1,
+                    alignItems: "flex-start",
+                    flexDirection: "column",
+                  }}
+                >
+                  <Typography
+                    variant="body2"
+                    sx={{ fontWeight: "bold", mb: 1 }}
+                  >
+                    Operator
+                  </Typography>
+
+                  <ToggleButtonGroup
+                    value={assertion.ioConfig?.operator}
+                    color="primary"
+                    onChange={(_, op) => {
+                      if (op === null) {
+                        return;
+                      }
+                      assertion.ioConfig!.operator = op;
+                      onConfigUpdate();
+                    }}
+                    exclusive
+                  >
+                    <ToggleButton
+                      value={"equals"}
+                      sx={{ textTransform: "capitalize", p: 0.8 }}
+                    >
+                      Equals
+                    </ToggleButton>
+                    <ToggleButton
+                      value={"contains"}
+                      sx={{ textTransform: "capitalize", p: 0.8 }}
+                    >
+                      Contains
+                    </ToggleButton>
+                  </ToggleButtonGroup>
+                </Grid>
+              </Grid>
+
+              <Typography variant="body2" sx={{ fontWeight: "bold", my: 1 }}>
+                Expected {assertion.ioConfig!.target}
+              </Typography>
+              <JSONTextField
+                object={assertion.ioConfig?.object}
+                onChange={(obj) => {
+                  assertion.ioConfig!.object = obj;
+                  onConfigUpdate();
+                }}
+              />
+            </>
+          )}
+          {assertion.customValidator && (
+            <>
+              <Typography variant="body2" sx={{ fontWeight: "bold", mb: 1 }}>
+                Validation Code
+              </Typography>
+              <CodeTestField
+                code={assertion.customValidator.code}
+                onChange={(code) => {
+                  assertion.customValidator!.code = code;
+                  onConfigUpdate();
+                }}
+              />
+            </>
+          )}
+        </Grid>
+      </AccordionDetails>
+    </Accordion>
   );
 };
 
-const CheckboxWithLabel: React.FC<{
-  value: boolean;
-  onChange: (v: { [key: string]: boolean }) => void;
-  label: string;
-  name: string;
-}> = ({ value, onChange, label, name }) => (
-  <FormControlLabel
-    control={<Checkbox checked={value} />}
-    onChange={(_, checked) => {
-      onChange({ [name]: checked });
-    }}
-    label={label}
-  />
-);
+const getNewAssertion = (
+  config: FunctionTestConfig,
+  assert: Partial<FunctionTestConfigAssertion> = {}
+): FunctionTestConfigAssertion => {
+  if (config.shouldThrowError) {
+    return {
+      name: "New Assertion",
+      shouldThrowError: true,
+      customValidator: undefined,
+      expectedErrorMessage: {
+        operator: "equals",
+        message: config.functionMeta.error!,
+      },
+      ...assert,
+    };
+  }
+  return {
+    name: "New Assertion",
+    shouldThrowError: false,
+    customValidator: undefined,
+    expectedErrorMessage: undefined,
+    ioConfig: {
+      object: config.functionMeta.output,
+      target: "output",
+      operator: "equals",
+    },
+    ...assert,
+  };
+};
+
+export const MockedFunctionView: React.FC<{
+  config: FunctionTestConfig;
+  onChange: (c: FunctionTestConfig) => void;
+}> = ({ config, onChange }) => {
+  const { unMockFunction, refreshColumns, onConfigUpdate } =
+    useContext(NestedObjectContext);
+
+  console.log("Updated mocked view", config.mockedOutput);
+
+  return (
+    <>
+      <Grid
+        item
+        xs={12}
+        display={"flex"}
+        alignItems={"flex-start"}
+        flexDirection={"column"}
+      >
+        <Button
+          onClick={() => {
+            config.isMocked = false;
+            config.mockedOutput = undefined;
+            config.mockedErrorMessage = undefined;
+            unMockFunction(config);
+            onConfigUpdate();
+          }}
+        >
+          UnMock This Function
+        </Button>
+
+        {config.functionMeta.error ? (
+          <>
+            <Typography variant="body2" sx={{ fontWeight: "bold", my: 1 }}>
+              Mocked Error
+            </Typography>
+            <TextField
+              fullWidth
+              value={config.mockedErrorMessage}
+              onChange={(e) => {
+                config.mockedErrorMessage = e.target.value;
+              }}
+            />
+          </>
+        ) : (
+          <>
+            <Typography variant="body2" sx={{ fontWeight: "bold", my: 1 }}>
+              Mocked Output
+            </Typography>
+            <JSONTextField
+              object={config.mockedOutput}
+              onChange={(obj) => {
+                config.mockedOutput = obj;
+                onConfigUpdate();
+              }}
+            />
+          </>
+        )}
+      </Grid>
+    </>
+  );
+};

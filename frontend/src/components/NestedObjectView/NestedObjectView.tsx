@@ -67,6 +67,7 @@ export const NestedObjectColumns: React.FC<{
         {objects.map((o) => (
           <NestedObjectColumn
             {...{ ListItemView, objects: o, onObjectSelected }}
+            key={o[0].id}
           />
         ))}
       </Box>
@@ -80,7 +81,7 @@ export const NestedObjectColumns: React.FC<{
             overflow: "scroll",
           }}
         >
-          <DetailView object={selectedObject} />
+          <DetailView object={selectedObject} key={selectedObject.id} />
         </Box>
       )}
     </Box>
