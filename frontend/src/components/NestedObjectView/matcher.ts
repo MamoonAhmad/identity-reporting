@@ -9,6 +9,7 @@ import {
 } from "../../entities/TestCase/components/ConfigureTestCase";
 
 export type TestRunForTestSuite = Omit<TestSuiteForFunction, "tests"> & {
+  testSuiteID: string;
   tests: (TestCaseForFunction & {
     executedFunction: ExecutedFunction;
   })[];
@@ -23,6 +24,7 @@ export type TestResult = {
   testCaseName: string;
   testCaseDescription: string;
   functionMeta: ExecutedFunction;
+  successful: boolean;
   result: TestResultForCase[];
 };
 
@@ -99,6 +101,7 @@ export const matchExecutionWithTestConfig = (
     testCaseName: testRun.name,
     testCaseDescription: testRun.description,
     functionMeta: testRun.functionMeta,
+    successful: results.every((r) => r.successful),
     result: results.map((r, i) => ({
       expectation: testRun.tests[i].name,
       result: r,
@@ -108,10 +111,26 @@ export const matchExecutionWithTestConfig = (
 };
 
 const matchFunctionWithConfig = (
-  executedFunction: ExecutedFunction,
+  executedFunction: ExecutedFunction | undefined,
   config: FunctionTestConfig
 ): FunctionTestResult => {
   let successful = true;
+
+  if (!executedFunction) {
+    return {
+      _type: "FunctionTestResult",
+      assertions: [],
+      children: [],
+      executedSuccessfully: false,
+      executionContext: {},
+      executionID: config.functionMeta.executionID,
+      failureReasons: ["Did not get called."],
+      name: config.functionMeta.name,
+      ignored: false,
+      successful: false,
+      thrownError: "",
+    };
+  }
 
   const assertionResults: AssertionResult[] = config.assertions.map(
     (assertion) => {
@@ -195,18 +214,15 @@ const matchFunctionWithConfig = (
 
   const failureReasons: string[] = [];
   const childrenResults = config.children.map((f, i) => {
-    if (executedFunction.children?.[i]) {
-      const childResult = matchFunctionWithConfig(
-        executedFunction.children?.[i],
-        f
-      );
-      if (!isResultSuccessful(childResult)) {
-        successful = false;
-        failureReasons.push(`Child function ${f.functionMeta.name}.`);
-      }
-      return childResult;
+    const childResult = matchFunctionWithConfig(
+      executedFunction.children?.[i],
+      f
+    );
+    if (!isResultSuccessful(childResult)) {
+      successful = false;
+      failureReasons.push(`Child function ${f.functionMeta.name}.`);
     }
-    return undefined as any;
+    return childResult;
   });
 
   return {

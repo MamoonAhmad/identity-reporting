@@ -10,14 +10,14 @@ export const TestRunServices = {
 
     const queryString = params.length ? `?${params.join("&")}` : "";
     const res = await axios.get(
-      `http://localhost:8002/get-test-runs/${queryString}`
+      `http://localhost:8002/test_run/get-test-runs/${queryString}`
     );
     return res.data;
   },
 
   async getTestRunById(objectID: string) {
     const res = await axios.get(
-      `http://localhost:8002/get-test-run/${objectID}`
+      `http://localhost:8002/test_run/get-test-run/${objectID}`
     );
     return res.data;
   },

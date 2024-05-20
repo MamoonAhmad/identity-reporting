@@ -7,10 +7,7 @@ import {
   Grid,
   IconButton,
   List,
-  ListItemButton,
-  MenuItem,
   Modal,
-  Select,
   TextField,
   ToggleButton,
   ToggleButtonGroup,
@@ -23,17 +20,14 @@ import {
 import {
   ExecutedFunction,
   FunctionTestConfig,
-  FunctionTestConfigAssertion,
   getColumns,
   getFunctionTestConfigForExecutedFunction,
   hasChildren,
 } from "../../../components/NestedObjectView/someutil";
 import {
   AddSharp,
-  ArrowUpward,
   CloseSharp,
   DeleteSharp,
-  KeyboardArrowDown,
   KeyboardArrowDownSharp,
   KeyboardArrowRightSharp,
 } from "@mui/icons-material";
@@ -42,13 +36,12 @@ import {
   NestedObjectContextProvider,
   NestedObjectTestConfigView,
 } from "./NestedObjectTestConfigViews";
-import { useEffect, useMemo, useReducer, useState } from "react";
+import { useEffect, useReducer, useState } from "react";
 import axios from "axios";
 import { TestCaseServices } from "../services";
-import { JSONTextField } from "../../../components/JSONTestField";
 import { HorizontalFlowDiagram } from "../../../components/FlowChart/HorizentalFlowDiagram";
 import { PyramidFlowDiagram } from "../../../components/FlowChart/PyramidFlowDiagram";
-import { DiagramEntity } from "../../../components/FlowChart/types";
+import { DiagramEntity } from "../../../components/FlowChart/types.ts";
 
 export type TestSuiteForFunction = {
   _id: string;
@@ -171,7 +164,9 @@ export const ConfigureTestCase: React.FC<{
           variant="contained"
           onClick={() => {
             axios
-              .post("http://localhost:8002/save-test-case", { ...state })
+              .post("http://localhost:8002/test_case/save-test-case", {
+                ...state,
+              })
               .then((res) => {
                 onSave?.(res.data);
               });
