@@ -1,9 +1,7 @@
 import { ViewPage } from "../../components/UICrud/ViewPage";
 import { useParams } from "react-router-dom";
-import { ExecutedFunction } from "../../components/NestedObjectView/someutil";
 import { useEffect, useMemo, useState } from "react";
 import {
-  AssertionResult,
   FunctionTestResult,
   TestResult,
   TestRunForTestSuite,
@@ -11,9 +9,7 @@ import {
 } from "../../components/NestedObjectView/matcher";
 import {
   TestResultColumns,
-  TestResultFailView,
-  TestResultSuccessView,
-  TestResultView,
+  TestResultFunctionView,
 } from "./components/NestedObjectTestResultView";
 import { TestRunServices } from "./services";
 import {
@@ -59,15 +55,25 @@ const ExecutedFunctionToTestConfigConverter: React.FC<{
   object: TestRunForTestSuite;
 }> = ({ object }) => {
   const [result, setResult] = useState<TestResult | undefined>(undefined);
-  const theme = useTheme();
-
-  const [diagramType, setDiagramType] = useState("vertical");
   useEffect(() => {
     if (!object) return;
 
     const res = matchExecutionWithTestConfig(object);
     setResult(res);
   }, [object]);
+
+  if (!result) {
+    return null;
+  }
+  return <TestResultView result={result} />;
+};
+
+export const TestResultView: React.FC<{
+  result: TestResult;
+}> = ({ result }) => {
+  const theme = useTheme();
+
+  const [diagramType, setDiagramType] = useState("vertical");
 
   const [showTests, setShowTests] = useState<"all" | "passed" | "failed">(
     "all"
@@ -100,7 +106,7 @@ const ExecutedFunctionToTestConfigConverter: React.FC<{
   }, [failed]);
 
   const resultsToShow = useMemo(() => {
-    if (!result || !result.result.length) {
+    if (!result || !result.result?.length) {
       return [];
     }
     switch (showTests) {
@@ -113,10 +119,6 @@ const ExecutedFunctionToTestConfigConverter: React.FC<{
     }
   }, [result, showTests]);
 
-  if (!result) {
-    return null;
-  }
-
   return (
     <>
       <Grid container>
@@ -126,7 +128,7 @@ const ExecutedFunctionToTestConfigConverter: React.FC<{
             color="primary"
             value={showTests}
             onChange={(_, v) => {
-              if(!v) {
+              if (!v) {
                 return;
               }
               setShowTests(v);
@@ -347,7 +349,7 @@ const ExecutedFunctionToTestConfigConverter: React.FC<{
             >
               <CloseSharp />
             </IconButton>
-            <TestResultView resultObject={selectedFunctionEntity} />
+            <TestResultFunctionView resultObject={selectedFunctionEntity} />
           </Box>
         </Modal>
       )}

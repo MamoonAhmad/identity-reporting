@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "bb4a5494ccaeef16fe83a46c2fdf5af5841d083da8c98468e5b0eaaeb56b2dd6"
+            "sha256": "82135d29f15b8a77bf5d43768010de353a5badf0aa7562f4c011f9072019370a"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -122,11 +122,11 @@
         },
         "identity-trace-python-agent": {
             "hashes": [
-                "sha256:447a944c1d3150df1391d21676463cadbc8ac7aafff592270ac353d27bd1b4a5",
-                "sha256:5ebd4efa28ebf010b403c7bbd7008925ebb85e331b31581582e7155488031f9d"
+                "sha256:7efc906dc80462a3f4dea02ce085925d283cf6c7ebd4008d0c4a7292d40881fc",
+                "sha256:a211f948769cb07bd7e5e84363ca6984b1a914918a5742a422f1a675ac2be438"
             ],
             "index": "pypi",
-            "version": "==1.0.5"
+            "version": "==1.0.6"
         },
         "idna": {
             "hashes": [

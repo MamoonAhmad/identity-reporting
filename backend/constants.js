@@ -1,0 +1,1 @@
+export const IDENTITY_DIRECTORY = "__identity__"

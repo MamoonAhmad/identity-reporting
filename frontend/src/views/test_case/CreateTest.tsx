@@ -19,7 +19,7 @@ export const CreateTestCase = () => {
       title="Function Execution View"
       dataLoader={async () => {
         const res = await axios.get(
-          `http://localhost:8002/get-executed-function/${objectID}`
+          `http://localhost:8002/executed_function/get-executed-function/${objectID}`
         );
         return res.data;
       }}

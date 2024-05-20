@@ -37,7 +37,7 @@ export const ListPage: React.FC<{
   columnOverride?: { [key: string]: React.FC<{ object: any }> };
   actionColumn?: ActionColumnComponent;
   actions?: ObjectAction;
-  pageTitle: string;
+  pageTitle: string | React.ReactElement;
 }> = ({
   loader,
   keyColumnMap,
@@ -75,7 +75,11 @@ export const ListPage: React.FC<{
           mt={2}
           mb={3}
         >
-          <Typography variant="h4">{pageTitle}</Typography>
+          {typeof pageTitle === "string" ? (
+            <Typography variant="h4">{pageTitle}</Typography>
+          ) : (
+            pageTitle
+          )}
         </Grid>
         <Grid container>
           <Table>

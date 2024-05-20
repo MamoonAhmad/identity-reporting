@@ -19,7 +19,6 @@ import {
   IconButton,
   List,
   ListItem,
-  ListItemIcon,
   ListItemText,
   Typography,
   useTheme,
@@ -33,7 +32,6 @@ import {
   RemoveSharp,
   ReplaySharp,
 } from "@mui/icons-material";
-import { JSONTextField } from "../../../components/JSONTestField";
 
 type GenericTestResult = FunctionTestResult;
 const getChildren = (
@@ -189,10 +187,10 @@ export const TestResultDetailView: React.FC<{
 }> = ({ object }) => {
   const resultObject: FunctionTestResult = object.object;
 
-  return <TestResultView resultObject={resultObject} />;
+  return <TestResultFunctionView resultObject={resultObject} />;
 };
 
-export const TestResultView: React.FC<{
+export const TestResultFunctionView: React.FC<{
   resultObject: FunctionTestResult;
 }> = ({ resultObject }) => {
   return (
@@ -443,7 +441,8 @@ const ObjectDiff: React.FC<{
   const [showChildren, setShowChildren] = useState(true);
 
   const targetHasMoreKeys =
-    Object.keys(targetObject).length > Object.keys(sourceObject).length;
+    Object.keys(targetObject || {}).length >
+    Object.keys(sourceObject || {}).length;
 
   let targetObjectToIterateOver = sourceObject;
   if (targetHasMoreKeys) {
@@ -511,8 +510,8 @@ const ObjectDiff: React.FC<{
             {Object.keys(targetObjectToIterateOver).map((k) => {
               return (
                 <GeneralObjectDiff
-                  sourceObject={sourceObject[k]}
-                  targetObject={targetObject[k]}
+                  sourceObject={sourceObject?.[k]}
+                  targetObject={targetObject?.[k]}
                   name={k}
                 />
               );
@@ -608,8 +607,8 @@ const ArrayDiff: React.FC<{
             {targetArrayToIterateOver.map((_, k) => {
               return (
                 <GeneralObjectDiff
-                  sourceObject={sourceObject[k]}
-                  targetObject={targetObject[k]}
+                  sourceObject={sourceObject?.[k]}
+                  targetObject={targetObject?.[k]}
                   name={""}
                 />
               );

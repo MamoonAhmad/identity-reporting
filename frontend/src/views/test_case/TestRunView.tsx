@@ -21,7 +21,7 @@ export const TestRunView = () => {
       title="Function Execution View"
       dataLoader={async () => {
         const res = await axios.get(
-          `http://localhost:8002/get-test-run/${objectID}`
+          `http://localhost:8002/test_run/get-test-run/${objectID}`
         );
         return res.data;
       }}

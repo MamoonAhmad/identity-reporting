@@ -11,7 +11,7 @@ export const TestRunList: React.FC<any> = () => {
       <ListPage
         loader={async () => {
           const res = await axios.get(
-            `http://localhost:8002/get-test-runs/?testCaseId=${testCaseID}`
+            `http://localhost:8002/test_run/get-test-runs/?testCaseId=${testCaseID}`
           );
           return res.data;
         }}
