@@ -49,7 +49,6 @@
  *
  */
 
-import { TestCase } from "../../views/test_case/_TestConfig";
 import { NestedObjectColumnItem } from "./NestedObjectView";
 
 export type ExecutedFunction = {

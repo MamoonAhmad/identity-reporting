@@ -5,6 +5,7 @@ import {
   Button,
   FormControlLabel,
   Grid,
+  IconButton,
   Switch,
   TextField,
   ToggleButton,
@@ -15,16 +16,15 @@ import {
   FunctionTestConfig,
   FunctionTestConfigAssertion,
 } from "../../../components/NestedObjectView/someutil";
-import React, {
-  PropsWithChildren,
-  useContext,
-  useEffect,
-  useReducer,
-  useState,
-} from "react";
+import React, { PropsWithChildren, useContext, useState } from "react";
 import { JSONTextField } from "../../../components/JSONTestField";
-import { AddSharp, KeyboardArrowDownSharp } from "@mui/icons-material";
+import {
+  AddSharp,
+  DeleteSharp,
+  KeyboardArrowDownSharp,
+} from "@mui/icons-material";
 import { CodeTestField } from "../../../components/CodeTestField";
+import { Box } from "@mui/system";
 
 const NestedObjectContext = React.createContext<{
   mockFunction: (o: FunctionTestConfig) => void;
@@ -78,7 +78,7 @@ const FunctionConfigView: React.FC<{
       </Grid>
 
       {config.isMocked && (
-        <MockedFunctionView config={config} onChange={(o) => undefined} />
+        <MockedFunctionView config={config} onChange={() => undefined} />
       )}
       {!config.isMocked && (
         <>
@@ -118,8 +118,15 @@ const FunctionConfigView: React.FC<{
             <Typography variant="h6" sx={{ flexGrow: 1, textAlign: "left" }}>
               Assertions
             </Typography>
+          </Grid>
+          <Grid item xs={12}>
+            {config.assertions.map((a) => (
+              <AssertionView assertion={a} config={config} />
+            ))}
+
             <Button
               variant="text"
+              sx={{ my: 2 }}
               onClick={() => {
                 config.assertions = [
                   ...config.assertions,
@@ -129,13 +136,8 @@ const FunctionConfigView: React.FC<{
               }}
             >
               <AddSharp />
-              Add Assertion
+              Add New Assertion For This Function
             </Button>
-          </Grid>
-          <Grid item xs={12}>
-            {config.assertions.map((a) => (
-              <AssertionView assertion={a} config={config} />
-            ))}
           </Grid>
         </>
       )}
@@ -155,7 +157,22 @@ const AssertionView: React.FC<{
         expandIcon={<KeyboardArrowDownSharp />}
         sx={{ flexDirection: "row-reverse" }}
       >
-        {assertion.name}
+        <Box sx={{ width: "100%", display: "flex", alignItems: "center" }}>
+          <Typography variant="body2" sx={{ flexGrow: 1 }}>
+            {assertion.name}
+          </Typography>
+          <IconButton
+            color="error"
+            onClick={(e) => {
+              e.stopPropagation();
+              const index = config.assertions.findIndex((a) => a === assertion);
+              config.assertions.splice(index, 1);
+              onConfigUpdate();
+            }}
+          >
+            <DeleteSharp />
+          </IconButton>
+        </Box>
       </AccordionSummary>
       <AccordionDetails>
         <Grid
@@ -404,9 +421,8 @@ const getNewAssertion = (
 export const MockedFunctionView: React.FC<{
   config: FunctionTestConfig;
   onChange: (c: FunctionTestConfig) => void;
-}> = ({ config, onChange }) => {
-  const { unMockFunction, refreshColumns, onConfigUpdate } =
-    useContext(NestedObjectContext);
+}> = ({ config }) => {
+  const { unMockFunction, onConfigUpdate } = useContext(NestedObjectContext);
 
   console.log("Updated mocked view", config.mockedOutput);
 
