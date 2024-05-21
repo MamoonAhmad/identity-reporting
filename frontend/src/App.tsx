@@ -2,15 +2,13 @@ import "./App.css";
 
 import { RouterProvider } from "react-router-dom";
 import { APP_ROUTES } from "./routes";
+import { Box } from "@mui/material";
 
 function App() {
   return (
-    <div
-      style={{ height: "100vh", width: "100vw", overflow: "scroll" }}
-      className="bg-white"
-    >
+    <Box sx={{ height: "100vh", width: "100vw", overflow: "scroll", bgcolor: "lightgray" }}>
       <RouterProvider router={APP_ROUTES} />
-    </div>
+    </Box>
   );
 }
 

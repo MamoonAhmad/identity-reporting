@@ -11,6 +11,7 @@ import {
   Container,
   Grid,
   IconButton,
+  Paper,
   Table,
   TableBody,
   TableCell,
@@ -65,7 +66,7 @@ export const ListPage: React.FC<{
   }, []);
 
   return (
-    <Container>
+    <Container sx={{ bgcolor: "background.default", py: 3 }}>
       <Grid container spacing={2}>
         <Grid
           xs={12}
@@ -81,44 +82,48 @@ export const ListPage: React.FC<{
             pageTitle
           )}
         </Grid>
-        <Grid container>
-          <Table>
-            <TableHead>
-              <TableRow>
-                {columns.map((col) => {
-                  return <TableCell>{col}</TableCell>;
-                })}
-                {(actions || actionColumn) && <TableCell>Action</TableCell>}
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {state.loading && <CircularProgress size={40} />}
-              {!state.loading &&
-                state.data &&
-                state.data.map((d: any) => {
-                  return (
-                    <TableRow>
-                      {objectKeys.map((k) => (
-                        <TableCell>
-                          {columnOverride[k]
-                            ? columnOverride[k]({ object: d })
-                            : d[k]}
-                        </TableCell>
-                      ))}
-                      {(actions || actionColumn) && (
-                        <TableCell>
-                          <TableActions
-                            object={d}
-                            actionColumn={actionColumn}
-                            actions={actions}
-                          />
-                        </TableCell>
-                      )}
-                    </TableRow>
-                  );
-                })}
-            </TableBody>
-          </Table>
+        <Grid container sx={{ px: 2 }}>
+          <Grid item xs={12}>
+            <Paper>
+              <Table>
+                <TableHead>
+                  <TableRow>
+                    {columns.map((col) => {
+                      return <TableCell>{col}</TableCell>;
+                    })}
+                    {(actions || actionColumn) && <TableCell>Action</TableCell>}
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {state.loading && <CircularProgress size={40} />}
+                  {!state.loading &&
+                    state.data &&
+                    state.data.map((d: any) => {
+                      return (
+                        <TableRow>
+                          {objectKeys.map((k) => (
+                            <TableCell>
+                              {columnOverride[k]
+                                ? columnOverride[k]({ object: d })
+                                : d[k]}
+                            </TableCell>
+                          ))}
+                          {(actions || actionColumn) && (
+                            <TableCell>
+                              <TableActions
+                                object={d}
+                                actionColumn={actionColumn}
+                                actions={actions}
+                              />
+                            </TableCell>
+                          )}
+                        </TableRow>
+                      );
+                    })}
+                </TableBody>
+              </Table>
+            </Paper>
+          </Grid>
         </Grid>
       </Grid>
     </Container>
