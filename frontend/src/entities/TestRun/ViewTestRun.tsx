@@ -33,7 +33,7 @@ import {
   CloseSharp,
   DoneSharp,
 } from "@mui/icons-material";
-import { HorizontalFlowDiagram } from "../../components/FlowChart/HorizentalFlowDiagram";
+import { HorizontalFlowDiagram } from "../../components/FlowChart/HorizontalFlowDiagram";
 import { PyramidFlowDiagram } from "../../components/FlowChart/PyramidFlowDiagram";
 import { DiagramEntity } from "../../components/FlowChart/types";
 

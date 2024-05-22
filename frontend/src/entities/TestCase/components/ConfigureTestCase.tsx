@@ -39,7 +39,7 @@ import {
 import { useEffect, useReducer, useState } from "react";
 import axios from "axios";
 import { TestCaseServices } from "../services";
-import { HorizontalFlowDiagram } from "../../../components/FlowChart/HorizentalFlowDiagram";
+import { HorizontalFlowDiagram } from "../../../components/FlowChart/HorizontalFlowDiagram.tsx";
 import { PyramidFlowDiagram } from "../../../components/FlowChart/PyramidFlowDiagram";
 import { DiagramEntity } from "../../../components/FlowChart/types.ts";
 
