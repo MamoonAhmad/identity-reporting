@@ -158,10 +158,11 @@ const AssertionView: React.FC<{
         sx={{ flexDirection: "row-reverse" }}
       >
         <Box sx={{ width: "100%", display: "flex", alignItems: "center" }}>
-          <Typography variant="body2" sx={{ flexGrow: 1 }}>
+          <Typography variant="body2" sx={{ flexGrow: 1, textAlign: "left" }}>
             {assertion.name}
           </Typography>
           <IconButton
+            size="small"
             color="error"
             onClick={(e) => {
               e.stopPropagation();
@@ -170,7 +171,7 @@ const AssertionView: React.FC<{
               onConfigUpdate();
             }}
           >
-            <DeleteSharp />
+            <DeleteSharp fontSize="small" />
           </IconButton>
         </Box>
       </AccordionSummary>
