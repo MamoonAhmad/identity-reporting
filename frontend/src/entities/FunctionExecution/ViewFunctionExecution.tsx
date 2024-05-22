@@ -6,7 +6,7 @@ import React, { useState } from "react";
 
 import { AddSharp, CloseSharp } from "@mui/icons-material";
 import { TestCaseRoutes } from "../TestCase/routes";
-import { HorizontalFlowDiagram } from "../../components/FlowChart/HorizentalFlowDiagram";
+import { HorizontalFlowDiagram } from "../../components/FlowChart/HorizontalFlowDiagram";
 import { DiagramEntity } from "../../components/FlowChart/types";
 import { PyramidFlowDiagram } from "../../components/FlowChart/PyramidFlowDiagram";
 import {
