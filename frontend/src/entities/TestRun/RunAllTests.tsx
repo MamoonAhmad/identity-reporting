@@ -5,16 +5,10 @@ import {
   Box,
   CircularProgress,
   Grid,
-  ToggleButton,
-  ToggleButtonGroup,
   Typography,
 } from "@mui/material";
 import { useEffect, useMemo, useState } from "react";
-import {
-  TestResult,
-  TestRunForTestSuite,
-  matchExecutionWithTestConfig,
-} from "../../components/NestedObjectView/matcher";
+import { TestResult } from "../../components/NestedObjectView/matcher";
 import { BugReport, CheckSharp, PendingSharp } from "@mui/icons-material";
 import { TestResultView } from "./ViewTestRun";
 import socketIO from "socket.io-client";
@@ -70,14 +64,13 @@ export const RunAllTests = () => {
         }))
       );
       socket.emit("test_run/run_test", []);
-      socket.on("test_run/test_run_result", (testResult: TestRunForTestSuite) => {
+      socket.on("test_run/test_run_result", (testResult: TestResult) => {
         setTests((existingTests) => {
-          const tr = matchExecutionWithTestConfig(testResult);
           const existingTestIndex = existingTests.findIndex(
             (t) => t.testCase._id === testResult.testSuiteID
           )!;
           const existingTest = existingTests[existingTestIndex];
-          existingTest.result = tr;
+          existingTest.result = testResult;
           existingTest.inProgress = false;
           existingTests[existingTestIndex] = { ...existingTest };
 

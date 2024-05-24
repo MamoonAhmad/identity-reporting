@@ -8,6 +8,7 @@ import * as testSuiteLoader from "../TestSuite/loader.js"
 import * as userSettingLoader from "../UserSetting/loader.js"
 import { ENTITY_NAME_URL, TEST_RUN_PATH } from "./constants.js";
 import { IDENTITY_DIRECTORY } from "../../constants.js"
+import { matchExecutionWithTestConfig } from "./matcher.js"
 
 
 
@@ -58,7 +59,8 @@ export const runTestSuits = (socketIOInstance, testSuiteIds = []) => {
 
     if (!testSuiteIds.length) {
         runAllTests(testResult => {
-            socketIOInstance.emit(url('test_run_result'), testResult)
+            const matcherResult = matchExecutionWithTestConfig(testResult);
+            socketIOInstance.emit(url('test_run_result'), matcherResult)
         }, (id) => socketIOInstance.emit(url("test_run_init"), id)).then(res => console.log(res))
     }
 }

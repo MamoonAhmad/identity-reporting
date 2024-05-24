@@ -22,6 +22,7 @@ export type TestResultForCase = {
 };
 export type TestResult = {
   testCaseName: string;
+  testSuiteID: string;
   testCaseDescription: string;
   functionMeta: ExecutedFunction;
   successful: boolean;
@@ -100,6 +101,7 @@ export const matchExecutionWithTestConfig = (
   return {
     testCaseName: testRun.name,
     testCaseDescription: testRun.description,
+    testSuiteID: "",
     functionMeta: testRun.functionMeta,
     successful: results.every((r) => r.successful),
     result: results.map((r, i) => ({
