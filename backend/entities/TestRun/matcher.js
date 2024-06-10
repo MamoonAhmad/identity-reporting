@@ -37,7 +37,7 @@ const matchFunctionWithConfig = (
             children: [],
             executedSuccessfully: false,
             executionContext: {},
-            executionID: config.functionMeta.executionID,
+            id: config.functionMeta.id,
             failureReasons: ["Did not get called."],
             name: config.functionMeta.name,
             ignored: false,
@@ -149,7 +149,7 @@ const matchFunctionWithConfig = (
         executedSuccessfully: executedFunction.executedSuccessfully,
         thrownError: executedFunction.error,
         executionContext: executedFunction.executionContext,
-        executionID: executedFunction.executionID,
+        id: executedFunction.id,
         assertions: assertionResults,
     };
 };

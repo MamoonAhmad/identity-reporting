@@ -32,7 +32,7 @@ export type TestResult = {
 export type FunctionTestResult = BaseTestResult & {
   _type: "FunctionTestResult";
   name: string;
-  executionID: string;
+  id: string;
   executedSuccessfully: boolean;
   thrownError?: string;
   executionContext: Record<string, any>;
@@ -125,7 +125,7 @@ const matchFunctionWithConfig = (
       children: [],
       executedSuccessfully: false,
       executionContext: {},
-      executionID: config.functionMeta.executionID,
+      id: config.functionMeta.executionID,
       failureReasons: ["Did not get called."],
       name: config.functionMeta.name,
       ignored: false,
@@ -237,7 +237,7 @@ const matchFunctionWithConfig = (
     executedSuccessfully: executedFunction.executedSuccessfully,
     thrownError: executedFunction.error,
     executionContext: executedFunction.executionContext,
-    executionID: executedFunction.executionID,
+    id: executedFunction.executionID,
     assertions: assertionResults,
   };
 };

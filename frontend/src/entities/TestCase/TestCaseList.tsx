@@ -34,8 +34,8 @@ export const TestCaseList: React.FC<any> = () => {
           description: "Description",
         }}
         actions={{
-          view: (o) => TestCaseRoutes.ViewTestCase.replace("*", o._id),
-          delete: (o) => `/delete-function-execution/${o._id}`,
+          view: (o) => TestCaseRoutes.ViewTestCase.replace("*", o.id),
+          delete: (o) => `/delete-function-execution/${o.id}`,
         }}
       />
     </>

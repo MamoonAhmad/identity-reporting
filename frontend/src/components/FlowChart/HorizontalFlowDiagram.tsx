@@ -99,12 +99,17 @@ const drawEntityAndChildren = (
   if (!entity.children?.length) {
     return;
   }
+  
+  const parentElement = document.getElementById(entity.id)!;
 
+  if (!parentElement) {
+    return;
+  }
+  
   // set the stoke to default color
   ctx.strokeStyle = defaultStrokeColor;
-
   ctx.beginPath();
-  const parentElement = document.getElementById(entity.id)!;
+
   const lastChild = entity.children[entity.children.length - 1];
   const lastChildElement = document.getElementById(lastChild.id)!;
 

@@ -12,7 +12,12 @@ export const PyramidFlowDiagram: React.FC<{
         return (
           <>
             {entities.map((e) => (
-              <FunctionBox entity={e} key={e.id} reDraw={reDraw} DiagramNodeComponent={DiagramNodeComponent} />
+              <FunctionBox
+                entity={e}
+                key={e.id}
+                reDraw={reDraw}
+                DiagramNodeComponent={DiagramNodeComponent}
+              />
             ))}
           </>
         );
@@ -104,11 +109,18 @@ const drawEntityAndChildren = (ctx: any, func: DiagramEntity) => {
   //   if (hasError) {
   //     children.push({ executionID: `${func.executionID}error` } as any);
   //   }
-  const parentEl = document.getElementById(func.id)!;
+  const parentEl = document.getElementById(func.id);
+  if (!parentEl) {
+    return;
+  }
 
   const firstChild = func.children[0];
 
-  const firstChildEl = document.getElementById(firstChild.id)!;
+  const firstChildEl = document.getElementById(firstChild.id);
+
+  if (!firstChildEl) {
+    return;
+  }
 
   let offsetTop = parentEl.offsetTop + parentEl.offsetHeight;
   const parentCenter = parentEl.offsetLeft + 20;
@@ -132,7 +144,10 @@ const drawEntityAndChildren = (ctx: any, func: DiagramEntity) => {
   ctx.lineTo(lastChildEl.offsetLeft + 20, offsetTop);
 
   children.forEach((f) => {
-    const childEl = document.getElementById(f.id)!;
+    const childEl = document.getElementById(f.id);
+    if (!childEl) {
+      return;
+    }
     ctx.moveTo(childEl.offsetLeft + 20, offsetTop);
     ctx.lineTo(childEl.offsetLeft + 20, childEl.offsetTop);
     drawEntityAndChildren(ctx, f);

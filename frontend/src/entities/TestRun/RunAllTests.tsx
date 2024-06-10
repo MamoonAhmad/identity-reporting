@@ -67,7 +67,7 @@ export const RunAllTests = () => {
       socket.on("test_run/test_run_result", (testResult: TestResult) => {
         setTests((existingTests) => {
           const existingTestIndex = existingTests.findIndex(
-            (t) => t.testCase._id === testResult.testSuiteID
+            (t) => t.testCase.id === testResult.testSuiteID
           )!;
           const existingTest = existingTests[existingTestIndex];
           existingTest.result = testResult;
@@ -82,7 +82,7 @@ export const RunAllTests = () => {
       socket.on("test_run/test_run_init", (testSuiteID) => {
         setTests((existingTests) => {
           const existingTestIndex = existingTests.findIndex(
-            (t) => t.testCase._id === testSuiteID
+            (t) => t.testCase.id === testSuiteID
           )!;
           const existingTest = existingTests[existingTestIndex];
           existingTest.inProgress = true;

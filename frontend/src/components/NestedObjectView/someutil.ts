@@ -52,7 +52,7 @@
 import { NestedObjectColumnItem } from "./NestedObjectView";
 
 export type ExecutedFunction = {
-  _id: string;
+  id: string;
   name: string;
   parentID: string;
   input: any;
@@ -195,10 +195,10 @@ const getFunctionTestConfigItems = (
   objectPath: string[]
 ) => {
   return functions.map((f) => ({
-    id: f.functionMeta._id,
+    id: f.functionMeta.id,
     name: f.functionMeta.name,
     object: f,
-    objectPath: [...objectPath, f.functionMeta._id],
+    objectPath: [...objectPath, f.functionMeta.id],
     selected: false,
   }));
 };
@@ -306,7 +306,7 @@ export const getFunctionTestConfigForExecutedFunction = (
   isRootFunction = true,
   context: FunctionTestConfigContext = { functionCallCountMap: {} }
 ): FunctionTestConfig => {
-  const functionKey = `${f.fileName}-${f.name}`;
+  const functionKey = `${f.moduleName}-${f.name}`;
   if (!context.functionCallCountMap[functionKey]) {
     context.functionCallCountMap[functionKey] = 0;
   }
@@ -356,7 +356,7 @@ export const getFunctionTestConfigForExecutedFunction = (
     functionCallCount: context.functionCallCountMap[functionKey],
     children: [
       ...(f.children?.map((ff) =>
-        getFunctionTestConfigForExecutedFunction(ff, false)
+        getFunctionTestConfigForExecutedFunction(ff, false, context)
       ) || []),
     ],
   };

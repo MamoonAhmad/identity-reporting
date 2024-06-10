@@ -11,11 +11,11 @@ export const getAllTestSuits = async () => {
 
 export const createOrUpdateTestSuite = async (testCaseConfig) => {
 
-    let id = testCaseConfig._id;
+    let id = testCaseConfig.id;
 
-    if (!testCaseConfig._id) {
+    if (!testCaseConfig.id) {
         id = v4()
-        testCaseConfig._id = id
+        testCaseConfig.id = id
     }
 
     let existingSuite = await loader.getTestSuiteByID(id)

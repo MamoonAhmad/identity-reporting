@@ -11,7 +11,7 @@ import { writeFileJSONPromised } from "../../utils/writeFileJSONPromised.js";
 
 
 
-const testCasePath = `${IDENTITY_DIRECTORY}/${ENTITY_NAME}/`
+const testCasePath = `${IDENTITY_DIRECTORY}/${ENTITY_NAME}`
 
 export const getAllTestSuits = async () => {
 
@@ -38,7 +38,7 @@ export const getTestSuiteByID = async (testSuiteID) => {
 
 
 export const updateTestSuite = async (testSuite) => {
-    const testSuiteID = testSuite._id
+    const testSuiteID = testSuite.id
     const testSuiteFile = `${testCasePath}/${testSuiteID}.json`
 
     try {
@@ -51,10 +51,10 @@ export const updateTestSuite = async (testSuite) => {
 
 
 export const createTestSuite = async (testSuite) => {
-    const testSuiteID = testSuite._id || uuidv4();
+    const testSuiteID = testSuite.id || uuidv4();
 
-    if (!testSuite._id) {
-        testSuite._id = testSuiteID;
+    if (!testSuite.id) {
+        testSuite.id = testSuiteID;
     }
 
     const testSuiteFile = `${testCasePath}/${testSuiteID}.json`

@@ -189,7 +189,7 @@ const getDiagramEntityFromExecutedFunction = (
   onClick?: DiagramEntity["onClick"]
 ): DiagramEntity => {
   return {
-    id: func.executionID,
+    id: func.id,
     label: func.name,
     type: "node",
     metaData: {

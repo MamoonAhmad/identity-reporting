@@ -175,7 +175,7 @@ export const TestResultView: React.FC<{
       </Grid>
       {resultsToShow?.map((r) => {
         return (
-          <Accordion key={r.result.executionID}>
+          <Accordion key={r.result.id}>
             <AccordionSummary>
               <Typography>
                 {r.successful && (
@@ -362,7 +362,7 @@ const getDiagramEntityFromExecutedFunction = (
   onClick?: DiagramEntity["onClick"]
 ): DiagramEntity => {
   const entity: DiagramEntity = {
-    id: func.executionID,
+    id: func.id,
     label: func.name,
     type: "node",
     metaData: {
