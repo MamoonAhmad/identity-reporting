@@ -1,7 +1,8 @@
+import { registerRunFileActionListener } from "../../runFileSignals.js"
 import { expressEndpointResolver } from "../../utils/expressEndpointResolver.js"
 import { socketIOResolverFactory } from "../../utils/socketIOResolverFactory.js"
 import { ENTITY_NAME_URL } from "./constants.js"
-import { getAllTestRuns, getTestRunByID, runTestSuits, saveTestRun } from "./controller.js"
+import { getAllTestRuns, getTestRunByID, processFunctionConfigForRunFileSignal, runTestSuits, saveTestRun } from "./controller.js"
 
 
 
@@ -15,6 +16,8 @@ export const registerExpressEndpoints = (app) => {
     app.get(url('get-test-run/:id'), expressEndpointResolver(req => getTestRunByID(req.params.id)))
     app.post(url('save-test-run'), expressEndpointResolver(req => saveTestRun(req.body)))
 
+    
+
 }
 
 export const registerSocketEndpoints = (socketIOInstance, socket) => {
@@ -22,6 +25,14 @@ export const registerSocketEndpoints = (socketIOInstance, socket) => {
         return `${ENTITY_NAME_URL}/${endpoint}`
     }
 
-    socket.on(...socketIOResolverFactory(url('run_test'), testCaseIds => runTestSuits(socketIOInstance, testCaseIds)))
+    socket.on(...socketIOResolverFactory({
+        endpoint: url('run_test'),
+        functionToRun: testCaseIds => runTestSuits(socketIOInstance, testCaseIds),
+        socketIOInstance,
+        socket
+    }))
 
+    registerRunFileActionListener("test_run", (runFileConfig, functionConfig) => {
+        return processFunctionConfigForRunFileSignal(socketIOInstance, runFileConfig, functionConfig)
+    })
 }

@@ -44,7 +44,7 @@ import { PyramidFlowDiagram } from "../../../components/FlowChart/PyramidFlowDia
 import { DiagramEntity } from "../../../components/FlowChart/types.ts";
 
 export type TestSuiteForFunction = {
-  _id: string;
+  id: string;
   name: string;
   description: string;
   functionMeta: ExecutedFunction;
@@ -196,10 +196,25 @@ const TestConfigColumns: React.FC<{
     {}
   );
 
+  const [mockedFunctions, setMockedFunctions] = useState<FunctionTestConfig[]>(
+    []
+  );
+
   const [columns, setColumns] = useState<NestedObjectColumnItem[][]>([]);
 
   useEffect(() => {
     setState({ ...functionTestConfig, mocks: functionTestConfig.mocks || {} });
+    const mockedFunctions: FunctionTestConfig[] = [];
+    visit(
+      functionTestConfig.config,
+      (f) => {
+        if (f.isMocked) {
+          mockedFunctions.push(f);
+        }
+      },
+      (f) => f.children
+    );
+    setMockedFunctions(mockedFunctions);
   }, [functionTestConfig]);
 
   useEffect(() => {
@@ -220,7 +235,15 @@ const TestConfigColumns: React.FC<{
     if (!functionTestConfig.mocks) {
       functionTestConfig.mocks = {};
     }
-    functionTestConfig.mocks![f.functionMeta.name] = f as any;
+    const key = `${f.functionMeta.moduleName}:${f.functionMeta.name}`;
+    if (!functionTestConfig.mocks![key]) {
+      functionTestConfig.mocks![key] = {};
+    }
+    functionTestConfig.mocks![key][f.functionCallCount] = {
+      output: f.functionMeta.output,
+      errorToThrow: f.functionMeta.error,
+    };
+    setMockedFunctions([...mockedFunctions, f]);
     setState({
       mocks: {
         ...functionTestConfig.mocks,
@@ -232,12 +255,19 @@ const TestConfigColumns: React.FC<{
     if (!functionTestConfig.mocks) {
       functionTestConfig.mocks = {};
     }
-    delete functionTestConfig.mocks![f.functionMeta?.name];
+    const key = `${f.functionMeta.moduleName}:${f.functionMeta.name}`;
+    delete functionTestConfig.mocks![key]?.[f.functionCallCount];
     setState({
       mocks: {
         ...functionTestConfig.mocks,
       },
     });
+    const mockedFunctionIndex = mockedFunctions.findIndex(
+      (mf) => f.functionMeta.id === mf.functionMeta.id
+    );
+    mockedFunctions.splice(mockedFunctionIndex, 1);
+    setMockedFunctions([...mockedFunctions]);
+
     // setColumns(
     //   getColumns(state.config!, getObjectPathFromCurrentColumns(columns))
     // );
@@ -343,14 +373,16 @@ const TestConfigColumns: React.FC<{
                   Mocks
                 </Typography>
                 {!state.mocks && "No mocks configured for this test case."}
-                {Object.keys(state.mocks || {}).map((k) => {
+                {mockedFunctions.map((f) => {
                   return (
                     <>
-                      <Accordion key={k}>
-                        <AccordionSummary>{k}</AccordionSummary>
+                      <Accordion key={f.functionMeta.id}>
+                        <AccordionSummary>
+                          ({f.functionCallCount}) {f.functionMeta.name}
+                        </AccordionSummary>
                         <AccordionDetails>
                           <MockedFunctionView
-                            config={functionTestConfig.mocks![k] as any}
+                            config={f}
                             onChange={() => undefined}
                           />
                         </AccordionDetails>
@@ -522,7 +554,7 @@ const getDiagramEntityFromExecutedFunction = (
   onClick?: DiagramEntity["onClick"]
 ): DiagramEntity => {
   const entity: DiagramEntity = {
-    id: func.functionMeta._id,
+    id: func.functionMeta.id,
     label: func.functionMeta.name,
     type: "node",
     metaData: {
@@ -556,3 +588,13 @@ const getObjectPathFromCurrentColumns = (
 
   return objectPath;
 };
+
+function visit<T>(
+  entity: T,
+  process: (o: T) => void,
+  getChildren: (o: T) => T[]
+) {
+  process(entity);
+  const children = getChildren(entity);
+  children.map((c) => visit(c, process, getChildren));
+}

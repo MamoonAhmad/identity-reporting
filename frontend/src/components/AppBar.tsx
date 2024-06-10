@@ -17,12 +17,13 @@ import ListItemButton from "@mui/material/ListItemButton";
 import ListItemIcon from "@mui/material/ListItemIcon";
 import ListItemText from "@mui/material/ListItemText";
 import { CodeSharp, SettingsSharp } from "@mui/icons-material";
-import { Container } from "@mui/material";
+import { Button, Container } from "@mui/material";
 import { Outlet, useNavigate } from "react-router-dom";
 import { TestCaseRoutes } from "../entities/TestCase/routes";
 import { TestRunRoutes } from "../entities/TestRun/routes";
 import { FunctionExecutionRoutes } from "../entities/FunctionExecution/routes";
 import { ConfigRoutes } from "../entities/Config/routes";
+import { FunctionModal } from "../entities/FunctionExecution/components/RunFunctionModal";
 
 const DrawerOptions: any = {
   executed_functions: {
@@ -102,6 +103,8 @@ export default function PersistentDrawerLeft() {
   const theme = useTheme();
   const [open, setOpen] = React.useState(false);
 
+  const [openRunCode, setOpenRunCode] = React.useState(false);
+
   const [state, setState] = React.useReducer(
     (p: any, c: any) => ({ ...p, ...c }),
     {
@@ -122,20 +125,28 @@ export default function PersistentDrawerLeft() {
   return (
     <Box sx={{ display: "flex" }}>
       <CssBaseline />
+      {openRunCode && <FunctionModal onClose={() => setOpenRunCode(false)} />}
       <AppBar position="fixed" open={open}>
         <Toolbar>
-          <IconButton
-            color="inherit"
-            aria-label="open drawer"
-            onClick={handleDrawerOpen}
-            edge="start"
-            sx={{ mr: 2, ...(open && { display: "none" }) }}
-          >
-            <MenuIcon />
-          </IconButton>
-          <Typography variant="h6" noWrap component="div">
-            Code Identity Reporting Tool
-          </Typography>
+          <Box sx={{ display: "flex", alignItems: "center", width: "100%" }}>
+            <Box sx={{ flexGrow: 1, display: "flex", alignItems: "center" }}>
+              <IconButton
+                color="inherit"
+                aria-label="open drawer"
+                onClick={handleDrawerOpen}
+                edge="start"
+                sx={{ mr: 2, ...(open && { display: "none" }) }}
+              >
+                <MenuIcon />
+              </IconButton>
+              <Typography variant="h6" noWrap component="div">
+                Code Identity Reporting Tool
+              </Typography>
+            </Box>
+            <Button onClick={() => setOpenRunCode(true)} color="inherit">
+              Run Function
+            </Button>
+          </Box>
         </Toolbar>
       </AppBar>
       <Drawer

@@ -34,8 +34,8 @@ export const FunctionExecutionList: React.FC<any> = () => {
           ),
         }}
         actions={{
-          view: (o) => `/function-execution/view-function-execution/${o._id}`,
-          delete: (o) => `/delete-function-execution/${o._id}`,
+          view: (o) => `/function-execution/view-function-execution/${o.id}`,
+          delete: (o) => `/delete-function-execution/${o.id}`,
         }}
       />
     </>

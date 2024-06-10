@@ -16,12 +16,10 @@ export const createExecutedFunction = async (executedFunction = {}) => {
 
     initDirectory(EXECUTED_FUNCTION_PATH);
 
-    const { executionID } = executedFunction;
-    executedFunction._id = executionID;
-    await writeFileJSONPromised(`${EXECUTED_FUNCTION_PATH}/${executionID}.json`, executedFunction);
+    const { id } = executedFunction;
+    await writeFileJSONPromised(`${EXECUTED_FUNCTION_PATH}/${id}.json`, executedFunction);
     return executedFunction;
 }
-
 
 export const getExecutedFunctionByID = async (id) => {
 

@@ -11,7 +11,7 @@ def mul(a, b):
 @watch()
 def create_ticket_and_item():
     global count
-    raise Exception("something ")
+    
     # raise Exception("Something went wrong")
     count = count + 1
     ticket = create_ticket()

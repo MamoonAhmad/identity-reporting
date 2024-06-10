@@ -22,7 +22,7 @@ export const createNodesForFunctions = (
     const y = offsetY;
 
     const obj: Node<any, string | undefined> = {
-      id: String(f._id),
+      id: String(f.id),
       type: "functionNode",
       position: {
         x,
@@ -65,9 +65,9 @@ export const createEdgesForFunction = (
   functions.forEach((f) => {
     if (parentFunction) {
       edges.push({
-        id: `${parentFunction._id}->${f._id}`,
-        source: String(parentFunction._id),
-        target: String(f._id),
+        id: `${parentFunction.id}->${f.id}`,
+        source: String(parentFunction.id),
+        target: String(f.id),
         markerEnd: {
           type: MarkerType.ArrowClosed,
           width: 20,

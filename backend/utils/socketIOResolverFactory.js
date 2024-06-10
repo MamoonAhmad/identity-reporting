@@ -3,7 +3,7 @@
 
 
 
-export const socketIOResolverFactory = (endpoint, functionToRun) => {
+export const socketIOResolverFactory = ({endpoint, functionToRun, socketIOInstance, socket}) => {
 
     return [
         endpoint,
@@ -18,7 +18,9 @@ export const socketIOResolverFactory = (endpoint, functionToRun) => {
                 }
                 return res
             } catch (e) {
+                console.error(e, e.stack)
                 console.log(`SocketIO - (${endpoint}) Failed - ${e?.toString()}`)
+                socketIOInstance.emit(`${endpoint}:error`, e?.toString())
             }
         }
     ]

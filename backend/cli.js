@@ -8,7 +8,7 @@ import http from 'http';
 import { Server } from 'socket.io';
 
 import { registerExpressEndpoints as registerTestSuiteEndpoints } from "./entities/TestSuite/endpoints.js"
-import { registerExpressEndpoints as registerExecutedFunctionEndpoints } from './entities/ExecutedFunction/endpoints.js';
+import { registerExpressEndpoints as registerExecutedFunctionEndpoints, registerSocketEndpoints as registerExecutedFunctionSocketEndpoints } from './entities/ExecutedFunction/endpoints.js';
 import { registerSocketEndpoints as registerTestRunSocketEndpoints, registerExpressEndpoints as registerTestRunEndpoints } from './entities/TestRun/endpoints.js';
 import { registerExpressEndpoints as registerUserSettingEndpoints } from './entities/UserSetting/endpoints.js';
 
@@ -30,6 +30,7 @@ const socketIOInstance = new Server(server, {
 socketIOInstance.on('connection', (socket) => {
     console.log('SocketIO: A user connected');
     registerTestRunSocketEndpoints(socketIOInstance, socket);
+    registerExecutedFunctionSocketEndpoints(socketIOInstance, socket);
 
     socket.on('disconnect', () => {
         console.log('SocketIO: User disconnected');
