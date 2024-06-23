@@ -26,7 +26,7 @@ export const runCodeOnClientApplication = async (socketIOInstance, code) => {
     const runFileName = `${IDENTITY_TEMP_DIRECTORY}/${runFileId}.json`
 
     // create a run file with code
-    // client code will consume this file
+    // agent will consume this file
     try {
         await writeFileJSONPromised(runFileName, {
             functions_to_run: [
@@ -76,6 +76,7 @@ export const runCodeOnClientApplication = async (socketIOInstance, code) => {
     await promise
 
 
+    // Read executed function details from run file.
     const codeRun = await readJSONFilePromised(runFileName);
     const executedFunction = codeRun.functions_to_run[0].executed_function
 
@@ -83,10 +84,8 @@ export const runCodeOnClientApplication = async (socketIOInstance, code) => {
         throw new Error("Client application did not set the executed function in the run file.")
     }
 
+    // create new Executed function
     await loader.createExecutedFunction(executedFunction);
-
-    // tracing agent could not set the executed function ID(s) in the run file
-    // probably because of an error
     
 
     // remove the temporary run file
