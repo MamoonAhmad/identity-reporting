@@ -1,5 +1,5 @@
 
-from identity_trace import watch
+from identity_trace.decorator import watch
 count = 0
 
 

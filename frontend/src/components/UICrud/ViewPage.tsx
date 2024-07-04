@@ -6,6 +6,10 @@ export const ViewPage: React.FC<{
   dataLoader: () => Promise<any>;
   title: string;
   Content?: React.FC<{ object: any }>;
+  breadCrumb?: {
+    url: string;
+    label: string;
+  }[];
 }> = ({ title, dataLoader, HeaderActions, Content }) => {
   const [state, setState] = useReducer((p: any, c: any) => ({ ...p, ...c }), {
     loading: false,
@@ -20,7 +24,7 @@ export const ViewPage: React.FC<{
 
   return (
     <Container>
-      <Grid display={"flex"} mb={5}>
+      <Grid display={"flex"} mb={2}>
         <Grid flexGrow={1} display={"flex"} justifyContent={"flex-start"}>
           <Typography variant="h3">{title}</Typography>
         </Grid>

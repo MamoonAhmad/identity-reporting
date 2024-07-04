@@ -54,6 +54,7 @@ import { NestedObjectColumnItem } from "./NestedObjectView";
 export type ExecutedFunction = {
   id: string;
   name: string;
+  description: string;
   parentID: string;
   input: any;
   output: any;

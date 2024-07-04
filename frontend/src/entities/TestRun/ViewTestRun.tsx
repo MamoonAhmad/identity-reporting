@@ -19,9 +19,11 @@ import {
   Box,
   Button,
   Chip,
+  Container,
   Grid,
   IconButton,
   Modal,
+  TextField,
   ToggleButton,
   ToggleButtonGroup,
   Typography,
@@ -118,6 +120,28 @@ export const TestResultView: React.FC<{
         return result.result.filter((r) => !!r.successful) || [];
     }
   }, [result, showTests]);
+
+  if (result.error) {
+    return (
+      <Grid container>
+        <Grid item xs={12}>
+          <Typography variant="caption" fontWeight={"bold"} color={"error"}>
+            Failed to run the test case. Following error occurred while running
+            the test case.
+          </Typography>
+          <Box sx={{ p: 2, m: 2 }}>
+            <TextField
+              fullWidth
+              sx={{}}
+              multiline
+              color="error"
+              value={result.error}
+            />
+          </Box>
+        </Grid>
+      </Grid>
+    );
+  }
 
   return (
     <>

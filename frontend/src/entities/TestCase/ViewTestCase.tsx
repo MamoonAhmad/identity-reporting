@@ -1,20 +1,26 @@
-import { Button } from "@mui/material";
+import { Breadcrumbs, Button, Link, Typography } from "@mui/material";
 import { ViewPage } from "../../components/UICrud/ViewPage";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { TestCaseServices } from "./services";
-import { ConfigureTestCase } from "./components/ConfigureTestCase";
 import axios from "axios";
+import { TestCaseView } from "./components/TestCaseView";
+import { TestCaseRoutes } from "./routes";
+import { NavigateNext } from "@mui/icons-material";
+import { CreateUpdateTestSuite } from "./components/CreateUpdateTestSuite";
 
 export const ViewTestCase = () => {
   const params = useParams();
+  const [searchParams] = useSearchParams();
   const objectID = params?.["*"];
   const navigate = useNavigate();
   if (!objectID) {
-    return <>Test Case ID not present in param.</>;
+    return <>Test Suite ID not present in param.</>;
   }
+  const selectedTestCaseID = searchParams.get("testCaseID");
+
   return (
     <ViewPage
-      title="Function Execution View"
+      title={selectedTestCaseID ? "Test Case" : "Test Suite"}
       HeaderActions={({ object }) => {
         return (
           <>
@@ -41,13 +47,62 @@ export const ViewTestCase = () => {
       dataLoader={async () => {
         return await TestCaseServices.getTestCaseById(objectID);
       }}
-      Content={({ object }) => (
-        <ConfigureTestCase
-          testCase={{
-            ...object,
-          }}
-        />
-      )}
+      Content={({ object }) => {
+        const breadCrumbs = [
+          {
+            url: TestCaseRoutes.TestCaseList,
+            label: "All Test Cases",
+          },
+          {
+            url: TestCaseRoutes.ViewTestCase.replace("*", object.id),
+            label: object.name,
+          },
+        ];
+        if (selectedTestCaseID) {
+          breadCrumbs.push({
+            url: TestCaseRoutes.ViewTestCase.replace(
+              "*",
+              `${object.id}?testCaseID=${selectedTestCaseID}`
+            ),
+            label:
+              object?.tests?.find((t: any) => t.id === selectedTestCaseID)
+                ?.name || selectedTestCaseID,
+          });
+        }
+
+        return (
+          <>
+            <Breadcrumbs
+              separator={<NavigateNext fontSize="small" />}
+              aria-label="breadcrumb"
+              sx={{ my: 2 }}
+            >
+              {breadCrumbs.map((b, i) =>
+                i === breadCrumbs.length - 1 ? (
+                  <Typography color={"text.primary"}>{b.label}</Typography>
+                ) : (
+                  <Link href={b.url} underline="hover" key="1" color="inherit">
+                    {b.label}
+                  </Link>
+                )
+              )}
+            </Breadcrumbs>
+
+            {selectedTestCaseID ? (
+              <TestCaseView
+                selectedTestCaseID={selectedTestCaseID}
+                testSuite={object}
+              />
+            ) : (
+              <CreateUpdateTestSuite
+                testSuite={{
+                  ...object,
+                }}
+              />
+            )}
+          </>
+        );
+      }}
     ></ViewPage>
   );
 };

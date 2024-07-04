@@ -9,7 +9,12 @@ import {
 } from "@mui/material";
 import { useEffect, useMemo, useState } from "react";
 import { TestResult } from "../../components/NestedObjectView/matcher";
-import { BugReport, CheckSharp, PendingSharp } from "@mui/icons-material";
+import {
+  BugReport,
+  CheckSharp,
+  CloseSharp,
+  PendingSharp,
+} from "@mui/icons-material";
 import { TestResultView } from "./ViewTestRun";
 import socketIO from "socket.io-client";
 import { TestCaseServices } from "../TestCase/services";
@@ -67,6 +72,24 @@ export const RunAllTests = () => {
       socket.on("test_run/test_run_result", (testResult: TestResult) => {
         setTests((existingTests) => {
           const existingTestIndex = existingTests.findIndex(
+            (t) => t.testCase.id === testResult?.testSuiteID
+          )!;
+          if (existingTestIndex < 0) {
+            return existingTests;
+          }
+
+          const existingTest = existingTests[existingTestIndex];
+          existingTest.result = testResult;
+          existingTest.inProgress = false;
+          existingTests[existingTestIndex] = { ...existingTest };
+
+          return [...existingTests];
+        });
+        console.log(testResult, "this is result");
+      });
+      socket.on("test_run/test_run_result:error", (testResult: TestResult) => {
+        setTests((existingTests) => {
+          const existingTestIndex = existingTests.findIndex(
             (t) => t.testCase.id === testResult.testSuiteID
           )!;
           const existingTest = existingTests[existingTestIndex];
@@ -76,7 +99,6 @@ export const RunAllTests = () => {
 
           return [...existingTests];
         });
-        console.log(testResult, "this is result");
       });
 
       socket.on("test_run/test_run_init", (testSuiteID) => {
@@ -229,8 +251,11 @@ const TestSuiteAccordion: React.FC<{
             {r.result?.successful && (
               <CheckSharp color="success" fontSize="small" sx={{ mr: 1 }} />
             )}
-            {r.result && !r.result?.successful && (
+            {!r.result?.error && !r.result?.successful && (
               <BugReport color="error" fontSize="small" sx={{ mr: 1 }} />
+            )}
+            {r.result?.error && !r.result?.successful && (
+              <CloseSharp color="error" fontSize="small" sx={{ mr: 1 }} />
             )}
             {r.testCase.name}
           </Typography>
