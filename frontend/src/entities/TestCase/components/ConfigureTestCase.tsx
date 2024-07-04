@@ -6,7 +6,6 @@ import {
   Button,
   Grid,
   IconButton,
-  List,
   Modal,
   TextField,
   ToggleButton,
@@ -24,20 +23,13 @@ import {
   getFunctionTestConfigForExecutedFunction,
   hasChildren,
 } from "../../../components/NestedObjectView/someutil";
-import {
-  AddSharp,
-  CloseSharp,
-  DeleteSharp,
-  KeyboardArrowDownSharp,
-  KeyboardArrowRightSharp,
-} from "@mui/icons-material";
+import { CloseSharp, KeyboardArrowRightSharp } from "@mui/icons-material";
 import {
   MockedFunctionView,
   NestedObjectContextProvider,
   NestedObjectTestConfigView,
 } from "./NestedObjectTestConfigViews";
 import { useEffect, useReducer, useState } from "react";
-import axios from "axios";
 import { TestCaseServices } from "../services";
 import { HorizontalFlowDiagram } from "../../../components/FlowChart/HorizontalFlowDiagram.tsx";
 import { PyramidFlowDiagram } from "../../../components/FlowChart/PyramidFlowDiagram";
@@ -68,118 +60,7 @@ export type FunctionMockConfig = {
   };
 };
 
-export const ConfigureTestCase: React.FC<{
-  testCase: TestSuiteForFunction;
-  onSave?: (testCase: TestSuiteForFunction) => void;
-}> = ({ testCase, onSave }) => {
-  const [state, setState] = useReducer(
-    (p: any, c: any) => ({ ...p, ...c }),
-    {}
-  ) as any as [
-    Partial<TestSuiteForFunction>,
-    (s: Partial<TestSuiteForFunction>) => void
-  ];
-
-  useEffect(() => {
-    setState({ ...testCase });
-  }, [testCase]);
-
-  useEffect(() => {
-    if (state && Object.keys(state).length) {
-      Object.keys(state).forEach((k) => {
-        (testCase as any)[k] = (state as any)[k];
-      });
-    }
-  }, [state]);
-
-  return (
-    <>
-      <Grid
-        container
-        display="flex"
-        flexDirection={"column"}
-        alignItems={"flex-start"}
-      >
-        <TextField
-          value={state.name}
-          fullWidth
-          label="Test Case Name"
-          onChange={(e) => {
-            setState({ name: e.target.value });
-          }}
-          sx={{ my: 3 }}
-        />
-        <TextField
-          value={state.description}
-          fullWidth
-          label="Test Case Description"
-          onChange={(e) => {
-            setState({ description: e.target.value });
-          }}
-          sx={{ my: 3 }}
-        />
-        <Typography variant="h5" textAlign={"left"} sx={{ my: 3 }}>
-          Test Case Configurations
-        </Typography>
-        <List></List>
-        {state.tests?.map((t, i) => (
-          <TestConfigColumns
-            object={t}
-            key={t.id}
-            onDelete={() => {
-              state.tests?.splice(i, 1);
-              setState({
-                tests: [...state.tests!],
-              });
-            }}
-          />
-        ))}
-
-        <Button
-          onClick={() => {
-            setState({
-              tests: [
-                ...(state?.tests || []),
-                {
-                  config: getFunctionTestConfigForExecutedFunction(
-                    testCase.functionMeta,
-                    true
-                  ),
-                  mocks: {},
-                  inputToPass: testCase.functionMeta.input,
-                  name: testCase.functionMeta.name,
-                  id: new Date().getTime().toString(),
-                },
-              ],
-            });
-          }}
-        >
-          <AddSharp /> Add Test Case
-        </Button>
-
-        <Button
-          fullWidth
-          sx={{ p: 2, my: 3 }}
-          color="primary"
-          variant="contained"
-          onClick={() => {
-            axios
-              .post("http://localhost:8002/test_case/save-test-case", {
-                ...state,
-              })
-              .then((res) => {
-                onSave?.(res.data);
-              });
-          }}
-        >
-          Save
-        </Button>
-      </Grid>
-    </>
-  );
-};
-
-const TestConfigColumns: React.FC<{
+export const TestConfigColumns: React.FC<{
   object: TestCaseForFunction;
   onDelete: () => void;
 }> = ({ object: functionTestConfig, onDelete }) => {
@@ -272,135 +153,113 @@ const TestConfigColumns: React.FC<{
     //   getColumns(state.config!, getObjectPathFromCurrentColumns(columns))
     // );
   };
-
-  const [expanded, setExpanded] = useState(false);
   if (!functionTestConfig.config) {
     return null;
   }
 
   return (
     <>
-      <Accordion expanded={expanded} onChange={() => setExpanded(!expanded)}>
-        <AccordionSummary color="primary">
-          <Box sx={{ display: "flex", alignItems: "center", width: "100%" }}>
-            <KeyboardArrowDownSharp />
-            <Typography sx={{ flexGrow: 1, textAlign: "left" }}>
-              {state.name}
-            </Typography>
-            <IconButton
-              onClick={(e) => {
-                e.stopPropagation();
-                onDelete();
-              }}
-            >
-              <DeleteSharp color="error" />
-            </IconButton>
-          </Box>
-        </AccordionSummary>
-        <AccordionDetails>
-          <TextField
-            value={state.name}
-            fullWidth
-            label="Test Case Name"
-            onChange={(e) => {
-              setState({ name: e.target.value });
-            }}
-            sx={{ my: 3 }}
-          />
+      <TextField
+        value={state.name}
+        fullWidth
+        label="Test Case Name"
+        onChange={(e) => {
+          setState({ name: e.target.value });
+        }}
+        sx={{ my: 3 }}
+      />
+      <Grid
+        width={"100%"}
+        display={"flex"}
+        alignItems={"center"}
+        sx={{ my: 1 }}
+      >
+        <TextField
+          value={JSON.stringify(state.inputToPass)}
+          sx={{ flexGrow: 1 }}
+          onChange={(e) => {
+            try {
+              const object = JSON.parse(e.target.value);
+              setState({ inputToPass: object });
+              setInternalState({ inputToPassError: false });
+            } catch (e) {
+              setInternalState({ inputToPassError: true });
+            }
+          }}
+          multiline
+          error={internalState?.inputToPassError}
+          label="Input to pass to the function for this test"
+        />
+        <Button
+          onClick={() => {
+            TestCaseServices.runFunctionWithInput(
+              functionTestConfig.config.functionMeta,
+              state.inputToPass
+            ).then((res) => {
+              setState({
+                config: getFunctionTestConfigForExecutedFunction(
+                  res.executedFunction,
+                  true
+                ),
+              });
+              console.log(res);
+            });
+          }}
+        >
+          Run Function with This Input
+        </Button>
+      </Grid>
+      <NestedObjectContextProvider
+        {...{
+          mockFunction,
+          unMockFunction,
+          refreshColumns: () =>
+            setColumns(
+              getColumns(
+                state.config!,
+                getObjectPathFromCurrentColumns(columns)
+              )
+            ),
+        }}
+      >
+        {(Object.keys(state.mocks || {}).length && (
           <Grid
             width={"100%"}
             display={"flex"}
-            alignItems={"center"}
-            sx={{ my: 1 }}
+            flexDirection={"column"}
+            bgcolor={"lightblue"}
+            sx={{ my: 1, p: 1 }}
           >
-            <TextField
-              value={JSON.stringify(state.inputToPass)}
-              sx={{ flexGrow: 1 }}
-              onChange={(e) => {
-                try {
-                  const object = JSON.parse(e.target.value);
-                  setState({ inputToPass: object });
-                  setInternalState({ inputToPassError: false });
-                } catch (e) {
-                  setInternalState({ inputToPassError: true });
-                }
-              }}
-              multiline
-              error={internalState?.inputToPassError}
-              label="Input to pass to the function for this test"
-            />
-            <Button
-              onClick={() => {
-                TestCaseServices.runFunctionWithInput(
-                  functionTestConfig.config.functionMeta,
-                  state.inputToPass
-                ).then((res) => {
-                  setState({
-                    config: getFunctionTestConfigForExecutedFunction(
-                      res.executedFunction,
-                      true
-                    ),
-                  });
-                  console.log(res);
-                });
-              }}
-            >
-              Run Function with This Input
-            </Button>
+            <Typography variant="h6" sx={{ textAlign: "left", mb: 2 }}>
+              Mocks
+            </Typography>
+            {!state.mocks && "No mocks configured for this test case."}
+            {mockedFunctions.map((f) => {
+              return (
+                <>
+                  <Accordion key={f.functionMeta.id}>
+                    <AccordionSummary>
+                      ({f.functionCallCount}) {f.functionMeta.name}
+                    </AccordionSummary>
+                    <AccordionDetails>
+                      <MockedFunctionView
+                        config={f}
+                        onChange={() => undefined}
+                      />
+                    </AccordionDetails>
+                  </Accordion>
+                </>
+              );
+            })}
           </Grid>
-          <NestedObjectContextProvider
-            {...{
-              mockFunction,
-              unMockFunction,
-              refreshColumns: () =>
-                setColumns(
-                  getColumns(
-                    state.config!,
-                    getObjectPathFromCurrentColumns(columns)
-                  )
-                ),
-            }}
-          >
-            {(Object.keys(state.mocks || {}).length && (
-              <Grid
-                width={"100%"}
-                display={"flex"}
-                flexDirection={"column"}
-                bgcolor={"lightblue"}
-                sx={{ my: 1, p: 1 }}
-              >
-                <Typography variant="h6" sx={{ textAlign: "left", mb: 2 }}>
-                  Mocks
-                </Typography>
-                {!state.mocks && "No mocks configured for this test case."}
-                {mockedFunctions.map((f) => {
-                  return (
-                    <>
-                      <Accordion key={f.functionMeta.id}>
-                        <AccordionSummary>
-                          ({f.functionCallCount}) {f.functionMeta.name}
-                        </AccordionSummary>
-                        <AccordionDetails>
-                          <MockedFunctionView
-                            config={f}
-                            onChange={() => undefined}
-                          />
-                        </AccordionDetails>
-                      </Accordion>
-                    </>
-                  );
-                })}
-              </Grid>
-            )) ||
-              null}
-            <Grid container>
-              <Grid item xs={12}>
-                <TestConfigViews config={functionTestConfig.config} />
-              </Grid>
-            </Grid>
-          </NestedObjectContextProvider>
-        </AccordionDetails>
-      </Accordion>
+        )) ||
+          null}
+        <Grid container>
+          <Grid item xs={12}>
+            <TestConfigViews config={functionTestConfig.config} />
+          </Grid>
+        </Grid>
+      </NestedObjectContextProvider>
     </>
   );
 };
@@ -598,3 +457,64 @@ function visit<T>(
   const children = getChildren(entity);
   children.map((c) => visit(c, process, getChildren));
 }
+
+
+export const TestSuiteMetaData: React.FC<{ testSuite: TestSuiteForFunction }> = ({
+  testSuite,
+}) => {
+  return (
+    <>
+      <Box
+        sx={{
+          p: 1,
+          border: 1,
+          borderColor: "ActiveBorder",
+          borderRadius: 3,
+          my: 2,
+        }}
+      >
+        <Typography
+          variant="body2"
+          sx={{ display: "flex", alignItems: "center" }}
+        >
+          Function:
+          <Typography
+            variant="subtitle1"
+            color={"info"}
+            sx={{ ml: 2 }}
+            fontWeight={"bold"}
+          >
+            {testSuite.functionMeta.name}
+          </Typography>
+        </Typography>
+        <Typography
+          variant="body2"
+          sx={{ display: "flex", alignItems: "center" }}
+        >
+          Description:
+          <Typography variant="subtitle1" color={"info"} sx={{ ml: 2 }}>
+            {testSuite.functionMeta.description || "---"}
+          </Typography>
+        </Typography>
+        <Typography
+          variant="body2"
+          sx={{ display: "flex", alignItems: "center" }}
+        >
+          File Name:{" "}
+          <Typography variant="subtitle1" color={"info"} sx={{ ml: 2 }}>
+            {testSuite.functionMeta.fileName}
+          </Typography>
+        </Typography>
+        <Typography
+          variant="body2"
+          sx={{ display: "flex", alignItems: "center" }}
+        >
+          Module Name:
+          <Typography variant="subtitle1" color={"info"} sx={{ ml: 2 }}>
+            {testSuite.functionMeta.moduleName}
+          </Typography>
+        </Typography>
+      </Box>
+    </>
+  );
+};

@@ -55,11 +55,11 @@ export const saveTestRun = async (body) => {
 
 
 
-export const runTestSuits = (socketIOInstance, testSuiteIds = []) => {
+export const runTestSuits = async (socketIOInstance, testSuiteIds = []) => {
 
     if (!testSuiteIds.length) {
-        runAllTests(testResult => {
-            console.log(testResult);
+        await runAllTests(testResult => {
+            socketIOInstance.emit("test_run/test_run_result", testResult)
         }, (id) => socketIOInstance.emit(url("test_run_init"), id)).then(res => console.log(res))
     }
 }
@@ -120,7 +120,7 @@ const runTestSuite = async (testCaseId, signalEndpoint) => {
         functions_to_run: functionsToRun
     }
 
-    if(signalEndpoint) {
+    if (signalEndpoint) {
         runFileConfig.signal_endpoint = signalEndpoint
     }
 
@@ -137,12 +137,24 @@ const runTestSuite = async (testCaseId, signalEndpoint) => {
                 console.error(err)
                 reject(err)
             }
-            
+
             resolve()
         })
     })
 
-    return await promise
+    try {
+        return await promise
+    } catch (e) {
+        return {
+            testCaseName: testSuite.name,
+            testCaseDescription: testSuite.description,
+            functionMeta: testSuite.functionMeta,
+            testSuiteID: testCaseId,
+            successful: false,
+            error: e?.toString()
+        };
+    }
+
 
 }
 
@@ -179,15 +191,15 @@ export const processFunctionConfigForRunFileSignal = async (socketIOInstance, ru
         fc => fc.context.test_run.testSuiteID === testSuiteID
     )
 
-    
-    if(testSuite.tests.length !== functionRuns.length) {
+
+    if (testSuite.tests.length !== functionRuns.length) {
         return
     }
 
     // If all the test cases have been executed for the test suite
     // create a result file
 
-    const testResult = {...testSuite}
+    const testResult = { ...testSuite }
     functionRuns.forEach(fc => {
         const testCase = testResult.tests.find(tc => tc.id === fc.context.test_run.testCaseID)
         testCase.executedFunction = fc.executed_function

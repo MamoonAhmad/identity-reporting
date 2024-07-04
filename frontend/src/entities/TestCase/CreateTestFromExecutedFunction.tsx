@@ -3,10 +3,10 @@ import {
   ExecutedFunction,
   getFunctionTestConfigForExecutedFunction,
 } from "../../components/NestedObjectView/someutil";
-import { ConfigureTestCase } from "./components/ConfigureTestCase";
 import { useMemo } from "react";
 import { ViewPage } from "../../components/UICrud/ViewPage";
 import { FunctionExecutionServices } from "../FunctionExecution/services";
+import { CreateUpdateTestSuite } from "./components/CreateUpdateTestSuite";
 
 export const CreateTestFromExecutedFunction = () => {
   const params = useParams();
@@ -16,7 +16,7 @@ export const CreateTestFromExecutedFunction = () => {
   }
   return (
     <ViewPage
-      title="Function Execution View"
+      title="New Test Suite"
       dataLoader={async () =>
         await FunctionExecutionServices.getFunctionExecutionById(objectID)
       }
@@ -36,9 +36,9 @@ const ExecutedFunctionToTestConfigConverter: React.FC<{
   return (
     <>
       {converted && (
-        <ConfigureTestCase
+        <CreateUpdateTestSuite
           onSave={(t) => navigate(`/test-case/view-test-case/${t.id}`)}
-          testCase={{
+          testSuite={{
             name: "",
             description: "",
             functionMeta: object,

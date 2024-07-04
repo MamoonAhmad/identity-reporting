@@ -1,4 +1,4 @@
-from identity_trace import run_test
+from identity_trace.runner import run_test
 import sys
 
 

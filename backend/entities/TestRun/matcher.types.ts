@@ -91,6 +91,7 @@ export type TestResultForCase = {
 export type TestResult = {
   testCaseName: string;
   testCaseDescription: string;
+  error: string;
   functionMeta: ExecutedFunction;
   successful: boolean;
   result: TestResultForCase[];

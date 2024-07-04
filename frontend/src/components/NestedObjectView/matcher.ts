@@ -27,6 +27,7 @@ export type TestResult = {
   functionMeta: ExecutedFunction;
   successful: boolean;
   result: TestResultForCase[];
+  error?: string;
 };
 
 export type FunctionTestResult = BaseTestResult & {
