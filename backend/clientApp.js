@@ -11,38 +11,6 @@ import { exec } from "child_process";
 let clientApp = {};
 
 const clientReportMap = {};
-const functionExecutionPromiseMap = {}
-
-export const getSocketListeners = () => {
-    return {
-        "client_app_connect": async (server, socket) => {
-            clientApp.socket = socket
-            socket.on("disconnect", () => {
-                clientApp.socket = null
-            })
-        },
-        "run_function_result_trace": async (server, socket, data) => {
-            const { requestID, trace, error } = data.payload || {}
-            if (!functionExecutionPromiseMap[requestID]) {
-                console.error(`Received client function trace for unregistered request ID ${requestID}.`)
-            }
-
-
-            const [resolve, reject] = functionExecutionPromiseMap[requestID]
-
-            if (trace) {
-                resolve(trace)
-            } else {
-                let errorToThrow = error
-                if (!errorToThrow) {
-                    errorToThrow = "Received invalid trace from the client app. Client does not have any error specified either. This could mean that client app closed unexpectedly."
-                }
-                reject(new Error(errorToThrow))
-            }
-
-        }
-    }
-}
 
 export const registerEndpoints = (app) => {
 

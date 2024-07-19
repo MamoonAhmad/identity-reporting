@@ -11,7 +11,7 @@ import { registerExpressEndpoints as registerTestSuiteEndpoints } from "./entiti
 import { registerExpressEndpoints as registerExecutedFunctionEndpoints, registerSocketEndpoints as registerExecutedFunctionSocketEndpoints } from './entities/ExecutedFunction/endpoints.js';
 import { registerSocketEndpoints as registerTestRunSocketEndpoints, registerExpressEndpoints as registerTestRunEndpoints } from './entities/TestRun/endpoints.js';
 import { registerExpressEndpoints as registerUserSettingEndpoints } from './entities/UserSetting/endpoints.js';
-import { getSocketListeners, registerEndpoints as registerClientAppEndpoints } from './clientApp.js';
+import { registerEndpoints as registerClientAppEndpoints } from './clientApp.js';
 
 
 
@@ -35,8 +35,6 @@ socketIOInstance.on('connection', (socket) => {
     if (!socketActionCallbacksMap) {
         socketActionCallbacksMap = prepareSocketListeners()
     }
-    // registerTestRunSocketEndpoints(socketIOInstance, socket);
-    // registerExecutedFunctionSocketEndpoints(socketIOInstance, socket);
     
     socket.on("message", async (data) => {
         if (!data.action) {
@@ -92,6 +90,5 @@ const prepareSocketListeners = () => {
     return {
         ...testRunCallbacks,
         ...executedFunctionCallbacks,
-        ...getSocketListeners()
     }
 }

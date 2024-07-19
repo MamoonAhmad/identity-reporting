@@ -48,69 +48,6 @@ export const runCodeOnClientApplication = async (socketIOInstance, code) => {
     } catch (e) {
         throw e
     }
-
-    // create a run file with code
-    // agent will consume this file
-    try {
-        await writeFileJSONPromised(runFileName, {
-            functions_to_run: [
-
-            ]
-        });
-    } catch (e) {
-        const errorMessage = `Could not create run file. ${e.toString()}`;
-        console.error(errorMessage);
-        throw new Error(errorMessage);
-    }
-
-
-
-
-
-    let settings = await userSettingLoader.getSettings()
-
-    const cwd = process.cwd();
-
-
-
-    // Run tracing agent with run file
-    const promise = new Promise((resolve, reject) => {
-        console.info(`Executing command: cd "${cwd}"; ${settings.command} --runFile="${runFileId}"`)
-        exec(`cd "${cwd}"; ${settings.command} --runFile="${runFileId}"`, (err, stdout, stderr) => {
-            console.log(stdout.toString())
-            if (err) {
-                console.error(err)
-                reject(err)
-            }
-            resolve()
-        })
-    })
-
-
-
-    await promise
-
-
-    // Read executed function details from run file.
-    const codeRun = await readJSONFilePromised(runFileName);
-    const executedFunction = codeRun.functions_to_run[0].executed_function
-
-    if (!executedFunction) {
-        throw new Error("Client application did not set the executed function in the run file.")
-    }
-
-    // create new Executed function
-    await loader.createExecutedFunction(executedFunction);
-
-
-    // remove the temporary run file
-    await fs.unlink(runFileName, (err) => {
-        console.error(err)
-    });
-
-    // emit executed function ID
-    socketIOInstance.emit(url("run_function_with_code:result"), executedFunction.id);
-
 }
 
 export const runFunctionWithInput = async (args = {}) => {
