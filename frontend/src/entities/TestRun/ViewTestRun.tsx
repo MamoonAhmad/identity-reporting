@@ -1,9 +1,10 @@
 import { ViewPage } from "../../components/UICrud/ViewPage";
 import { useParams } from "react-router-dom";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   FunctionTestResult,
   TestResult,
+  TestResultForCase,
   TestRunForTestSuite,
   matchExecutionWithTestConfig,
 } from "../../components/NestedObjectView/matcher";
@@ -13,12 +14,13 @@ import {
 } from "./components/NestedObjectTestResultView";
 import { TestRunServices } from "./services";
 import {
-  Accordion,
-  AccordionDetails,
-  AccordionSummary,
+  Accordion as MuiAccordion,
+  AccordionDetails as MuiAccordionDetails,
+  AccordionSummary as MuiAccordionSummary,
   Box,
   Button,
   Chip,
+  Collapse,
   Container,
   Grid,
   IconButton,
@@ -28,16 +30,106 @@ import {
   ToggleButtonGroup,
   Typography,
   useTheme,
+  styled,
+  AccordionSummaryProps,
+  AccordionProps,
 } from "@mui/material";
 import {
+  ArrowForwardIosSharp,
   BugReportSharp,
+  CheckCircle,
+  CheckCircleSharp,
   CheckSharp,
   CloseSharp,
   DoneSharp,
+  ErrorSharp,
 } from "@mui/icons-material";
 import { HorizontalFlowDiagram } from "../../components/FlowChart/HorizontalFlowDiagram";
 import { PyramidFlowDiagram } from "../../components/FlowChart/PyramidFlowDiagram";
 import { DiagramEntity } from "../../components/FlowChart/types";
+
+const Accordion = styled(
+  (
+    props: AccordionProps & {
+      colorVariant?: "success" | "error";
+    }
+  ) => {
+    const theme = useTheme();
+    return (
+      <MuiAccordion
+        disableGutters
+        elevation={0}
+        square
+        {...props}
+        sx={{
+          borderColor:
+            props.colorVariant === "success"
+              ? theme.palette.success.main
+              : props.colorVariant === "error"
+              ? theme.palette.error.main
+              : "",
+        }}
+      />
+    );
+  }
+)(({ theme }) => ({
+  borderWidth: "2px",
+  borderStyle: "solid",
+  "&:not(:last-child)": {
+    borderBottom: 0,
+  },
+  "&::before": {
+    display: "none",
+  },
+}));
+
+const AccordionSummary = styled(
+  (
+    props: AccordionSummaryProps & {
+      colorVariant?: "success" | "error";
+    }
+  ) => {
+    const theme = useTheme();
+    return (
+      <MuiAccordionSummary
+        expandIcon={<ArrowForwardIosSharp sx={{ fontSize: "0.9rem" }} />}
+        {...props}
+        sx={{
+          borderColor:
+            props.colorVariant === "success"
+              ? theme.palette.success.main
+              : props.colorVariant === "error"
+              ? theme.palette.error.main
+              : "",
+        }}
+      />
+    );
+  }
+)(({ theme }) => ({
+  backgroundColor: theme.palette.background.paper,
+
+  minHeight: "auto",
+  height: "auto",
+  padding: theme.spacing(0.5),
+  "&.Mui-expanded": {
+    borderBottomWidth: "2px",
+    borderBottomStyle: "solid",
+  },
+
+  "& .MuiAccordionSummary-expandIconWrapper.Mui-expanded": {
+    transform: "rotate(90deg)",
+  },
+  "& .MuiAccordionSummary-content": {
+    marginLeft: theme.spacing(1),
+    marginTop: 0,
+    marginBottom: 0,
+  },
+}));
+
+const AccordionDetails = styled(MuiAccordionDetails)(({ theme }) => ({
+  padding: theme.spacing(2),
+  borderTop: "1px solid rgba(0, 0, 0, .125)",
+}));
 
 export const ViewTestRun = () => {
   const params = useParams();
@@ -73,54 +165,6 @@ const ExecutedFunctionToTestConfigConverter: React.FC<{
 export const TestResultView: React.FC<{
   result: TestResult;
 }> = ({ result }) => {
-  const theme = useTheme();
-
-  const [diagramType, setDiagramType] = useState("vertical");
-
-  const [showTests, setShowTests] = useState<"all" | "passed" | "failed">(
-    "all"
-  );
-
-  const [selectedFunctionEntity, setSelectedFunctionEntity] = useState<
-    FunctionTestResult | undefined
-  >(undefined);
-  const onModalClose = () => setSelectedFunctionEntity(undefined);
-
-  const { total, passed, failed } = useMemo(() => {
-    if (!result?.result?.length) {
-      return { total: 0, passed: 0, failed: 0 };
-    }
-    return result?.result?.reduce(
-      (acc, r) => {
-        acc.total += 1;
-        acc.passed += r.successful ? 1 : 0;
-        acc.failed += !r.successful ? 1 : 0;
-        return acc;
-      },
-      { total: 0, passed: 0, failed: 0 }
-    );
-  }, [result]);
-
-  useEffect(() => {
-    if (failed) {
-      setShowTests("failed");
-    }
-  }, [failed]);
-
-  const resultsToShow = useMemo(() => {
-    if (!result || !result.result?.length) {
-      return [];
-    }
-    switch (showTests) {
-      case "all":
-        return result.result;
-      case "failed":
-        return result.result.filter((r) => !r.successful) || [];
-      case "passed":
-        return result.result.filter((r) => !!r.successful) || [];
-    }
-  }, [result, showTests]);
-
   if (result.error) {
     return (
       <Grid container>
@@ -147,204 +191,180 @@ export const TestResultView: React.FC<{
     <>
       <Grid container>
         <Grid item xs={12}>
-          <ToggleButtonGroup
-            size="small"
-            color="primary"
-            value={showTests}
-            onChange={(_, v) => {
-              if (!v) {
-                return;
-              }
-              setShowTests(v);
-            }}
-            sx={{ display: "flex", my: 2 }}
-            exclusive
-          >
-            <ToggleButton value={"all"} color="info" disabled={total < 1}>
-              All{" "}
-              <Chip
-                label={total}
-                size="small"
-                variant="filled"
-                color="info"
-                sx={{ ml: 1 }}
-              />
-            </ToggleButton>
-            <ToggleButton value={"failed"} color="error" disabled={failed < 1}>
-              Failed{" "}
-              <Chip
-                label={failed}
-                size="small"
-                variant="filled"
-                color="error"
-                sx={{ ml: 1 }}
-              />
-            </ToggleButton>
-            <ToggleButton
-              value={"passed"}
-              color="success"
-              disabled={passed < 1}
-            >
-              Passed{" "}
-              <Chip
-                label={passed}
-                size="small"
-                variant="filled"
-                color="success"
-                sx={{ ml: 1 }}
-              />
-            </ToggleButton>
-          </ToggleButtonGroup>
+          {result.result?.map((r) => {
+            return <TestCaseResult testCaseResult={r} />;
+          })}
         </Grid>
       </Grid>
-      {resultsToShow?.map((r) => {
-        return (
-          <Accordion key={r.result.id}>
-            <AccordionSummary>
-              <Typography>
-                {r.successful && (
-                  <DoneSharp color="success" fontSize="small" sx={{ mr: 1 }} />
-                )}
-                {!r.successful && (
-                  <BugReportSharp
-                    color="error"
-                    fontSize="small"
-                    sx={{ mr: 1 }}
-                  />
-                )}
-                {r.expectation}
-              </Typography>
-            </AccordionSummary>
-            <AccordionDetails>
-              <Grid
-                display={"flex"}
-                flexDirection={"column"}
-                alignItems={"flex-start"}
-              >
-                <Grid item xs={12}>
-                  <Grid display={"flex"}>
-                    <ToggleButtonGroup
-                      size="small"
-                      color="primary"
-                      value={diagramType}
-                      onChange={(_, v) => {
-                        setDiagramType(v);
-                      }}
-                      exclusive
-                    >
-                      <ToggleButton value={"horizontal"}>
-                        Horizontal
-                      </ToggleButton>
-                      <ToggleButton value={"vertical"}>Vertical</ToggleButton>
-                      <ToggleButton value={"columns"}>Columns</ToggleButton>
-                    </ToggleButtonGroup>
-                  </Grid>
-                </Grid>
+    </>
+  );
+};
 
-                {diagramType === "horizontal" && (
-                  <HorizontalFlowDiagram
-                    DiagramNodeComponent={({ entity }) => {
-                      return (
-                        <Button
-                          sx={{
-                            p: 1,
-                            borderRadius: 4,
-                            border: "1px solid black",
-                            display: "flex",
-                            alignItems: "center",
-                            textTransform: "none",
-                            color: "black",
-                            background: entity.metaData?.successful
-                              ? "transparent"
-                              : theme.palette.error.light,
-                          }}
-                          onClick={() =>
-                            setSelectedFunctionEntity(entity.metaData?.result)
-                          }
-                        >
-                          {entity.metaData?.successful ? (
-                            <CheckSharp color="success" />
-                          ) : (
-                            <CloseSharp
-                              sx={{ color: theme.palette.error.contrastText }}
-                            />
-                          )}
-                          <Typography
-                            sx={{
-                              color: !entity.metaData?.successful
-                                ? theme.palette.error.contrastText
-                                : undefined,
-                            }}
-                          >
-                            {entity.label}
-                          </Typography>
-                        </Button>
-                      );
-                    }}
-                    entities={[
-                      getDiagramEntityFromExecutedFunction(
-                        r.result,
-                        () => undefined
-                      ),
-                    ]}
-                  />
-                )}
-                {diagramType === "vertical" && (
-                  <PyramidFlowDiagram
-                    DiagramNodeComponent={({ entity }) => {
-                      return (
-                        <Button
-                          sx={{
-                            p: 1,
-                            borderRadius: 4,
-                            border: "1px solid black",
-                            display: "flex",
-                            alignItems: "center",
-                            textTransform: "none",
-                            color: "black",
-                            background: entity.metaData?.successful
-                              ? "transparent"
-                              : theme.palette.error.light,
-                          }}
-                          onClick={() =>
-                            setSelectedFunctionEntity(entity.metaData?.result)
-                          }
-                        >
-                          {entity.metaData?.successful ? (
-                            <CheckSharp color="success" />
-                          ) : (
-                            <CloseSharp
-                              sx={{ color: theme.palette.error.contrastText }}
-                            />
-                          )}
-                          <Typography
-                            sx={{
-                              color: !entity.metaData?.successful
-                                ? theme.palette.error.contrastText
-                                : undefined,
-                            }}
-                          >
-                            {entity.label}
-                          </Typography>
-                        </Button>
-                      );
-                    }}
-                    entities={[
-                      getDiagramEntityFromExecutedFunction(
-                        r.result,
-                        () => undefined
-                      ),
-                    ]}
-                  />
-                )}
-                {diagramType === "columns" && (
-                  <TestResultColumns object={r.result} />
-                )}
+export const TestCaseResult: React.FC<{
+  testCaseResult: TestResultForCase;
+  expanded?: boolean;
+}> = ({ testCaseResult, expanded }) => {
+  const [diagramType, setDiagramType] = useState("vertical");
+  const [selectedFunctionEntity, setSelectedFunctionEntity] = useState<
+    FunctionTestResult | undefined
+  >(undefined);
+
+  const theme = useTheme();
+
+  const onModalClose = useCallback(() => {
+    setSelectedFunctionEntity(undefined);
+  }, []);
+
+  return (
+    <>
+      <Accordion
+        defaultExpanded={expanded}
+        colorVariant={testCaseResult.successful ? "success" : "error"}
+      >
+        <AccordionSummary
+          colorVariant={testCaseResult.successful ? "success" : "error"}
+        >
+          <Typography>
+            {testCaseResult.successful && (
+              <CheckCircle color="success" fontSize="small" sx={{ mr: 1 }} />
+            )}
+            {!testCaseResult.successful && (
+              <ErrorSharp color="error" fontSize="small" sx={{ mr: 1 }} />
+            )}
+            {testCaseResult.expectation}
+          </Typography>
+        </AccordionSummary>
+        <AccordionDetails>
+          <Grid
+            display={"flex"}
+            flexDirection={"column"}
+            alignItems={"flex-start"}
+          >
+            <Grid item xs={12}>
+              <Grid display={"flex"}>
+                <ToggleButtonGroup
+                  size="small"
+                  color="primary"
+                  value={diagramType}
+                  onChange={(_, v) => {
+                    setDiagramType(v);
+                  }}
+                  exclusive
+                >
+                  <ToggleButton value={"horizontal"}>Horizontal</ToggleButton>
+                  <ToggleButton value={"vertical"}>Vertical</ToggleButton>
+                  <ToggleButton value={"columns"}>Columns</ToggleButton>
+                </ToggleButtonGroup>
               </Grid>
-            </AccordionDetails>
-          </Accordion>
-        );
-      })}
+            </Grid>
+
+            <Grid sx={{ overflow: "scroll" }} item xs={12}>
+              {diagramType === "horizontal" && (
+                <HorizontalFlowDiagram
+                  DiagramNodeComponent={({ entity }) => {
+                    return (
+                      <Button
+                        sx={{
+                          p: 1,
+                          borderRadius: 4,
+                          border: "1px solid black",
+                          display: "flex",
+                          alignItems: "center",
+                          textTransform: "none",
+                          color: "black",
+                          background: entity.metaData?.successful
+                            ? "transparent"
+                            : theme.palette.error.light,
+                        }}
+                        onClick={() =>
+                          setSelectedFunctionEntity(entity.metaData?.result)
+                        }
+                      >
+                        {entity.metaData?.successful ? (
+                          <CheckCircle color="success" />
+                        ) : (
+                          <ErrorSharp
+                            sx={{ color: theme.palette.error.contrastText }}
+                          />
+                        )}
+                        <Typography
+                          sx={{
+                            color: !entity.metaData?.successful
+                              ? theme.palette.error.contrastText
+                              : undefined,
+                            ml: 1,
+                          }}
+                        >
+                          {entity.label}
+                        </Typography>
+                      </Button>
+                    );
+                  }}
+                  entities={[
+                    getDiagramEntityFromExecutedFunction(
+                      testCaseResult.result,
+                      () => undefined
+                    ),
+                  ]}
+                />
+              )}
+              {diagramType === "vertical" && (
+                <PyramidFlowDiagram
+                  DiagramNodeComponent={({ entity }) => {
+                    return (
+                      <Button
+                        sx={{
+                          p: 1,
+                          borderRadius: 4,
+                          border: "1px solid black",
+                          display: "flex",
+                          alignItems: "center",
+                          textTransform: "none",
+                          color: "black",
+                          background: entity.metaData?.successful
+                            ? "transparent"
+                            : theme.palette.error.light,
+                        }}
+                        onClick={() =>
+                          setSelectedFunctionEntity(entity.metaData?.result)
+                        }
+                      >
+                        {entity.metaData?.successful ? (
+                          <CheckCircleSharp color="success" />
+                        ) : (
+                          <ErrorSharp
+                            sx={{ color: theme.palette.error.contrastText }}
+                          />
+                        )}
+                        <Typography
+                          sx={{
+                            color: !entity.metaData?.successful
+                              ? theme.palette.error.contrastText
+                              : undefined,
+                            ml: 1,
+                          }}
+                        >
+                          {entity.label}
+                        </Typography>
+                      </Button>
+                    );
+                  }}
+                  entities={[
+                    getDiagramEntityFromExecutedFunction(
+                      testCaseResult.result,
+                      () => undefined
+                    ),
+                  ]}
+                />
+              )}
+              {diagramType === "columns" && (
+                <TestResultColumns object={testCaseResult.result} />
+              )}
+            </Grid>
+          </Grid>
+        </AccordionDetails>
+      </Accordion>
+
       {selectedFunctionEntity && (
         <Modal open onClose={onModalClose}>
           <Box
@@ -387,7 +407,8 @@ const getDiagramEntityFromExecutedFunction = (
 ): DiagramEntity => {
   const entity: DiagramEntity = {
     id: func.id,
-    label: func.name,
+    label:
+      func.name + (func.executionContext.test_run?.is_mocked ? " (Mocked)" : ""),
     type: "node",
     metaData: {
       result: func,
@@ -398,10 +419,12 @@ const getDiagramEntityFromExecutedFunction = (
     children: [],
   };
 
-  entity.children =
-    func.children?.map((f) =>
-      getDiagramEntityFromExecutedFunction(f, onClick)
-    ) || [];
+  if (!func.executionContext.test_run?.is_mocked) {
+    entity.children =
+      func.children?.map((f) =>
+        getDiagramEntityFromExecutedFunction(f, onClick)
+      ) || [];
+  }
 
   return entity;
 };

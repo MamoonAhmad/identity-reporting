@@ -7,15 +7,29 @@ import { initDirectory } from "../../utils/initDirectory.js"
 import { readJSONFilePromised } from "../../utils/readJSONFilePromised.js"
 import { ENTITY_NAME } from "./constants.js"
 import { writeFileJSONPromised } from "../../utils/writeFileJSONPromised.js";
+import { matchWithOperator } from "../../utils/loaderUtils.js";
 
 
 
 
 const testCasePath = `${IDENTITY_DIRECTORY}/${ENTITY_NAME}`
 
-export const getAllTestSuits = async () => {
+export const getAllTestSuits = async (filters = {}) => {
 
     initDirectory(testCasePath);
+
+    const filterOverrides = {};
+
+    if (filters.fileName) {
+        filterOverrides.fileName = (object) => {
+            return object?.functionMeta?.fileName?.includes(filters.fileName.contains)
+        }
+    }
+    if (filters.moduleName) {
+        filterOverrides.moduleName = (object) => {
+            return object?.functionMeta?.moduleName?.includes(filters.moduleName.contains)
+        }
+    }
 
     const files = fs.readdirSync(testCasePath)
     const fileNames = files.map(f => path.join(testCasePath, f))
@@ -23,7 +37,7 @@ export const getAllTestSuits = async () => {
         return readJSONFilePromised(fname)
     })
     const result = await Promise.all(promises)
-    return result
+    return result.filter(r => Object.keys(filters).every(key => matchWithOperator(r, key, filters[key], filterOverrides)))
 }
 
 export const getTestSuiteByID = async (testSuiteID) => {

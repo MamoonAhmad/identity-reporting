@@ -7,6 +7,10 @@ import { useMemo } from "react";
 import { ViewPage } from "../../components/UICrud/ViewPage";
 import { FunctionExecutionServices } from "../FunctionExecution/services";
 import { CreateUpdateTestSuite } from "./components/CreateUpdateTestSuite";
+import { Button } from "@mui/material";
+import { TestSuiteForFunction } from "./components/ConfigureTestCase";
+import axios from "axios";
+import { TestCaseRoutes } from "./routes";
 
 export const CreateTestFromExecutedFunction = () => {
   const params = useParams();
@@ -30,31 +34,50 @@ const ExecutedFunctionToTestConfigConverter: React.FC<{
 }> = ({ object }) => {
   const navigate = useNavigate();
   const converted = useMemo(() => {
-    return getFunctionTestConfigForExecutedFunction(object);
+    const config = getFunctionTestConfigForExecutedFunction(object);
+    const testSuiteConfig: TestSuiteForFunction = {
+      name: object.name,
+      description: "",
+      functionMeta: object,
+
+      id: undefined as any,
+      tests: [
+        {
+          name: "Test Case 1",
+          config: config,
+          mocks: null as any,
+          inputToPass: object.input,
+          id: new Date().getTime().toString(),
+        },
+      ],
+    };
+    return testSuiteConfig;
   }, [object]);
+  const onSaveTestSuite = (testSuite: TestSuiteForFunction) => {
+    axios
+      .post("http://localhost:8002/test_case/save-test-case", {
+        ...testSuite,
+      })
+      .then((res) => {
+        const testSuite = res.data;
+        if (testSuite.id) {
+          window.location.href = TestCaseRoutes.ViewTestCase.replace(
+            "*",
+            testSuite.id
+          );
+        }
+      });
+  };
 
   return (
     <>
       {converted && (
-        <CreateUpdateTestSuite
-          onSave={(t) => navigate(`/test-case/view-test-case/${t.id}`)}
-          testSuite={{
-            name: "",
-            description: "",
-            functionMeta: object,
-
-            id: undefined as any,
-            tests: [
-              {
-                name: object.name,
-                config: converted,
-                mocks: null as any,
-                inputToPass: object.input,
-                id: new Date().getTime().toString(),
-              },
-            ],
-          }}
-        />
+        <>
+          <CreateUpdateTestSuite
+            onSave={onSaveTestSuite}
+            testSuite={converted}
+          />
+        </>
       )}
     </>
   );

@@ -8,8 +8,10 @@ export const TestCaseServices = {
     return res.data;
   },
 
-  async getAllTestCases() {
-    const res = await axios.get(`http://localhost:8002/test_case/test-cases`);
+  async getAllTestCases(filters?: { [key: string]: any }) {
+    const res = await axios.get(`http://localhost:8002/test_case/test-cases`, {
+      params: filters,
+    });
     return res.data;
   },
 

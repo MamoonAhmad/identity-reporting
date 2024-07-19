@@ -9,6 +9,7 @@ import { IDENTITY_TEMP_DIRECTORY } from "../../constants.js";
 import { writeFileJSONPromised } from "../../utils/writeFileJSONPromised.js";
 import { readJSONFilePromised } from "../../utils/readJSONFilePromised.js";
 import { initDirectory } from "../../utils/initDirectory.js";
+import { runFunctionsOnClientApp } from "../../clientApp.js";
 
 
 /**
@@ -21,23 +22,39 @@ export const runCodeOnClientApplication = async (socketIOInstance, code) => {
 
     await initDirectory(EXECUTED_FUNCTION_PATH);
 
+    const url = (endpoint) => {
+        return `${ENTITY_NAME_URL}/${endpoint}`
+    }
+
     const runFileId = v4()
 
-    const runFileName = `${IDENTITY_TEMP_DIRECTORY}/${runFileId}.json`
+    const function_config = {
+        execution_id: runFileId,
+        input_to_pass: null,
+        function_meta: null,
+        code,
+        action: "run_function",
+        context: null,
+    }
+
+    try {
+
+        const [executedFunction] = await runFunctionsOnClientApp([
+            function_config
+        ])
+        await loader.createExecutedFunction(executedFunction);
+        socketIOInstance.emit(url("run_function_with_code:result"), executedFunction.id);
+
+    } catch (e) {
+        throw e
+    }
 
     // create a run file with code
     // agent will consume this file
     try {
         await writeFileJSONPromised(runFileName, {
             functions_to_run: [
-                {
-                    execution_id: runFileId,
-                    input_to_pass: null,
-                    function_meta: null,
-                    code,
-                    action: "run_function",
-                    context: null,
-                }
+
             ]
         });
     } catch (e) {
@@ -54,9 +71,7 @@ export const runCodeOnClientApplication = async (socketIOInstance, code) => {
 
     const cwd = process.cwd();
 
-    const url = (endpoint) => {
-        return `${ENTITY_NAME_URL}/${endpoint}`
-    }
+
 
     // Run tracing agent with run file
     const promise = new Promise((resolve, reject) => {
@@ -86,7 +101,7 @@ export const runCodeOnClientApplication = async (socketIOInstance, code) => {
 
     // create new Executed function
     await loader.createExecutedFunction(executedFunction);
-    
+
 
     // remove the temporary run file
     await fs.unlink(runFileName, (err) => {
@@ -102,46 +117,22 @@ export const runFunctionWithInput = async (args = {}) => {
 
     const { name, fileName, packageName, environmentName, moduleName, inputToPass } = args
 
-    const runFileId = v4()
-
-    const runFileName = `${EXECUTED_FUNCTION_PATH}/${runFileId}.json`
-
-    writeFileJSONPromised(runFileName, {
-        name, fileName, packageName, environmentName, moduleName, inputToPass,
-        type: "run_function"
-    })
-
-    const settings = await userSettingLoader.getSettings()
-
-    const cwd = process.cwd();
-
-    console.log(`executing cd "${cwd}"; ${settings.command} --runFile="${runFileId}"`)
-
-    const promise = new Promise((resolve, reject) => {
-
-        const result = exec(`cd "${cwd}"; ${settings.command} --runFile="${runFileId}"`, (err, stdout, stderr) => {
-            console.log(stdout.toString())
-            if (err) {
-                console.error(err)
-                return res.status(500).json({ error: err.message })
+    const executedFunctions = await runFunctionsOnClientApp(
+        [
+            {
+                action: "run_function",
+                input_to_pass: inputToPass,
+                execution_id: v4(),
+                function_meta: {
+                    module_name: moduleName,
+                    file_name: fileName,
+                    function_name: name
+                },
             }
+        ]
+    )
 
-
-            const functionRun = readJSONFilePromised(runFileName).then(functionRun => {
-                fs.unlinkSync(runFileName)
-
-                let functions = functionRun?.executedFunction?.data;
-
-
-                const functionsToSave = getExecutedFunctionTreeFromExecutedFunctions(functions);
-
-                return resolve({ executedFunction: functionsToSave[0] }) // TODO: think
-            })
-
-        })
-    })
-
-    return await promise
+    return { executedFunction: executedFunctions[0] }
 }
 
 
@@ -162,6 +153,23 @@ export const getExecutedFunctionByID = async (id) => {
     return await loader.getExecutedFunctionByID(id)
 }
 
-export const getAllExecutedFunctions = async () => {
-    return loader.getAllExecutedFunctions()
+export const getAllExecutedFunctions = async (req, res) => {
+    const filters = {};
+    if (req.query?.fileName) {
+        filters.fileName = {
+            contains: req.query?.fileName
+        }
+    }
+    if (req.query?.moduleName) {
+        filters.moduleName = {
+            contains: req.query?.moduleName
+        }
+    }
+    if (req.query?.name) {
+        filters.name = {
+            contains: req.query?.name
+        }
+    }
+
+    return loader.getAllExecutedFunctions(filters)
 }

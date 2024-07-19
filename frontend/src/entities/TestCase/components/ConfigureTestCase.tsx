@@ -7,7 +7,6 @@ import {
   Grid,
   IconButton,
   Modal,
-  TextField,
   ToggleButton,
   ToggleButtonGroup,
   Typography,
@@ -20,7 +19,6 @@ import {
   ExecutedFunction,
   FunctionTestConfig,
   getColumns,
-  getFunctionTestConfigForExecutedFunction,
   hasChildren,
 } from "../../../components/NestedObjectView/someutil";
 import { CloseSharp, KeyboardArrowRightSharp } from "@mui/icons-material";
@@ -30,10 +28,10 @@ import {
   NestedObjectTestConfigView,
 } from "./NestedObjectTestConfigViews";
 import { useEffect, useReducer, useState } from "react";
-import { TestCaseServices } from "../services";
 import { HorizontalFlowDiagram } from "../../../components/FlowChart/HorizontalFlowDiagram.tsx";
 import { PyramidFlowDiagram } from "../../../components/FlowChart/PyramidFlowDiagram";
 import { DiagramEntity } from "../../../components/FlowChart/types.ts";
+import { useObjectChange } from "./useObjectChange.ts";
 
 export type TestSuiteForFunction = {
   id: string;
@@ -64,202 +62,20 @@ export const TestConfigColumns: React.FC<{
   object: TestCaseForFunction;
   onDelete: () => void;
 }> = ({ object: functionTestConfig, onDelete }) => {
-  const [state, setState] = useReducer(
-    (p: any, c: any) => ({ ...p, ...c }),
-    {}
-  ) as any as [
-    Partial<TestCaseForFunction>,
-    (s: Partial<TestCaseForFunction>) => void
-  ];
 
-  const [internalState, setInternalState] = useReducer(
-    (p: any, c: any) => ({ ...p, ...c }),
-    {}
-  );
+  useObjectChange(functionTestConfig, (t) => [t.config])
 
-  const [mockedFunctions, setMockedFunctions] = useState<FunctionTestConfig[]>(
-    []
-  );
-
-  const [columns, setColumns] = useState<NestedObjectColumnItem[][]>([]);
-
-  useEffect(() => {
-    setState({ ...functionTestConfig, mocks: functionTestConfig.mocks || {} });
-    const mockedFunctions: FunctionTestConfig[] = [];
-    visit(
-      functionTestConfig.config,
-      (f) => {
-        if (f.isMocked) {
-          mockedFunctions.push(f);
-        }
-      },
-      (f) => f.children
-    );
-    setMockedFunctions(mockedFunctions);
-  }, [functionTestConfig]);
-
-  useEffect(() => {
-    if (state.config) {
-      setColumns(getColumns(state.config, [state.config.functionMeta.name]));
-    }
-  }, [state.config]);
-
-  useEffect(() => {
-    if (state && Object.keys(state).length) {
-      Object.keys(state).forEach((k) => {
-        (functionTestConfig as any)[k] = (state as any)[k];
-      });
-    }
-  }, [state]);
-
-  const mockFunction = (f: FunctionTestConfig) => {
-    if (!functionTestConfig.mocks) {
-      functionTestConfig.mocks = {};
-    }
-    const key = `${f.functionMeta.moduleName}:${f.functionMeta.name}`;
-    if (!functionTestConfig.mocks![key]) {
-      functionTestConfig.mocks![key] = {};
-    }
-    functionTestConfig.mocks![key][f.functionCallCount] = {
-      output: f.functionMeta.output,
-      errorToThrow: f.functionMeta.error,
-    };
-    setMockedFunctions([...mockedFunctions, f]);
-    setState({
-      mocks: {
-        ...functionTestConfig.mocks,
-      },
-    });
-  };
-
-  const unMockFunction = (f: FunctionTestConfig) => {
-    if (!functionTestConfig.mocks) {
-      functionTestConfig.mocks = {};
-    }
-    const key = `${f.functionMeta.moduleName}:${f.functionMeta.name}`;
-    delete functionTestConfig.mocks![key]?.[f.functionCallCount];
-    setState({
-      mocks: {
-        ...functionTestConfig.mocks,
-      },
-    });
-    const mockedFunctionIndex = mockedFunctions.findIndex(
-      (mf) => f.functionMeta.id === mf.functionMeta.id
-    );
-    mockedFunctions.splice(mockedFunctionIndex, 1);
-    setMockedFunctions([...mockedFunctions]);
-
-    // setColumns(
-    //   getColumns(state.config!, getObjectPathFromCurrentColumns(columns))
-    // );
-  };
   if (!functionTestConfig.config) {
     return null;
   }
 
   return (
     <>
-      <TextField
-        value={state.name}
-        fullWidth
-        label="Test Case Name"
-        onChange={(e) => {
-          setState({ name: e.target.value });
-        }}
-        sx={{ my: 3 }}
-      />
-      <Grid
-        width={"100%"}
-        display={"flex"}
-        alignItems={"center"}
-        sx={{ my: 1 }}
-      >
-        <TextField
-          value={JSON.stringify(state.inputToPass)}
-          sx={{ flexGrow: 1 }}
-          onChange={(e) => {
-            try {
-              const object = JSON.parse(e.target.value);
-              setState({ inputToPass: object });
-              setInternalState({ inputToPassError: false });
-            } catch (e) {
-              setInternalState({ inputToPassError: true });
-            }
-          }}
-          multiline
-          error={internalState?.inputToPassError}
-          label="Input to pass to the function for this test"
-        />
-        <Button
-          onClick={() => {
-            TestCaseServices.runFunctionWithInput(
-              functionTestConfig.config.functionMeta,
-              state.inputToPass
-            ).then((res) => {
-              setState({
-                config: getFunctionTestConfigForExecutedFunction(
-                  res.executedFunction,
-                  true
-                ),
-              });
-              console.log(res);
-            });
-          }}
-        >
-          Run Function with This Input
-        </Button>
-      </Grid>
-      <NestedObjectContextProvider
-        {...{
-          mockFunction,
-          unMockFunction,
-          refreshColumns: () =>
-            setColumns(
-              getColumns(
-                state.config!,
-                getObjectPathFromCurrentColumns(columns)
-              )
-            ),
-        }}
-      >
-        {(Object.keys(state.mocks || {}).length && (
-          <Grid
-            width={"100%"}
-            display={"flex"}
-            flexDirection={"column"}
-            bgcolor={"lightblue"}
-            sx={{ my: 1, p: 1 }}
-          >
-            <Typography variant="h6" sx={{ textAlign: "left", mb: 2 }}>
-              Mocks
-            </Typography>
-            {!state.mocks && "No mocks configured for this test case."}
-            {mockedFunctions.map((f) => {
-              return (
-                <>
-                  <Accordion key={f.functionMeta.id}>
-                    <AccordionSummary>
-                      ({f.functionCallCount}) {f.functionMeta.name}
-                    </AccordionSummary>
-                    <AccordionDetails>
-                      <MockedFunctionView
-                        config={f}
-                        onChange={() => undefined}
-                      />
-                    </AccordionDetails>
-                  </Accordion>
-                </>
-              );
-            })}
-          </Grid>
-        )) ||
-          null}
-        <Grid container>
-          <Grid item xs={12}>
-            <TestConfigViews config={functionTestConfig.config} />
-          </Grid>
+      <Grid container>
+        <Grid item xs={12}>
+          <TestConfigViews config={functionTestConfig.config} />
         </Grid>
-      </NestedObjectContextProvider>
+      </Grid>
     </>
   );
 };
@@ -282,6 +98,9 @@ const TestConfigViews: React.FC<{
       setColumns(getColumns(config, [config.functionMeta.name]));
     }
   }, [config]);
+
+  const _ = useObjectChange(config);
+
   const onEntityClick = (e: DiagramEntity) => {
     setSelectedFunctionEntity(e.metaData?.function);
   };
@@ -458,10 +277,9 @@ function visit<T>(
   children.map((c) => visit(c, process, getChildren));
 }
 
-
-export const TestSuiteMetaData: React.FC<{ testSuite: TestSuiteForFunction }> = ({
-  testSuite,
-}) => {
+export const TestSuiteMetaData: React.FC<{
+  testSuite: TestSuiteForFunction;
+}> = ({ testSuite }) => {
   return (
     <>
       <Box

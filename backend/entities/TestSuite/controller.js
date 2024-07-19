@@ -5,8 +5,24 @@ import * as loader from "./loader.js"
 
 
 
-export const getAllTestSuits = async () => {
-    return await loader.getAllTestSuits()
+export const getAllTestSuits = async (req, res) => {
+    const filters = {};
+    if (req.query?.fileName) {
+        filters.fileName = {
+            contains: req.query?.fileName
+        }
+    }
+    if (req.query?.moduleName) {
+        filters.moduleName = {
+            contains: req.query?.moduleName
+        }
+    }
+    if (req.query?.name) {
+        filters.name = {
+            contains: req.query?.name
+        }
+    }
+    return await loader.getAllTestSuits(filters)
 }
 
 export const createOrUpdateTestSuite = async (testCaseConfig) => {

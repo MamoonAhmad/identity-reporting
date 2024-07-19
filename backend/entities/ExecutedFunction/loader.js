@@ -35,7 +35,7 @@ export const getExecutedFunctionByID = async (id) => {
 
 
 
-export const getAllExecutedFunctions = async () => {
+export const getAllExecutedFunctions = async (filters) => {
 
     initDirectory(EXECUTED_FUNCTION_PATH);
 
@@ -45,5 +45,16 @@ export const getAllExecutedFunctions = async () => {
         return readJSONFilePromised(fname)
     })
     const result = await Promise.all(promises)
-    return result
+    return result.filter(f => {
+        return Object.keys(filters).every(propName => matchWithOperator(f, propName, filters[propName]))
+    })
+}
+
+const matchWithOperator = (object, propName, filterValue) => {
+    if (filterValue?.contains) {
+        return !!object?.[propName]?.toString()?.includes(filterValue?.contains)
+    }
+    if (filterValue?.eq) {
+        return object?.[propName]?.toString() === filterValue?.eq?.toString()
+    }
 }

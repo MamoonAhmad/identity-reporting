@@ -16,7 +16,12 @@ import {
   FunctionTestConfig,
   FunctionTestConfigAssertion,
 } from "../../../components/NestedObjectView/someutil";
-import React, { PropsWithChildren, useContext, useState } from "react";
+import React, {
+  PropsWithChildren,
+  useCallback,
+  useContext,
+  useState,
+} from "react";
 import { JSONTextField } from "../../../components/JSONTestField";
 import {
   AddSharp,
@@ -25,12 +30,15 @@ import {
 } from "@mui/icons-material";
 import { CodeTestField } from "../../../components/CodeTestField";
 import { Box } from "@mui/system";
+import { useObjectChange } from "./useObjectChange";
 
 const NestedObjectContext = React.createContext<{
   mockFunction: (o: FunctionTestConfig) => void;
   unMockFunction: (o: FunctionTestConfig) => void;
   refreshColumns: () => void;
   onConfigUpdate: () => void;
+  changeRequester: string | undefined;
+  setChangeRequester: (requester: string | undefined) => void;
 }>({} as any);
 
 export const NestedObjectContextProvider: React.FC<
@@ -41,6 +49,7 @@ export const NestedObjectContextProvider: React.FC<
   }>
 > = ({ children, mockFunction, unMockFunction, refreshColumns }) => {
   const [counter, updateCounter] = useState(0);
+  const [changeRequester, setChangeRequester] = useState<string | undefined>();
   return (
     <NestedObjectContext.Provider
       value={{
@@ -48,6 +57,8 @@ export const NestedObjectContextProvider: React.FC<
         unMockFunction,
         refreshColumns,
         onConfigUpdate: () => updateCounter(counter + 1),
+        changeRequester,
+        setChangeRequester,
       }}
     >
       {children}
@@ -69,8 +80,18 @@ const FunctionConfigView: React.FC<{
   config: FunctionTestConfig;
   name: string;
 }> = ({ config, name }) => {
-  const { mockFunction, onConfigUpdate } = useContext(NestedObjectContext);
+  const updateState = useObjectChange(config);
 
+  const deleteAssertion = useCallback(
+    (assertion: FunctionTestConfigAssertion) => {
+      const index = config.assertions.findIndex((a) => assertion === a);
+      if (index > -1) {
+        config.assertions.splice(index, 1);
+      }
+      updateState({ assertions: [...config.assertions] });
+    },
+    [config]
+  );
   return (
     <Grid container>
       <Grid item xs={12} display={"flex"} alignItems={"center"}>
@@ -85,29 +106,17 @@ const FunctionConfigView: React.FC<{
           <Grid item xs={12} display={"flex"} alignItems={"center"}>
             <Button
               onClick={() => {
-                config.isMocked = true;
-                config.mockedOutput = config.functionMeta.output;
-                config.mockedErrorMessage = config.functionMeta?.error;
-                mockFunction({
-                  ...config,
+                updateState({
                   isMocked: true,
-                  mockedOutput: config.functionMeta.output,
+                  mockedOutput: config.functionMeta?.output,
                   mockedErrorMessage: config.functionMeta?.error,
                 });
-                onConfigUpdate();
               }}
             >
               Mock This Function
             </Button>
           </Grid>
-          {/* <Grid item xs={12} display={"flex"} alignItems={"center"}>
-            <CheckboxWithLabel
-              label="Ignore Child Function Calls"
-              name="ignoreChildren"
-              value={!!state.ignoreChildren}
-              onChange={setState}
-            />
-          </Grid> */}
+
           <Grid
             item
             xs={12}
@@ -121,18 +130,20 @@ const FunctionConfigView: React.FC<{
           </Grid>
           <Grid item xs={12}>
             {config.assertions.map((a) => (
-              <AssertionView assertion={a} config={config} />
+              <AssertionView
+                assertion={a}
+                onDelete={deleteAssertion}
+                config={config}
+              />
             ))}
 
             <Button
               variant="text"
               sx={{ my: 2 }}
               onClick={() => {
-                config.assertions = [
-                  ...config.assertions,
-                  getNewAssertion(config),
-                ];
-                onConfigUpdate();
+                updateState({
+                  assertions: [...config.assertions, getNewAssertion(config)],
+                });
               }}
             >
               <AddSharp />
@@ -147,9 +158,15 @@ const FunctionConfigView: React.FC<{
 
 const AssertionView: React.FC<{
   assertion: FunctionTestConfigAssertion;
+  onDelete: (assertion: FunctionTestConfigAssertion) => void;
   config: FunctionTestConfig;
-}> = ({ assertion, config }) => {
-  const { onConfigUpdate } = useContext(NestedObjectContext);
+}> = ({ assertion, onDelete, config }) => {
+  const updateState = useObjectChange(assertion);
+
+  const _ = useObjectChange(config, (obj) => [
+    obj.functionMeta.input,
+    obj.functionMeta.input,
+  ]);
 
   return (
     <Accordion>
@@ -166,9 +183,7 @@ const AssertionView: React.FC<{
             color="error"
             onClick={(e) => {
               e.stopPropagation();
-              const index = config.assertions.findIndex((a) => a === assertion);
-              config.assertions.splice(index, 1);
-              onConfigUpdate();
+              onDelete(assertion);
             }}
           >
             <DeleteSharp fontSize="small" />
@@ -188,12 +203,13 @@ const AssertionView: React.FC<{
             label="Custom Validator"
             value={!!assertion.customValidator}
             onChange={(_, checked) => {
-              assertion.customValidator = checked
-                ? {
-                    code: "",
-                  }
-                : undefined;
-              onConfigUpdate();
+              updateState({
+                customValidator: checked
+                  ? {
+                      code: "",
+                    }
+                  : undefined,
+              });
             }}
           />
           {assertion.shouldThrowError && !assertion.customValidator && (
@@ -207,11 +223,12 @@ const AssertionView: React.FC<{
                 sx={{ mb: 1 }}
                 color="primary"
                 onChange={(_, op) => {
-                  assertion.expectedErrorMessage = {
-                    ...assertion.expectedErrorMessage!,
-                    operator: op,
-                  };
-                  onConfigUpdate();
+                  updateState({
+                    expectedErrorMessage: {
+                      ...assertion.expectedErrorMessage!,
+                      operator: op,
+                    },
+                  });
                 }}
                 exclusive
               >
@@ -236,11 +253,12 @@ const AssertionView: React.FC<{
                 fullWidth
                 label="Expected Error Message"
                 onChange={(e) => {
-                  assertion.expectedErrorMessage = {
-                    ...assertion.expectedErrorMessage!,
-                    message: e.target.value,
-                  };
-                  onConfigUpdate();
+                  updateState({
+                    expectedErrorMessage: {
+                      ...assertion.expectedErrorMessage!,
+                      message: e.target.value,
+                    },
+                  });
                 }}
                 sx={{ my: 1 }}
                 multiline
@@ -256,8 +274,7 @@ const AssertionView: React.FC<{
                 value={assertion.name}
                 fullWidth
                 onChange={(e) => {
-                  assertion.name = e.target.value;
-                  onConfigUpdate();
+                  updateState({ name: e.target.value });
                 }}
                 sx={{ mb: 1 }}
               />
@@ -287,15 +304,16 @@ const AssertionView: React.FC<{
                       if (op === null) {
                         return;
                       }
-                      assertion.ioConfig = {
-                        ...assertion.ioConfig!,
-                        target: op,
-                        object:
-                          op === "input"
-                            ? config.functionMeta.input
-                            : config.functionMeta.output,
-                      };
-                      onConfigUpdate();
+                      updateState({
+                        ioConfig: {
+                          ...assertion.ioConfig!,
+                          target: op,
+                          object:
+                            op === "input"
+                              ? config.functionMeta.input
+                              : config.functionMeta.output,
+                        },
+                      });
                     }}
                     exclusive
                   >
@@ -337,7 +355,7 @@ const AssertionView: React.FC<{
                         return;
                       }
                       assertion.ioConfig!.operator = op;
-                      onConfigUpdate();
+                      updateState({});
                     }}
                     exclusive
                   >
@@ -364,7 +382,7 @@ const AssertionView: React.FC<{
                 object={assertion.ioConfig?.object}
                 onChange={(obj) => {
                   assertion.ioConfig!.object = obj;
-                  onConfigUpdate();
+                  updateState({});
                 }}
               />
             </>
@@ -378,7 +396,7 @@ const AssertionView: React.FC<{
                 code={assertion.customValidator.code}
                 onChange={(code) => {
                   assertion.customValidator!.code = code;
-                  onConfigUpdate();
+                  updateState({});
                 }}
               />
             </>
@@ -423,9 +441,8 @@ export const MockedFunctionView: React.FC<{
   config: FunctionTestConfig;
   onChange: (c: FunctionTestConfig) => void;
 }> = ({ config }) => {
-  const { unMockFunction, onConfigUpdate } = useContext(NestedObjectContext);
+  const updateState = useObjectChange(config);
 
-  console.log("Updated mocked view", config.mockedOutput);
 
   return (
     <>
@@ -438,11 +455,11 @@ export const MockedFunctionView: React.FC<{
       >
         <Button
           onClick={() => {
-            config.isMocked = false;
-            config.mockedOutput = undefined;
-            config.mockedErrorMessage = undefined;
-            unMockFunction(config);
-            onConfigUpdate();
+            updateState({
+              isMocked: false,
+              mockedOutput: undefined,
+              mockedErrorMessage: undefined,
+            });
           }}
         >
           UnMock This Function
@@ -457,7 +474,9 @@ export const MockedFunctionView: React.FC<{
               fullWidth
               value={config.mockedErrorMessage}
               onChange={(e) => {
-                config.mockedErrorMessage = e.target.value;
+                updateState({
+                  mockedErrorMessage: e.target.value,
+                });
               }}
             />
           </>
@@ -469,8 +488,7 @@ export const MockedFunctionView: React.FC<{
             <JSONTextField
               object={config.mockedOutput}
               onChange={(obj) => {
-                config.mockedOutput = obj;
-                onConfigUpdate();
+                updateState({ mockedOutput: obj });
               }}
             />
           </>
@@ -479,3 +497,15 @@ export const MockedFunctionView: React.FC<{
     </>
   );
 };
+
+// const Wrapper = function <T>(
+//   component: React.FC<T & { onObjectUpdate: () => void }>
+// ) {
+//   return React.memo((props: Omit<T, "onObjectUpdate">) => {
+//     const [counter, setCounter] = useState({});
+//   });
+// };
+
+// const Some = Wrapper(
+//   (props: { onObjectUpdate: () => void; some: string; bob: string }) => {}
+// );

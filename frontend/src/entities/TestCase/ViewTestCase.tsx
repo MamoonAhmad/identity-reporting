@@ -7,6 +7,7 @@ import { TestCaseView } from "./components/TestCaseView";
 import { TestCaseRoutes } from "./routes";
 import { NavigateNext } from "@mui/icons-material";
 import { CreateUpdateTestSuite } from "./components/CreateUpdateTestSuite";
+import { TestSuiteForFunction } from "./components/ConfigureTestCase";
 
 export const ViewTestCase = () => {
   const params = useParams();
@@ -16,7 +17,7 @@ export const ViewTestCase = () => {
   if (!objectID) {
     return <>Test Suite ID not present in param.</>;
   }
-  const selectedTestCaseID = searchParams.get("testCaseID");
+  const selectedTestCaseID = searchParams.get("testCaseID") || undefined;
 
   return (
     <ViewPage
@@ -69,6 +70,15 @@ export const ViewTestCase = () => {
                 ?.name || selectedTestCaseID,
           });
         }
+        const onSaveTestSuite = (testSuite: TestSuiteForFunction) => {
+          axios
+            .post("http://localhost:8002/test_case/save-test-case", {
+              ...testSuite,
+            })
+            .then((res) => {
+              window.location.reload();
+            });
+        };
 
         return (
           <>
@@ -88,18 +98,13 @@ export const ViewTestCase = () => {
               )}
             </Breadcrumbs>
 
-            {selectedTestCaseID ? (
-              <TestCaseView
-                selectedTestCaseID={selectedTestCaseID}
-                testSuite={object}
-              />
-            ) : (
-              <CreateUpdateTestSuite
-                testSuite={{
-                  ...object,
-                }}
-              />
-            )}
+            <CreateUpdateTestSuite
+              testSuite={{
+                ...object,
+              }}
+              onSave={onSaveTestSuite}
+              selectedTestCaseID={selectedTestCaseID}
+            />
           </>
         );
       }}

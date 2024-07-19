@@ -10,16 +10,11 @@ export type FlowChartProps = {
 };
 export const Flowchart: React.FC<FlowChartProps> = React.memo(
   ({ nodes, edges, nodeTypes }) => {
-    console.log(nodes, "this is nodes");
-    console.log(edges, "this is edges");
     return (
-      <div style={{ width: "2000px", height: "500px", border: "1px solid #ccc" }}>
-        <ReactFlow
-          nodes={nodes}
-          edges={edges}
-          
-          nodeTypes={nodeTypes}
-        />
+      <div
+        style={{ width: "2000px", height: "500px", border: "1px solid #ccc" }}
+      >
+        <ReactFlow nodes={nodes} edges={edges} nodeTypes={nodeTypes} />
       </div>
     );
   }

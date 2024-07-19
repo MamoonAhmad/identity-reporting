@@ -16,7 +16,7 @@ export const registerExpressEndpoints = (app) => {
     app.get(url('get-test-run/:id'), expressEndpointResolver(req => getTestRunByID(req.params.id)))
     app.post(url('save-test-run'), expressEndpointResolver(req => saveTestRun(req.body)))
 
-    
+
 
 }
 
@@ -25,14 +25,22 @@ export const registerSocketEndpoints = (socketIOInstance, socket) => {
         return `${ENTITY_NAME_URL}/${endpoint}`
     }
 
-    socket.on(...socketIOResolverFactory({
-        endpoint: url('run_test'),
-        functionToRun: testCaseIds => runTestSuits(socketIOInstance, testCaseIds),
-        socketIOInstance,
-        socket
-    }))
+    // socket.on(...socketIOResolverFactory({
+    //     endpoint: url('run_test'),
+    //     functionToRun: testCaseIds => runTestSuits(socketIOInstance, testCaseIds),
+    //     socketIOInstance,
+    //     socket
+    // }))
 
     registerRunFileActionListener("test_run", (runFileConfig, functionConfig) => {
         return processFunctionConfigForRunFileSignal(socketIOInstance, runFileConfig, functionConfig)
     })
+
+
+    return {
+        [url('run_test')]: async (socketServerInstance, socket, {payload}) => {
+            const { filter } = payload
+            return runTestSuits(socket, filter)
+        }
+    }
 }

@@ -31,11 +31,18 @@ export const registerSocketEndpoints = (socketIOInstance, socket) => {
         return `${ENTITY_NAME_URL}/${endpoint}`
     }
 
-    socket.on(...socketIOResolverFactory({
-        endpoint: url('run_function_with_code'),
-        functionToRun: code => runCodeOnClientApplication(socketIOInstance, code),
-        socketIOInstance,
-        socket
-    }))
+    // socket.on(...socketIOResolverFactory({
+    //     endpoint: url('run_function_with_code'),
+    //     functionToRun: code => runCodeOnClientApplication(socketIOInstance, code),
+    //     socketIOInstance,
+    //     socket
+    // }))
+
+
+    return {
+        [url('run_function_with_code')]: async (socketServer, socket, data) => {
+            await runCodeOnClientApplication(socket, data.payload.code)
+        }
+    }
 
 }
