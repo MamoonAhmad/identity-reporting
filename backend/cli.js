@@ -74,7 +74,7 @@ app.use(urlLoggerMiddleware)
 
 const PORT = process.env.PORT || 8002;
 
-server.listen(8002)
+server.listen(PORT)
 
 registerExecutedFunctionEndpoints(app);
 registerTestSuiteEndpoints(app);
