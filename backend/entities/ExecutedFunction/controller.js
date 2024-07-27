@@ -1,13 +1,7 @@
 import { v4 } from "uuid"
-import fs from "fs"
-import { exec } from "child_process";
 import * as loader from "./loader.js";
-import * as userSettingLoader from "../UserSetting/loader.js"
 import { getExecutedFunctionTreeFromExecutedFunctions } from "./utils.js";
 import { ENTITY_NAME_URL, EXECUTED_FUNCTION_PATH } from "./constants.js";
-import { IDENTITY_TEMP_DIRECTORY } from "../../constants.js";
-import { writeFileJSONPromised } from "../../utils/writeFileJSONPromised.js";
-import { readJSONFilePromised } from "../../utils/readJSONFilePromised.js";
 import { initDirectory } from "../../utils/initDirectory.js";
 import { runFunctionsOnClientApp } from "../../clientApp.js";
 
@@ -52,7 +46,7 @@ export const runCodeOnClientApplication = async (socketIOInstance, code) => {
 
 export const runFunctionWithInput = async (args = {}) => {
 
-    const { name, fileName, packageName, environmentName, moduleName, inputToPass } = args
+    const { name, fileName, packageName, environmentName, moduleName, inputToPass, mocks } = args
 
     const executedFunctions = await runFunctionsOnClientApp(
         [
@@ -65,6 +59,9 @@ export const runFunctionWithInput = async (args = {}) => {
                     file_name: fileName,
                     function_name: name
                 },
+                context: {
+                    mocks: mocks || undefined
+                }
             }
         ]
     )

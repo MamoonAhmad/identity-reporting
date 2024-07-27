@@ -7,7 +7,6 @@ import { useMemo } from "react";
 import { ViewPage } from "../../components/UICrud/ViewPage";
 import { FunctionExecutionServices } from "../FunctionExecution/services";
 import { CreateUpdateTestSuite } from "./components/CreateUpdateTestSuite";
-import { Button } from "@mui/material";
 import { TestSuiteForFunction } from "./components/ConfigureTestCase";
 import axios from "axios";
 import { TestCaseRoutes } from "./routes";
@@ -20,6 +19,7 @@ export const CreateTestFromExecutedFunction = () => {
   }
   return (
     <ViewPage
+      objectID={objectID}
       title="New Test Suite"
       dataLoader={async () =>
         await FunctionExecutionServices.getFunctionExecutionById(objectID)

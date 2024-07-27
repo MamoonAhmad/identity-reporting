@@ -65,7 +65,7 @@ def some_other3():
 
 @watch()
 def add_item_to_ticket(ticket, item_id):
-    some_other()
+    
     if item_id == 20:
         ticket["items"].append(dict(
             name = "Item 1",
@@ -75,6 +75,7 @@ def add_item_to_ticket(ticket, item_id):
     else:
         raise Exception("Invalid item id.")
     
+    some_other()
     return ticket
 
 

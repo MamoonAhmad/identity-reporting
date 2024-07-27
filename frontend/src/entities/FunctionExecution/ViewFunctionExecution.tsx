@@ -2,9 +2,14 @@ import { useNavigate, useParams } from "react-router-dom";
 import { ViewPage } from "../../components/UICrud/ViewPage";
 import { FunctionExecutionServices } from "./services";
 import { ExecutedFunction } from "../../components/NestedObjectView/someutil";
-import React, { useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 
-import { AddSharp, CloseSharp } from "@mui/icons-material";
+import {
+  AddSharp,
+  CloseSharp,
+  ErrorSharp,
+  PlayArrowSharp,
+} from "@mui/icons-material";
 import { TestCaseRoutes } from "../TestCase/routes";
 import { HorizontalFlowDiagram } from "../../components/FlowChart/HorizontalFlowDiagram";
 import { DiagramEntity } from "../../components/FlowChart/types";
@@ -18,8 +23,11 @@ import {
   ToggleButton,
   ToggleButtonGroup,
   Typography,
+  useTheme,
 } from "@mui/material";
 import { JSONTextField } from "../../components/JSONTestField";
+import { useObjectChange } from "../TestCase/components/useObjectChange";
+import { TestCaseServices } from "../TestCase/services";
 
 export const ViewFunctionExecution = () => {
   const params = useParams();
@@ -30,8 +38,9 @@ export const ViewFunctionExecution = () => {
   }
   return (
     <ViewPage
+      objectID={objectID}
       title="Function Execution View"
-      dataLoader={async () =>
+      dataLoader={async (objectID) =>
         await FunctionExecutionServices.getFunctionExecutionById(objectID)
       }
       Content={P}
@@ -72,52 +81,133 @@ const P: React.FC<{ object: any }> = ({ object }) => {
   );
 };
 
+type ExecutedFunctionWithCallCount = ExecutedFunction & {
+  callCount: number;
+  children: ExecutedFunctionWithCallCount[];
+};
 type ExecutionViewProps = {
   function: ExecutedFunction;
   onChange: (c: ExecutedFunction) => void;
   onFunctionClick: (executedFunction: ExecutedFunction) => void;
 };
 export const ExecutionView: React.FC<ExecutionViewProps> = React.memo(
-  ({ function: func, onFunctionClick }) => {
+  ({ function: executedFucntion, onFunctionClick }) => {
+    const theme = useTheme();
     const [diagramType, setDiagramType] = useState("horizontal");
 
     const [selectedFunctionEntity, setSelectedFunctionEntity] =
-      useState<ExecutedFunction | null>(null);
+      useState<ExecutedFunctionWithCallCount | null>(null);
 
     const onEntityClick = (e: DiagramEntity) => {
-      const executedFunction: ExecutedFunction = e.metaData?.function;
+      const executedFunction: ExecutedFunctionWithCallCount =
+        e.metaData?.function;
       setSelectedFunctionEntity(executedFunction);
     };
     const onModalClose = () => {
       setSelectedFunctionEntity(null);
     };
 
+    const [f, setF] = useState(executedFucntion);
+    useEffect(() => {
+      setF(executedFucntion);
+    }, [executedFucntion]);
+
+    const func: ExecutedFunctionWithCallCount = useMemo(() => {
+      const callCountMap: { [key: string]: number } = {};
+      const visit = (f: ExecutedFunction): ExecutedFunctionWithCallCount => {
+        const key = `${f.moduleName}:${f.name}`;
+        const callCount = (callCountMap[key] || 0) + 1;
+
+        return {
+          ...f,
+          children: f.children?.map((c) => visit(c)) || [],
+          callCount,
+        };
+      };
+
+      return visit(f);
+    }, [f]);
+
+    const runFunctionWithInput = useCallback(() => {
+      const mocks: {
+        [key: string]: {
+          [callCount: string]: {
+            errorToThrow?: string;
+            output?: any;
+          };
+        };
+      } = {};
+      const visit = (f: ExecutedFunctionWithCallCount) => {
+        if (f.isMocked) {
+          const key = `${f.moduleName}:${f.name}`;
+          if (!mocks[key]) {
+            mocks[key] = {};
+          }
+          mocks[key][f.callCount] = {
+            errorToThrow: f.mockedErrorMessage,
+            output: f.mockedOutput,
+          };
+        }
+        f.children?.forEach(visit);
+      };
+
+      visit(func);
+
+      TestCaseServices.runFunctionWithInput(
+        func,
+        func.input,
+        Object.keys(mocks).length > 0 ? mocks : undefined
+      ).then((res) => {
+        setF(res.executedFunction);
+      });
+    }, [func]);
+
+    const [mocks, setMocks] = useState<{ [key: string]: any }>({});
+
     if (!func) return null;
 
     return (
       <>
         <Grid container>
-          <Grid
-            display={"flex"}
-            flexDirection={"column"}
-            alignItems={"flex-start"}
-            sx={{ my: 2 }}
-          >
-            <Typography variant="subtitle1" sx={{ mt: 0.2 }}>
-              Execution Time: 38ms
-            </Typography>
-            {!func.error && (
-              <Typography variant="subtitle1" color={"green"} sx={{ mt: 0.2 }}>
-                Status: Function executed successfully.
-              </Typography>
-            )}
-            {func.error && (
-              <Typography variant="subtitle1" color={"red"} sx={{ mt: 0.2 }}>
-                Status: Error - {func.error}
-              </Typography>
-            )}
+          <Grid item xs={12}>
+            <Box sx={{ display: "flex", alignItems: "center" }}>
+              <Box
+                display={"flex"}
+                flexDirection={"column"}
+                alignItems={"flex-start"}
+                sx={{ my: 2, flexGrow: 1 }}
+              >
+                <Typography variant="subtitle1" sx={{ mt: 0.2 }}>
+                  Execution Time: 38ms
+                </Typography>
+                {!func.error && (
+                  <Typography
+                    variant="subtitle1"
+                    color={"green"}
+                    sx={{ mt: 0.2 }}
+                  >
+                    Status: Function executed successfully.
+                  </Typography>
+                )}
+                {func.error && (
+                  <Typography
+                    variant="subtitle1"
+                    color={"red"}
+                    sx={{ mt: 0.2 }}
+                  >
+                    Status: Error - {func.error}
+                  </Typography>
+                )}
+              </Box>
+              <Button sx={{ mx: 2 }} onClick={runFunctionWithInput}>
+                <Typography sx={{ display: "flex", alignItems: "center" }}>
+                  <PlayArrowSharp sx={{ mr: 1 }} />
+                  Run Function Again
+                </Typography>
+              </Button>
+            </Box>
           </Grid>
-          <Grid item xs={12} display={"flex"} >
+          <Grid item xs={12} display={"flex"}>
             <ToggleButtonGroup
               size="small"
               color="primary"
@@ -134,6 +224,48 @@ export const ExecutionView: React.FC<ExecutionViewProps> = React.memo(
 
           {diagramType === "horizontal" && (
             <HorizontalFlowDiagram
+              DiagramNodeComponent={({ entity }) => {
+                const success = !entity.metaData?.function?.error;
+                console.log("Button for ", entity.metaData?.function.name);
+                return (
+                  <Button
+                    sx={{
+                      p: 1,
+                      borderRadius: 4,
+                      border: "1px solid black",
+                      display: "flex",
+                      alignItems: "center",
+                      textTransform: "none",
+                      color: "black",
+                      background: success
+                        ? "transparent"
+                        : theme.palette.error.light,
+                    }}
+                    onClick={() =>
+                      setSelectedFunctionEntity(entity.metaData?.function)
+                    }
+                  >
+                    {!success ? (
+                      <ErrorSharp
+                        sx={{ color: theme.palette.error.contrastText }}
+                      />
+                    ) : null}
+                    <Typography
+                      sx={{
+                        color: !success
+                          ? theme.palette.error.contrastText
+                          : undefined,
+                        ml: 1,
+                      }}
+                    >
+                      {entity.label}
+                      <Typography fontWeight={"bold"}>
+                        {entity.metaData?.function?.isMocked ? " (Mocked)" : ""}
+                      </Typography>
+                    </Typography>
+                  </Button>
+                );
+              }}
               entities={[
                 getDiagramEntityFromExecutedFunction(func, onEntityClick),
               ]}
@@ -141,6 +273,49 @@ export const ExecutionView: React.FC<ExecutionViewProps> = React.memo(
           )}
           {diagramType === "vertical" && (
             <PyramidFlowDiagram
+              DiagramNodeComponent={({ entity }) => {
+                // eslint-disable-next-line react-hooks/rules-of-hooks
+                // const _ = useObjectChange(entity.metaData?.function);
+                const success = !entity.metaData?.function?.error;
+                return (
+                  <Button
+                    sx={{
+                      p: 1,
+                      borderRadius: 4,
+                      border: "1px solid black",
+                      display: "flex",
+                      alignItems: "center",
+                      textTransform: "none",
+                      color: "black",
+                      background: success
+                        ? "transparent"
+                        : theme.palette.error.light,
+                    }}
+                    onClick={() =>
+                      setSelectedFunctionEntity(entity.metaData?.function)
+                    }
+                  >
+                    {!success ? (
+                      <ErrorSharp
+                        sx={{ color: theme.palette.error.contrastText }}
+                      />
+                    ) : null}
+                    <Typography
+                      sx={{
+                        color: !success
+                          ? theme.palette.error.contrastText
+                          : undefined,
+                        ml: 1,
+                      }}
+                    >
+                      {entity.label}
+                      <Typography fontWeight={"bold"}>
+                        {entity.metaData?.function?.isMocked ? " (Mocked)" : ""}
+                      </Typography>
+                    </Typography>
+                  </Button>
+                );
+              }}
               entities={[
                 getDiagramEntityFromExecutedFunction(func, onEntityClick),
               ]}
@@ -196,60 +371,109 @@ const getDiagramEntityFromExecutedFunction = (
       function: func,
     },
     onClick,
-    children:
-      func.children?.map((f) =>
-        getDiagramEntityFromExecutedFunction(f, onClick)
-      ) || [],
+    children: !func.isMocked
+      ? func.children?.map((f) =>
+          getDiagramEntityFromExecutedFunction(f, onClick)
+        ) || []
+      : [],
   };
 };
 
 const FunctionView: React.FC<{
-  executedFunction: ExecutedFunction;
+  executedFunction: ExecutedFunctionWithCallCount;
 }> = ({ executedFunction }) => {
+  const updateObject = useObjectChange(executedFunction, (obj) => [
+    obj.mockedOutput,
+    obj.mockedErrorMessage,
+  ]);
   return (
     <Grid container>
       <Grid item xs={12}>
         <Typography variant="h6">{executedFunction.name}</Typography>
       </Grid>
       <Grid item xs={12}>
-        <Typography variant="subtitle1" sx={{ mt: 0.2 }}>
-          Execution Time: 38ms
-        </Typography>
-        {!executedFunction.error && (
-          <Typography variant="subtitle1" color={"green"} sx={{ mt: 0.2 }}>
-            Status: Function executed successfully.
-          </Typography>
-        )}
-        {executedFunction.error && (
-          <Typography variant="subtitle1" color={"red"} sx={{ mt: 0.2 }}>
-            Status: Error - {executedFunction.error}
-          </Typography>
+        {!executedFunction.isMocked ? (
+          <Button
+            onClick={() => {
+              updateObject({
+                isMocked: true,
+                mockedOutput: executedFunction.output,
+                mockedErrorMessage: executedFunction.error,
+              });
+            }}
+          >
+            Mock This Function
+          </Button>
+        ) : (
+          <Button
+            onClick={() => {
+              updateObject({
+                isMocked: false,
+                mockedOutput: undefined,
+                mockedErrorMessage: undefined,
+              });
+            }}
+          >
+            UnMock This Function
+          </Button>
         )}
       </Grid>
-      <Grid item xs={12}>
-        <Grid container spacing={1}>
+      {executedFunction.isMocked ? (
+        <Grid item xs={12}>
           <Grid item xs={6}>
             <Typography variant="caption" fontWeight={"bold"}>
-              Input
+              Mocked Output
             </Typography>
             <JSONTextField
-              object={executedFunction.input}
-              onChange={() => undefined}
+              object={executedFunction.mockedOutput}
+              onChange={(obj) => updateObject({ mockedOutput: obj })}
             />
           </Grid>
-          {!executedFunction.error && (
-            <Grid item xs={6}>
-              <Typography variant="caption" fontWeight={"bold"}>
-                Output
-              </Typography>
-              <JSONTextField
-                object={executedFunction.output}
-                onChange={() => undefined}
-              />
-            </Grid>
-          )}
         </Grid>
-      </Grid>
+      ) : null}
+      {!executedFunction.isMocked ? (
+        <>
+          <Grid item xs={12}>
+            <Typography variant="subtitle1" sx={{ mt: 0.2 }}>
+              Execution Time: 38ms
+            </Typography>
+            {!executedFunction.error && (
+              <Typography variant="subtitle1" color={"green"} sx={{ mt: 0.2 }}>
+                Status: Function executed successfully.
+              </Typography>
+            )}
+            {executedFunction.error && (
+              <Typography variant="subtitle1" color={"red"} sx={{ mt: 0.2 }}>
+                Status: Error - {executedFunction.error}
+              </Typography>
+            )}
+          </Grid>
+          <Grid item xs={12}>
+            <Grid container spacing={1}>
+              <Grid item xs={6}>
+                <Typography variant="caption" fontWeight={"bold"}>
+                  Input
+                </Typography>
+                <JSONTextField
+                  object={executedFunction.input}
+                  onChange={() => undefined}
+                />
+              </Grid>
+              {!executedFunction.error && (
+                <Grid item xs={6}>
+                  <Typography variant="caption" fontWeight={"bold"}>
+                    Output
+                  </Typography>
+                  <JSONTextField
+                    object={executedFunction.output}
+                    onChange={() => undefined}
+                  />
+                </Grid>
+              )}
+            </Grid>
+          </Grid>
+        </>
+      ) : null}
     </Grid>
   );
 };

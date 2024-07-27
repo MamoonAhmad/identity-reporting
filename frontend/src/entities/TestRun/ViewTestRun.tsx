@@ -136,6 +136,7 @@ export const ViewTestRun = () => {
   const objectID = params?.["*"] || "";
   return (
     <ViewPage
+      objectID={objectID}
       title="Test Suite Run"
       dataLoader={async () => {
         return await TestRunServices.getTestRunById(objectID);
@@ -408,7 +409,8 @@ const getDiagramEntityFromExecutedFunction = (
   const entity: DiagramEntity = {
     id: func.id,
     label:
-      func.name + (func.executionContext.test_run?.is_mocked ? " (Mocked)" : ""),
+      func.name +
+      (func.executionContext.test_run?.is_mocked ? " (Mocked)" : ""),
     type: "node",
     metaData: {
       result: func,

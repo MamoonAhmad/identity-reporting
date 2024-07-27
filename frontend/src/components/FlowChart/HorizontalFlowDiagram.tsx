@@ -34,7 +34,7 @@ const FunctionBox: React.FC<{
 }> = ({ entity, ml = 0, reDraw, DiagramNodeComponent }) => {
   return (
     <>
-      <Box sx={{ display: "flex", alignItems: "flex-start" }}>
+      <Box sx={{ display: "flex", alignItems: "center" }}>
         {DiagramNodeComponent ? (
           <Box id={entity.id} display={"flex"} my={2}>
             <DiagramNodeComponent entity={entity} reDraw={reDraw} />
@@ -99,19 +99,25 @@ const drawEntityAndChildren = (
   if (!entity.children?.length) {
     return;
   }
-  
+
   const parentElement = document.getElementById(entity.id)!;
 
   if (!parentElement) {
     return;
   }
-  
+
   // set the stoke to default color
   ctx.strokeStyle = defaultStrokeColor;
   ctx.beginPath();
 
   const lastChild = entity.children[entity.children.length - 1];
+  const firstChild = entity.children[0];
   const lastChildElement = document.getElementById(lastChild.id)!;
+  const firstChildElement = document.getElementById(firstChild.id)!;
+
+  if (!lastChildElement || !firstChildElement) {
+    return;
+  }
 
   const parentRightOffset =
     parentElement.offsetLeft + parentElement.offsetWidth;
@@ -125,7 +131,10 @@ const drawEntityAndChildren = (
   ctx.lineTo(centerLineLeft, parentTopCenter);
 
   // Draw a center line
-  ctx.moveTo(centerLineLeft, parentTopCenter);
+  ctx.moveTo(
+    centerLineLeft,
+    firstChildElement.offsetTop + firstChildElement.offsetHeight / 2
+  );
   ctx.lineTo(
     centerLineLeft,
     lastChildElement.offsetTop + lastChildElement.offsetHeight / 2
