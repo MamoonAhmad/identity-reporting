@@ -81,9 +81,12 @@ const P: React.FC<{ object: any }> = ({ object }) => {
   );
 };
 
-type ExecutedFunctionWithCallCount = ExecutedFunction & {
+type ExecutedFunctionWithMockMeta = Omit<ExecutedFunction, "children"> & {
   callCount: number;
-  children: ExecutedFunctionWithCallCount[];
+  children: ExecutedFunctionWithMockMeta[];
+  isMocked?: boolean;
+  mockedErrorMessage?: string;
+  mockedOutput?: any;
 };
 type ExecutionViewProps = {
   function: ExecutedFunction;
@@ -96,10 +99,10 @@ export const ExecutionView: React.FC<ExecutionViewProps> = React.memo(
     const [diagramType, setDiagramType] = useState("horizontal");
 
     const [selectedFunctionEntity, setSelectedFunctionEntity] =
-      useState<ExecutedFunctionWithCallCount | null>(null);
+      useState<ExecutedFunctionWithMockMeta | null>(null);
 
     const onEntityClick = (e: DiagramEntity) => {
-      const executedFunction: ExecutedFunctionWithCallCount =
+      const executedFunction: ExecutedFunctionWithMockMeta =
         e.metaData?.function;
       setSelectedFunctionEntity(executedFunction);
     };
@@ -112,16 +115,24 @@ export const ExecutionView: React.FC<ExecutionViewProps> = React.memo(
       setF(executedFucntion);
     }, [executedFucntion]);
 
-    const func: ExecutedFunctionWithCallCount = useMemo(() => {
+    const func: ExecutedFunctionWithMockMeta = useMemo(() => {
       const callCountMap: { [key: string]: number } = {};
-      const visit = (f: ExecutedFunction): ExecutedFunctionWithCallCount => {
+      const visit = (f: ExecutedFunction): ExecutedFunctionWithMockMeta => {
         const key = `${f.moduleName}:${f.name}`;
         const callCount = (callCountMap[key] || 0) + 1;
+
+        const mockContext: { [key: string]: any } = {};
+        if (f.executionContext?.is_mocked) {
+          mockContext.isMocked = true;
+          mockContext.mockedOutput = f.output;
+          mockContext.mockedErrorMessage = f.error;
+        }
 
         return {
           ...f,
           children: f.children?.map((c) => visit(c)) || [],
           callCount,
+          ...mockContext,
         };
       };
 
@@ -137,8 +148,8 @@ export const ExecutionView: React.FC<ExecutionViewProps> = React.memo(
           };
         };
       } = {};
-      const visit = (f: ExecutedFunctionWithCallCount) => {
-        if (f.isMocked) {
+      const visit = (f: ExecutedFunctionWithMockMeta) => {
+        if (f.isMocked || f?.executionContext?.is_mocked) {
           const key = `${f.moduleName}:${f.name}`;
           if (!mocks[key]) {
             mocks[key] = {};
@@ -360,7 +371,7 @@ export const ExecutionView: React.FC<ExecutionViewProps> = React.memo(
 );
 
 const getDiagramEntityFromExecutedFunction = (
-  func: ExecutedFunction,
+  func: ExecutedFunctionWithMockMeta,
   onClick?: DiagramEntity["onClick"]
 ): DiagramEntity => {
   return {
@@ -380,7 +391,7 @@ const getDiagramEntityFromExecutedFunction = (
 };
 
 const FunctionView: React.FC<{
-  executedFunction: ExecutedFunctionWithCallCount;
+  executedFunction: ExecutedFunctionWithMockMeta;
 }> = ({ executedFunction }) => {
   const updateObject = useObjectChange(executedFunction, (obj) => [
     obj.mockedOutput,
