@@ -25,9 +25,11 @@ import {
 } from "@mui/material";
 import {
   AddSharp,
+  CheckCircleSharp,
   CheckSharp,
   CloseSharp,
   DoneSharp,
+  ErrorSharp,
   KeyboardArrowRightSharp,
   RemoveSharp,
   ReplaySharp,
@@ -317,12 +319,12 @@ const AssertionSuccessView: React.FC<{
   return (
     <Accordion>
       <AccordionSummary>
-        <Box display={"flex"}>
+        <Box display={"flex"} alignItems={"center"}>
           <Box mr={1}>
             {assertion.success ? (
-              <CheckSharp color="success" />
+              <CheckCircleSharp color="success" />
             ) : (
-              <CloseSharp color="error" />
+              <ErrorSharp color="error" />
             )}
           </Box>
           {assertion.name}
@@ -374,7 +376,7 @@ const AssertionFailView: React.FC<{
     <Accordion>
       <AccordionSummary>
         <Box display={"flex"}>
-          <CloseSharp color="error" sx={{ mr: 1 }} />
+          <ErrorSharp color="error" sx={{ mr: 1 }} />
 
           {assertion.name}
         </Box>

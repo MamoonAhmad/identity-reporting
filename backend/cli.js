@@ -11,6 +11,7 @@ import { registerExpressEndpoints as registerTestSuiteEndpoints } from "./entiti
 import { registerExpressEndpoints as registerExecutedFunctionEndpoints, registerSocketEndpoints as registerExecutedFunctionSocketEndpoints } from './entities/ExecutedFunction/endpoints.js';
 import { registerSocketEndpoints as registerTestRunSocketEndpoints, registerExpressEndpoints as registerTestRunEndpoints } from './entities/TestRun/endpoints.js';
 import { registerExpressEndpoints as registerUserSettingEndpoints } from './entities/UserSetting/endpoints.js';
+import { registerEndpoints as registerClientAppEndpoints } from './clientApp.js';
 
 
 
@@ -27,10 +28,36 @@ const socketIOInstance = new Server(server, {
     }
 });
 
+let socketActionCallbacksMap = null
 socketIOInstance.on('connection', (socket) => {
     console.log('SocketIO: A user connected');
-    registerTestRunSocketEndpoints(socketIOInstance, socket);
-    registerExecutedFunctionSocketEndpoints(socketIOInstance, socket);
+
+    if (!socketActionCallbacksMap) {
+        socketActionCallbacksMap = prepareSocketListeners()
+    }
+    
+    socket.on("message", async (data) => {
+        if (!data.action) {
+            return socket.emit("error", "Invalid socket message. Missing action.")
+        }
+        if (!data.payload) {
+            return socket.emit("error", "Invalid socket message. Missing payload.")
+        }
+        if (!socketActionCallbacksMap[data.action]) {
+            return socket.emit("error", "Invalid action.")
+        }
+
+        try {
+            const res = socketActionCallbacksMap[data.action](
+                socketIOInstance, socket, data
+            )
+            if (res instanceof Promise) {
+                await res
+            }
+        } catch (e) {
+            socket.emit(`${data.action}:error`, `Error occurred while trying to execute a socket action.\n${e?.toString()}`)
+        }
+    })
 
     socket.on('disconnect', () => {
         console.log('SocketIO: User disconnected');
@@ -45,9 +72,23 @@ app.use(urlLoggerMiddleware)
 
 const PORT = process.env.PORT || 8002;
 
-server.listen(8002)
+server.listen(PORT)
 
 registerExecutedFunctionEndpoints(app);
 registerTestSuiteEndpoints(app);
 registerTestRunEndpoints(app);
 registerUserSettingEndpoints(app);
+registerClientAppEndpoints(app);
+
+
+const prepareSocketListeners = () => {
+    
+    const socket = { on: () => { } }
+    const testRunCallbacks = registerTestRunSocketEndpoints(socketIOInstance, socket);
+    const executedFunctionCallbacks = registerExecutedFunctionSocketEndpoints(socketIOInstance, socket)
+
+    return {
+        ...testRunCallbacks,
+        ...executedFunctionCallbacks,
+    }
+}

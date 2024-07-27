@@ -52,7 +52,6 @@ export const DiagramWrapper: React.FC<{
       sx={{
         width: "100%",
         p: 0,
-        background: "lightgrey",
         position: "relative",
       }}
     >

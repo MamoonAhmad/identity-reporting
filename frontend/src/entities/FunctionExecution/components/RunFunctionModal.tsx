@@ -68,7 +68,12 @@ export const FunctionModal: React.FC<{
           onClick={() => {
             const socket = socketIO("http://localhost:8002");
             setLoading(true);
-            socket.emit("executed_function/run_function_with_code", code);
+            socket.emit("message", {
+              action: "executed_function/run_function_with_code",
+              payload: {
+                code
+              }
+            });
             socket.on(
               "executed_function/run_function_with_code:update",
               (data) => {

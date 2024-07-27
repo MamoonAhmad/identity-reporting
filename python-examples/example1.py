@@ -3,22 +3,28 @@ from identity_trace.decorator import watch
 count = 0
 
 
+
+
+
 @watch(name="multiply")
 def mul(a, b):
     return a * b
 
 
 @watch()
-def create_ticket_and_item():
+def create_ticket_and_item(anchor = None):
+    if anchor:
+        raise Exception("Anchor present")
     global count
     
     # raise Exception("Something went wrong")
-    count = count + 1
+    
     ticket = create_ticket()
     # raise Exception("Something to know about")
     ticket = add_item_to_ticket(ticket, 20)
-    if count > 1:
-        ticket['price'] = 0
+    count = count + 1
+    # if count > 1:
+    #     ticket['price'] = 0
     return ticket
     # return 10
 
@@ -59,7 +65,7 @@ def some_other3():
 
 @watch()
 def add_item_to_ticket(ticket, item_id):
-    some_other()
+    
     if item_id == 20:
         ticket["items"].append(dict(
             name = "Item 1",
@@ -69,6 +75,7 @@ def add_item_to_ticket(ticket, item_id):
     else:
         raise Exception("Invalid item id.")
     
+    some_other()
     return ticket
 
 

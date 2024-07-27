@@ -5,6 +5,7 @@ import { initDirectory } from "../../utils/initDirectory.js";
 import { readJSONFilePromised } from "../../utils/readJSONFilePromised.js";
 import { writeFileJSONPromised } from "../../utils/writeFileJSONPromised.js"
 import { EXECUTED_FUNCTION_PATH } from "./constants.js"
+import { matchWithOperator } from "../../utils/loaderUtils.js";
 
 
 
@@ -35,7 +36,7 @@ export const getExecutedFunctionByID = async (id) => {
 
 
 
-export const getAllExecutedFunctions = async () => {
+export const getAllExecutedFunctions = async (filters) => {
 
     initDirectory(EXECUTED_FUNCTION_PATH);
 
@@ -45,5 +46,7 @@ export const getAllExecutedFunctions = async () => {
         return readJSONFilePromised(fname)
     })
     const result = await Promise.all(promises)
-    return result
+    return result.filter(f => {
+        return Object.keys(filters).every(propName => matchWithOperator(f, propName, filters[propName]))
+    })
 }

@@ -3,24 +3,25 @@ import { useEffect, useReducer } from "react";
 
 export const ViewPage: React.FC<{
   HeaderActions?: React.FC<{ object: any }>;
-  dataLoader: () => Promise<any>;
+  objectID: string;
+  dataLoader: (id: string) => Promise<any>;
   title: string;
   Content?: React.FC<{ object: any }>;
   breadCrumb?: {
     url: string;
     label: string;
   }[];
-}> = ({ title, dataLoader, HeaderActions, Content }) => {
+}> = ({ title, dataLoader, HeaderActions, Content, objectID }) => {
   const [state, setState] = useReducer((p: any, c: any) => ({ ...p, ...c }), {
     loading: false,
   });
 
   useEffect(() => {
-    setState({ loading: true });
-    dataLoader().then((data) => {
+    setState({ loading: true, data: undefined });
+    dataLoader(objectID).then((data) => {
       setState({ data, loading: false });
     });
-  }, []);
+  }, [objectID]);
 
   return (
     <Container>
