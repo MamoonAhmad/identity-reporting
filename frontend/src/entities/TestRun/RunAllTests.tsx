@@ -116,7 +116,6 @@ export const RunAllTests = () => {
       setTotalTestCases(data.total || 0);
     });
     socket.on("test_run/test_run_result", (testResult: TestResult) => {
-      
       if (testResult.successful) {
         setPassedTests((tests) => [...tests, testResult]);
       } else {
@@ -149,7 +148,6 @@ export const RunAllTests = () => {
       // });
     });
   }, [filters]);
-
 
   // const filteredTests = useMemo(() => {
   //   if (Object.keys(filters).length === 0) {

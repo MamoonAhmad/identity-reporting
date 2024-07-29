@@ -28,6 +28,7 @@ import {
 import { JSONTextField } from "../../components/JSONTestField";
 import { useObjectChange } from "../TestCase/components/useObjectChange";
 import { TestCaseServices } from "../TestCase/services";
+import { GeneralObjectView } from "../../components/ObjectView";
 
 export const ViewFunctionExecution = () => {
   const params = useParams();
@@ -110,9 +111,12 @@ export const ExecutionView: React.FC<ExecutionViewProps> = React.memo(
       setSelectedFunctionEntity(null);
     };
 
+    const [inputToPass, setInputToPass] = useState(executedFucntion?.input);
+
     const [f, setF] = useState(executedFucntion);
     useEffect(() => {
       setF(executedFucntion);
+      setInputToPass(executedFucntion?.input);
     }, [executedFucntion]);
 
     const func: ExecutedFunctionWithMockMeta = useMemo(() => {
@@ -166,14 +170,12 @@ export const ExecutionView: React.FC<ExecutionViewProps> = React.memo(
 
       TestCaseServices.runFunctionWithInput(
         func,
-        func.input,
+        inputToPass,
         Object.keys(mocks).length > 0 ? mocks : undefined
       ).then((res) => {
         setF(res.executedFunction);
       });
-    }, [func]);
-
-    const [mocks, setMocks] = useState<{ [key: string]: any }>({});
+    }, [func, inputToPass]);
 
     if (!func) return null;
 
@@ -181,7 +183,7 @@ export const ExecutionView: React.FC<ExecutionViewProps> = React.memo(
       <>
         <Grid container>
           <Grid item xs={12}>
-            <Box sx={{ display: "flex", alignItems: "center" }}>
+            <Box sx={{ display: "flex", alignItems: "flex-start" }}>
               <Box
                 display={"flex"}
                 flexDirection={"column"}
@@ -204,19 +206,38 @@ export const ExecutionView: React.FC<ExecutionViewProps> = React.memo(
                   <Typography
                     variant="subtitle1"
                     color={"red"}
+                    textAlign={"left"}
                     sx={{ mt: 0.2 }}
                   >
-                    Status: Error - {func.error}
+                    {func.error?.split("\n")?.map((s) => (
+                      <Typography
+                        variant="subtitle1"
+                        color={"red"}
+                        sx={{ mt: 0.2 }}
+                      >
+                        {s}
+                      </Typography>
+                    ))}
                   </Typography>
                 )}
               </Box>
-              <Button sx={{ mx: 2 }} onClick={runFunctionWithInput}>
+              <Button
+                sx={{ mx: 2, flexShrink: 0, mt: 2 }}
+                onClick={runFunctionWithInput}
+              >
                 <Typography sx={{ display: "flex", alignItems: "center" }}>
                   <PlayArrowSharp sx={{ mr: 1 }} />
                   Run Function Again
                 </Typography>
               </Button>
             </Box>
+          </Grid>
+          <Grid item xs={12} my={2}>
+            <JSONTextField
+              object={inputToPass}
+              onChange={(obj) => setInputToPass(obj)}
+              label="Input To Pass (JSON)"
+            />
           </Grid>
           <Grid item xs={12} display={"flex"}>
             <ToggleButtonGroup
@@ -454,9 +475,15 @@ const FunctionView: React.FC<{
               </Typography>
             )}
             {executedFunction.error && (
-              <Typography variant="subtitle1" color={"red"} sx={{ mt: 0.2 }}>
-                Status: Error - {executedFunction.error}
-              </Typography>
+              <>
+                <Typography variant="subtitle1" color={"red"} sx={{ mt: 0.2 }}>
+                  <>
+                    {executedFunction.error?.split("\n").map((s) => (
+                      <Typography color={"red"}>{s}</Typography>
+                    ))}
+                  </>
+                </Typography>
+              </>
             )}
           </Grid>
           <Grid item xs={12}>
@@ -465,9 +492,9 @@ const FunctionView: React.FC<{
                 <Typography variant="caption" fontWeight={"bold"}>
                   Input
                 </Typography>
-                <JSONTextField
-                  object={executedFunction.input}
-                  onChange={() => undefined}
+                <GeneralObjectView
+                  sourceObject={executedFunction.input}
+                  name=""
                 />
               </Grid>
               {!executedFunction.error && (
@@ -475,9 +502,9 @@ const FunctionView: React.FC<{
                   <Typography variant="caption" fontWeight={"bold"}>
                     Output
                   </Typography>
-                  <JSONTextField
-                    object={executedFunction.output}
-                    onChange={() => undefined}
+                  <GeneralObjectView
+                    sourceObject={executedFunction.output}
+                    name=""
                   />
                 </Grid>
               )}

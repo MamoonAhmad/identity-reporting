@@ -16,9 +16,10 @@ export type TestRunForTestSuite = Omit<TestSuiteForFunction, "tests"> & {
 };
 
 export type TestResultForCase = {
-  result: FunctionTestResult;
+  result?: FunctionTestResult;
   successful: boolean;
   expectation: string;
+  error?: string;
 };
 export type TestResult = {
   testCaseName: string;
