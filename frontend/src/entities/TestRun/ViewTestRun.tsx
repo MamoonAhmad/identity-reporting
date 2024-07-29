@@ -236,133 +236,148 @@ export const TestCaseResult: React.FC<{
           </Typography>
         </AccordionSummary>
         <AccordionDetails>
-          <Grid
-            display={"flex"}
-            flexDirection={"column"}
-            alignItems={"flex-start"}
-          >
-            <Grid item xs={12}>
-              <Grid display={"flex"}>
-                <ToggleButtonGroup
-                  size="small"
-                  color="primary"
-                  value={diagramType}
-                  onChange={(_, v) => {
-                    setDiagramType(v);
-                  }}
-                  exclusive
-                >
-                  <ToggleButton value={"horizontal"}>Horizontal</ToggleButton>
-                  <ToggleButton value={"vertical"}>Vertical</ToggleButton>
-                  <ToggleButton value={"columns"}>Columns</ToggleButton>
-                </ToggleButtonGroup>
+          {testCaseResult?.error ? (
+            <Grid container>
+              <Grid item xs={12}>
+                <TextField
+                  fullWidth
+                  sx={{}}
+                  multiline
+                  color="error"
+                  value={testCaseResult.error}
+                />
               </Grid>
             </Grid>
+          ) : null}
+          {!testCaseResult?.error ? (
+            <Grid
+              display={"flex"}
+              flexDirection={"column"}
+              alignItems={"flex-start"}
+            >
+              <Grid item xs={12}>
+                <Grid display={"flex"}>
+                  <ToggleButtonGroup
+                    size="small"
+                    color="primary"
+                    value={diagramType}
+                    onChange={(_, v) => {
+                      setDiagramType(v);
+                    }}
+                    exclusive
+                  >
+                    <ToggleButton value={"horizontal"}>Horizontal</ToggleButton>
+                    <ToggleButton value={"vertical"}>Vertical</ToggleButton>
+                    <ToggleButton value={"columns"}>Columns</ToggleButton>
+                  </ToggleButtonGroup>
+                </Grid>
+              </Grid>
 
-            <Grid sx={{ overflow: "scroll" }} item xs={12}>
-              {diagramType === "horizontal" && (
-                <HorizontalFlowDiagram
-                  DiagramNodeComponent={({ entity }) => {
-                    return (
-                      <Button
-                        sx={{
-                          p: 1,
-                          borderRadius: 4,
-                          border: "1px solid black",
-                          display: "flex",
-                          alignItems: "center",
-                          textTransform: "none",
-                          color: "black",
-                          background: entity.metaData?.successful
-                            ? "transparent"
-                            : theme.palette.error.light,
-                        }}
-                        onClick={() =>
-                          setSelectedFunctionEntity(entity.metaData?.result)
-                        }
-                      >
-                        {entity.metaData?.successful ? (
-                          <CheckCircle color="success" />
-                        ) : (
-                          <ErrorSharp
-                            sx={{ color: theme.palette.error.contrastText }}
-                          />
-                        )}
-                        <Typography
+              <Grid sx={{ overflow: "scroll" }} item xs={12}>
+                {diagramType === "horizontal" && (
+                  <HorizontalFlowDiagram
+                    DiagramNodeComponent={({ entity }) => {
+                      return (
+                        <Button
                           sx={{
-                            color: !entity.metaData?.successful
-                              ? theme.palette.error.contrastText
-                              : undefined,
-                            ml: 1,
+                            p: 1,
+                            borderRadius: 4,
+                            border: "1px solid black",
+                            display: "flex",
+                            alignItems: "center",
+                            textTransform: "none",
+                            color: "black",
+                            background: entity.metaData?.successful
+                              ? "transparent"
+                              : theme.palette.error.light,
                           }}
+                          onClick={() =>
+                            setSelectedFunctionEntity(entity.metaData?.result)
+                          }
                         >
-                          {entity.label}
-                        </Typography>
-                      </Button>
-                    );
-                  }}
-                  entities={[
-                    getDiagramEntityFromExecutedFunction(
-                      testCaseResult.result,
-                      () => undefined
-                    ),
-                  ]}
-                />
-              )}
-              {diagramType === "vertical" && (
-                <PyramidFlowDiagram
-                  DiagramNodeComponent={({ entity }) => {
-                    return (
-                      <Button
-                        sx={{
-                          p: 1,
-                          borderRadius: 4,
-                          border: "1px solid black",
-                          display: "flex",
-                          alignItems: "center",
-                          textTransform: "none",
-                          color: "black",
-                          background: entity.metaData?.successful
-                            ? "transparent"
-                            : theme.palette.error.light,
-                        }}
-                        onClick={() =>
-                          setSelectedFunctionEntity(entity.metaData?.result)
-                        }
-                      >
-                        {entity.metaData?.successful ? (
-                          <CheckCircleSharp color="success" />
-                        ) : (
-                          <ErrorSharp
-                            sx={{ color: theme.palette.error.contrastText }}
-                          />
-                        )}
-                        <Typography
+                          {entity.metaData?.successful ? (
+                            <CheckCircle color="success" />
+                          ) : (
+                            <ErrorSharp
+                              sx={{ color: theme.palette.error.contrastText }}
+                            />
+                          )}
+                          <Typography
+                            sx={{
+                              color: !entity.metaData?.successful
+                                ? theme.palette.error.contrastText
+                                : undefined,
+                              ml: 1,
+                            }}
+                          >
+                            {entity.label}
+                          </Typography>
+                        </Button>
+                      );
+                    }}
+                    entities={[
+                      getDiagramEntityFromExecutedFunction(
+                        testCaseResult.result!,
+                        () => undefined
+                      ),
+                    ]}
+                  />
+                )}
+                {diagramType === "vertical" && (
+                  <PyramidFlowDiagram
+                    DiagramNodeComponent={({ entity }) => {
+                      return (
+                        <Button
                           sx={{
-                            color: !entity.metaData?.successful
-                              ? theme.palette.error.contrastText
-                              : undefined,
-                            ml: 1,
+                            p: 1,
+                            borderRadius: 4,
+                            border: "1px solid black",
+                            display: "flex",
+                            alignItems: "center",
+                            textTransform: "none",
+                            color: "black",
+                            background: entity.metaData?.successful
+                              ? "transparent"
+                              : theme.palette.error.light,
                           }}
+                          onClick={() =>
+                            setSelectedFunctionEntity(entity.metaData?.result)
+                          }
                         >
-                          {entity.label}
-                        </Typography>
-                      </Button>
-                    );
-                  }}
-                  entities={[
-                    getDiagramEntityFromExecutedFunction(
-                      testCaseResult.result,
-                      () => undefined
-                    ),
-                  ]}
-                />
-              )}
-              {diagramType === "columns" && (
-                <TestResultColumns object={testCaseResult.result} />
-              )}
+                          {entity.metaData?.successful ? (
+                            <CheckCircleSharp color="success" />
+                          ) : (
+                            <ErrorSharp
+                              sx={{ color: theme.palette.error.contrastText }}
+                            />
+                          )}
+                          <Typography
+                            sx={{
+                              color: !entity.metaData?.successful
+                                ? theme.palette.error.contrastText
+                                : undefined,
+                              ml: 1,
+                            }}
+                          >
+                            {entity.label}
+                          </Typography>
+                        </Button>
+                      );
+                    }}
+                    entities={[
+                      getDiagramEntityFromExecutedFunction(
+                        testCaseResult.result!,
+                        () => undefined
+                      ),
+                    ]}
+                  />
+                )}
+                {diagramType === "columns" && (
+                  <TestResultColumns object={testCaseResult.result!} />
+                )}
+              </Grid>
             </Grid>
-          </Grid>
+          ) : null}
         </AccordionDetails>
       </Accordion>
 
