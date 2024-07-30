@@ -51,7 +51,18 @@ export const Filter: React.FC<{
             </Grid>
           </AccordionDetails>
           <AccordionActions sx={{ justifyContent: "flex-start", px: 2 }}>
-            <Button onClick={() => onFilter(filterObject)}>
+            <Button
+              onClick={() =>
+                onFilter(
+                  Object.keys(filterObject).reduce((acc: any, k) => {
+                    if (filterObject[k]) {
+                      acc[k] = filterObject[k];
+                    }
+                    return acc;
+                  }, {})
+                )
+              }
+            >
               <FilterAltSharp sx={{ mr: 1 }} fontSize="inherit" />
               Filter
             </Button>

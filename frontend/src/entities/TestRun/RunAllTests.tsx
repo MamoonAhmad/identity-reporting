@@ -3,7 +3,6 @@ import {
   AccordionDetails as MuiAccordionDetails,
   AccordionSummary as MuiAccordionSummary,
   Box,
-  CircularProgress,
   Grid,
   Typography,
   styled,
@@ -11,7 +10,7 @@ import {
   AccordionSummaryProps,
   Button,
 } from "@mui/material";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { TestResult } from "../../components/NestedObjectView/matcher";
 import {
   CheckCircle,
@@ -19,24 +18,14 @@ import {
   EditSharp,
   ErrorSharp,
   KeyboardArrowDownSharp,
-  PendingSharp,
   PlayArrowSharp,
 } from "@mui/icons-material";
 import { TestResultView } from "./ViewTestRun";
 import socketIO from "socket.io-client";
-import { TestCaseServices } from "../TestCase/services";
-import { TestSuiteForFunction } from "../TestCase/components/ConfigureTestCase";
 import { Link, useSearchParams } from "react-router-dom";
 import { Filter, FilterObjectType } from "./components/Filter";
 import { PageContainer } from "../../components/PageContainer";
 import { PageTitle } from "../../components/PageTitle";
-import { useListPage } from "../../hooks/useListPage";
-import { TestRunRoutes } from "./routes";
-import { TestRunServices } from "./services";
-
-const socket = socketIO("http://localhost:8002");
-
-let testRunning = false;
 
 const Accordion = styled((props: AccordionProps) => (
   <MuiAccordion disableGutters elevation={0} square {...props} />
@@ -83,10 +72,16 @@ export const RunAllTests = () => {
   const [filters, setFilters] = useState<FilterObjectType | undefined>(
     undefined
   );
-  const [params] = useSearchParams();
-  const [totalTestCases, setTotalTestCases] = useState(0);
-  const [passedTests, setPassedTests] = useState<TestResult[]>([]);
-  const [failedTests, setFailedTests] = useState<TestResult[]>([]);
+  const [params, setParams] = useSearchParams();
+
+  const ref = useRef<{ passedTests: TestResult[]; failedTests: TestResult[] }>({
+    passedTests: [],
+    failedTests: [],
+  });
+
+  const { passedTests, failedTests } = ref.current;
+
+  const [t, setT] = useState(0);
 
   useEffect(() => {
     setFilters({
@@ -96,16 +91,16 @@ export const RunAllTests = () => {
     });
   }, [params]);
 
-  useEffect(() => {
+  const runTestsWithFilters = useCallback(() => {
     if (!filters) {
       return;
     }
 
-    setPassedTests([]);
-    setFailedTests([]);
-    setTotalTestCases(0);
+    setT(0);
+    ref.current = { passedTests: [], failedTests: [] };
 
-    testRunning = true;
+    console.log("I am called. before");
+    const socket = socketIO("http://localhost:8002");
     socket.emit("message", {
       action: "test_run/run_test",
       payload: {
@@ -113,73 +108,32 @@ export const RunAllTests = () => {
       },
     });
     socket.on("test_run/run_test:stats", (data) => {
-      setTotalTestCases(data.total || 0);
+      // setTotalTestCases(data.total || 0);
     });
     socket.on("test_run/test_run_result", (testResult: TestResult) => {
       if (testResult.successful) {
-        setPassedTests((tests) => [...tests, testResult]);
+        ref.current.passedTests.push(testResult);
       } else {
-        setFailedTests((tests) => [...tests, testResult]);
+        ref.current.failedTests.push(testResult);
       }
+      setT((t) => t + 1);
     });
     socket.on("test_run/test_run_result:error", (testResult: TestResult) => {
-      failedTests.push(testResult);
-      // setTests((existingTests) => {
-      //   const existingTestIndex = existingTests.findIndex(
-      //     (t) => t.testCase.id === testResult.testSuiteID
-      //   )!;
-      //   const existingTest = existingTests[existingTestIndex];
-      //   existingTest.result = testResult;
-      //   existingTest.inProgress = false;
-      //   existingTests[existingTestIndex] = { ...existingTest };
-      //   return [...existingTests];
-      // });
+      ref.current.failedTests.push(testResult);
+      setT((t) => t + 1);
     });
 
-    socket.on("test_run/test_run_init", (testSuiteID) => {
-      // setTests((existingTests) => {
-      //   const existingTestIndex = existingTests.findIndex(
-      //     (t) => t.testCase.id === testSuiteID
-      //   )!;
-      //   const existingTest = existingTests[existingTestIndex];
-      //   existingTest.inProgress = true;
-      //   existingTests[existingTestIndex] = { ...existingTest };
-      //   return [...existingTests];
-      // });
-    });
+    socket.on("test_run/test_run_init", (testSuiteID) => testSuiteID);
   }, [filters]);
 
-  // const filteredTests = useMemo(() => {
-  //   if (Object.keys(filters).length === 0) {
-  //     return tests;
-  //   }
-  //   return tests.filter((t) => {
-  //     if (
-  //       filters.moduleName &&
-  //       !t.result?.functionMeta?.moduleName?.includes(filters.moduleName)
-  //     ) {
-  //       return false;
-  //     }
-  //     if (
-  //       filters.fileName &&
-  //       !t.result?.functionMeta?.fileName?.includes(filters.fileName)
-  //     ) {
-  //       return false;
-  //     }
-  //     if (
-  //       filters.testSuiteName &&
-  //       !t.result?.testCaseName?.includes(filters.testSuiteName)
-  //     ) {
-  //       return false;
-  //     }
-  //     return true;
-  //   });
-  // }, [filters, tests]);
+  useEffect(() => {
+    runTestsWithFilters();
+  }, [runTestsWithFilters]);
 
   return (
     <PageContainer>
       <PageTitle title="Test Run">
-        <Button>
+        <Button onClick={runTestsWithFilters}>
           <PlayArrowSharp sx={{ mr: 1 }} />
           Run Tests Again
         </Button>
@@ -195,7 +149,7 @@ export const RunAllTests = () => {
             }}
           >
             <Typography fontWeight={"bold"} variant="body2" sx={{ mr: 1 }}>
-              {totalTestCases}
+              {passedTests.length + failedTests.length}
             </Typography>
             <Typography variant="body2">Total</Typography>
           </Box>
@@ -250,7 +204,7 @@ export const RunAllTests = () => {
               functionName: "Function Name",
               moduleName: "Module Name",
             }}
-            onFilter={(filters) => setFilters(filters)}
+            onFilter={(filters) => setParams(new URLSearchParams(filters))}
           />
         </Grid>
 
@@ -296,7 +250,7 @@ const TestSuiteAccordion: React.FC<{
   return (
     <Accordion defaultExpanded={!!r.result} disabled={!r.result}>
       <AccordionSummary sx={{ display: "flex", alignItems: "center" }}>
-        <Typography sx={{ flexGrow: 1, textAlign: "left" }}>
+        <Typography sx={{ textAlign: "left", flexShrink: 0 }}>
           {r?.successful && (
             <CheckCircle color="success" fontSize="small" sx={{ mr: 1 }} />
           )}
@@ -308,6 +262,13 @@ const TestSuiteAccordion: React.FC<{
           )}
           {r.testCaseName}
         </Typography>
+        <Typography
+          color={"gray"}
+          sx={{ ml: 1, flexGrow: 1, textAlign: "left" }}
+        >
+          ({r.functionMeta?.moduleName})
+        </Typography>
+
         <Link
           to={`/test-case/view-test-case/${r.testSuiteID}`}
           onClick={(e) => e.stopPropagation()}
