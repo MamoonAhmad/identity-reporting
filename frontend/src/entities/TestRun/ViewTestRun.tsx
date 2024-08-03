@@ -1,6 +1,6 @@
 import { ViewPage } from "../../components/UICrud/ViewPage";
 import { useParams } from "react-router-dom";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   FunctionTestResult,
   TestResult,
@@ -72,7 +72,7 @@ const Accordion = styled(
       />
     );
   }
-)(({ theme }) => ({
+)(() => ({
   borderWidth: "2px",
   borderStyle: "solid",
   "&:not(:last-child)": {
@@ -193,7 +193,9 @@ export const TestResultView: React.FC<{
       <Grid container>
         <Grid item xs={12}>
           {result.result?.map((r) => {
-            return <TestCaseResult testCaseResult={r} />;
+            return (
+              <TestCaseResult testCaseResult={r} expanded={!r.successful} />
+            );
           })}
         </Grid>
       </Grid>
@@ -239,13 +241,17 @@ export const TestCaseResult: React.FC<{
           {testCaseResult?.error ? (
             <Grid container>
               <Grid item xs={12}>
-                <TextField
-                  fullWidth
-                  sx={{}}
-                  multiline
-                  color="error"
-                  value={testCaseResult.error}
-                />
+                <>
+                  {testCaseResult.error.split("\n").map((s) => (
+                    <Typography
+                      variant="subtitle1"
+                      color={"error"}
+                      textAlign={"left"}
+                    >
+                      {s}
+                    </Typography>
+                  ))}
+                </>
               </Grid>
             </Grid>
           ) : null}

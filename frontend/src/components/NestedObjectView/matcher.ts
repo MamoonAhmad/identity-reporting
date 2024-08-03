@@ -40,6 +40,7 @@ export type FunctionTestResult = BaseTestResult & {
   executionContext: Record<string, any>;
   children: FunctionTestResult[];
   assertions: AssertionResult[];
+  passedInput: any
 };
 
 export type AssertionResult = {

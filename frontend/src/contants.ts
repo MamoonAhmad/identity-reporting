@@ -1,7 +1,0 @@
-
-
-export const STORE_ACTIONS = {
-
-    SHOW_SIDE_PANEL: 'SHOW_SIDE_PANEL'
-
-}
