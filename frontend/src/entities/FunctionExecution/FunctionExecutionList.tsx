@@ -9,7 +9,7 @@ import { FunctionExecutionServices } from "./services";
 import { Box, CircularProgress, Grid, IconButton } from "@mui/material";
 import { PageContainer } from "../../components/PageContainer";
 import { PageTitle } from "../../components/PageTitle";
-import { Filter } from "../TestRun/components/Filter";
+import { Filter } from "../../components/Filter";
 
 import { useListPage } from "../../hooks/useListPage";
 import { Link } from "react-router-dom";

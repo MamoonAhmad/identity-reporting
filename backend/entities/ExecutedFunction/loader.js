@@ -42,11 +42,23 @@ export const getAllExecutedFunctions = async (filters) => {
 
     const files = fs.readdirSync(EXECUTED_FUNCTION_PATH)
     const fileNames = files.map(f => path.join(EXECUTED_FUNCTION_PATH, f))
+    const results = []
+
     const promises = fileNames.map(fname => {
-        return readJSONFilePromised(fname)
+        return (async () => {
+            const res = await readJSONFilePromised(fname)
+            const shouldAdd = Object.keys(filters).
+                every(propName => matchWithOperator(res, propName, filters[propName]))
+
+            if (shouldAdd) {
+                results.push(res);
+            }
+
+        })();
     })
-    const result = await Promise.all(promises)
-    return result.filter(f => {
-        return Object.keys(filters).every(propName => matchWithOperator(f, propName, filters[propName]))
-    })
+
+    await promises;
+
+    return results;
+
 }

@@ -33,11 +33,20 @@ export const getAllTestSuits = async (filters = {}) => {
 
     const files = fs.readdirSync(testCasePath)
     const fileNames = files.map(f => path.join(testCasePath, f))
+    const results = []
     const promises = fileNames.map(fname => {
-        return readJSONFilePromised(fname)
+        return (async () => {
+            const res = readJSONFilePromised(fname)
+            const shouldAdd = Object.keys(filters).
+                every(key => matchWithOperator(r, key, filters[key], filterOverrides));
+            if (shouldAdd) {
+                results.push(res);
+            }
+        })()
     })
-    const result = await Promise.all(promises)
-    return result.filter(r => Object.keys(filters).every(key => matchWithOperator(r, key, filters[key], filterOverrides)))
+    await promises;
+
+    return results;
 }
 
 export const getTestSuiteByID = async (testSuiteID) => {

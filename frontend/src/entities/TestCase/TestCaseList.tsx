@@ -19,7 +19,7 @@ import { TestRunRoutes } from "../TestRun/routes";
 import { PageContainer } from "../../components/PageContainer";
 import { PageTitle } from "../../components/PageTitle";
 import { useListPage } from "../../hooks/useListPage";
-import { Filter } from "../TestRun/components/Filter";
+import { Filter } from "../../components/Filter";
 
 export const TestCaseList: React.FC<any> = () => {
   const { data, loading, filters, setFilters } = useListPage(

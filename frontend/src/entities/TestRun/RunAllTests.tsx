@@ -23,9 +23,9 @@ import {
 import { TestResultView } from "./ViewTestRun";
 import socketIO from "socket.io-client";
 import { Link, useSearchParams } from "react-router-dom";
-import { Filter, FilterObjectType } from "./components/Filter";
 import { PageContainer } from "../../components/PageContainer";
 import { PageTitle } from "../../components/PageTitle";
+import { Filter, FilterObjectType } from "../../components/Filter";
 
 const Accordion = styled((props: AccordionProps) => (
   <MuiAccordion disableGutters elevation={0} square {...props} />

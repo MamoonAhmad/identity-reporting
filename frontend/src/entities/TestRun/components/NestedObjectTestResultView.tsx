@@ -20,6 +20,7 @@ import {
   List,
   ListItem,
   ListItemText,
+  TextField,
   Typography,
   useTheme,
 } from "@mui/material";
@@ -30,10 +31,13 @@ import {
   CloseSharp,
   DoneSharp,
   ErrorSharp,
+  KeyboardArrowDownSharp,
   KeyboardArrowRightSharp,
   RemoveSharp,
   ReplaySharp,
 } from "@mui/icons-material";
+import { GeneralObjectView } from "../../../components/ObjectView";
+import { ClientErrorMessage } from "../../../components/ClientErrorMessage";
 
 type GenericTestResult = FunctionTestResult;
 const getChildren = (
@@ -210,7 +214,21 @@ export const TestResultFunctionView: React.FC<{
           </Box>
         </Grid>
 
-        <Grid xs={12} sx={{ mt: 2 }}>
+        <Grid item xs={12} my={2}>
+          <Accordion>
+            <AccordionSummary expandIcon={<KeyboardArrowDownSharp />}>
+              Passed Input
+            </AccordionSummary>
+            <AccordionDetails>
+              <GeneralObjectView
+                sourceObject={resultObject.passedInput}
+                name=""
+              />
+            </AccordionDetails>
+          </Accordion>
+        </Grid>
+
+        <Grid item xs={12} sx={{ mt: 2 }}>
           {resultObject.successful ? (
             <TestResultSuccessView object={resultObject} />
           ) : (
@@ -235,7 +253,7 @@ export const TestResultSuccessView: React.FC<{ object: GenericTestResult }> = ({
       >
         <Typography variant="subtitle1">Result:</Typography>
         <Typography sx={{ ml: 1 }} variant="body1" color={"green"}>
-          Successfully matched with config.1
+          Successfully matched with config
         </Typography>
       </Grid>
 
@@ -245,19 +263,10 @@ export const TestResultSuccessView: React.FC<{ object: GenericTestResult }> = ({
         alignItems={"center"}
         justifyContent={"flex-start"}
       >
-        {object.executedSuccessfully ? (
+        {object.executedSuccessfully && (
           <Typography variant="body1" color={"green"}>
             Function successfully executed.
           </Typography>
-        ) : (
-          <>
-            <Typography align="left">
-              <Typography variant="body1">Thrown Error: </Typography>
-              <Typography variant="body1" color={"red"}>
-                {object.thrownError}
-              </Typography>
-            </Typography>
-          </>
         )}
       </Grid>
       <Grid item xs={12} sx={{ my: 2 }}>
@@ -316,9 +325,10 @@ export const TestResultFailView: React.FC<{ object: GenericTestResult }> = ({
 const AssertionSuccessView: React.FC<{
   assertion: AssertionResult;
 }> = ({ assertion }) => {
+  const theme = useTheme();
   return (
     <Accordion>
-      <AccordionSummary>
+      <AccordionSummary expandIcon={<KeyboardArrowDownSharp />}>
         <Box display={"flex"} alignItems={"center"}>
           <Box mr={1}>
             {assertion.success ? (
@@ -331,6 +341,20 @@ const AssertionSuccessView: React.FC<{
         </Box>
       </AccordionSummary>
       <AccordionDetails>
+        {assertion.expectedErrorMessage && (
+          <Grid container>
+            <Grid item xs={12}>
+              <Typography variant="body1" fontWeight={"bold"} sx={{ mb: 1 }}>
+                Expected Error Message
+              </Typography>
+              <ClientErrorMessage
+                message={assertion.expectedErrorMessage.message}
+                color={theme.palette.success.dark}
+                variant="subtitle1"
+              />
+            </Grid>
+          </Grid>
+        )}
         {assertion.ioConfig && (
           <Grid container>
             <Grid item xs={12}>
@@ -372,9 +396,10 @@ const AssertionSuccessView: React.FC<{
 const AssertionFailView: React.FC<{
   assertion: AssertionResult;
 }> = ({ assertion }) => {
+  const theme = useTheme();
   return (
-    <Accordion>
-      <AccordionSummary>
+    <Accordion defaultExpanded>
+      <AccordionSummary expandIcon={<KeyboardArrowDownSharp />}>
         <Box display={"flex"}>
           <ErrorSharp color="error" sx={{ mr: 1 }} />
 
@@ -382,6 +407,32 @@ const AssertionFailView: React.FC<{
         </Box>
       </AccordionSummary>
       <AccordionDetails>
+        {assertion.expectedErrorMessage && (
+          <>
+            <Grid container>
+              <Grid item xs={12}>
+                <Typography variant="body1" fontWeight={"bold"}>
+                  Expected Error Message
+                </Typography>
+                <ClientErrorMessage
+                  message={assertion.expectedErrorMessage.message}
+                  color={theme.palette.success.dark}
+                  variant="subtitle1"
+                />
+              </Grid>
+              <Grid item xs={12} mt={2}>
+                <Typography variant="body1" fontWeight={"bold"}>
+                  Received Error Message
+                </Typography>
+                <ClientErrorMessage
+                  message={assertion.expectedErrorMessage.receivedError || ""}
+                  color={theme.palette.error.dark}
+                  variant="subtitle1"
+                />
+              </Grid>
+            </Grid>
+          </>
+        )}
         {assertion.ioConfig && (
           <Grid container>
             <Grid item xs={12}>
