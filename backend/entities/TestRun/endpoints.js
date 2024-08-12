@@ -1,3 +1,4 @@
+import { logger } from "../../logger.js"
 import { expressEndpointResolver } from "../../utils/expressEndpointResolver.js"
 import { ENTITY_NAME_URL } from "./constants.js"
 import { getAllTestRuns, getTestRunByID, runTestSuits, saveTestRun } from "./controller.js"
@@ -6,6 +7,7 @@ import { getAllTestRuns, getTestRunByID, runTestSuits, saveTestRun } from "./con
 
 
 export const registerExpressEndpoints = (app) => {
+    logger.debug("Registering endpoints for TestRun")
     const url = (endpoint) => {
         return `/${ENTITY_NAME_URL}/${endpoint}`
     }

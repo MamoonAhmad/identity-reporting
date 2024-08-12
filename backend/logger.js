@@ -16,4 +16,12 @@ export const logger = {
         console.warn(message)
     },
 
+    info (message){
+        console.info(message);
+    },
+
+    debug (message) {
+        console.debug(message);
+    }
+
 }
