@@ -36,9 +36,9 @@ export const getAllTestSuits = async (filters = {}) => {
     const results = []
     const promises = fileNames.map(fname => {
         return (async () => {
-            const res = readJSONFilePromised(fname)
+            const res = await readJSONFilePromised(fname)
             const shouldAdd = Object.keys(filters).
-                every(key => matchWithOperator(r, key, filters[key], filterOverrides));
+                every(key => matchWithOperator(res, key, filters[key], filterOverrides));
             if (shouldAdd) {
                 results.push(res);
             }
