@@ -1,18 +1,13 @@
-import {
-  CheckCircleSharp,
-  DeleteSharp,
-  ErrorSharp,
-  VisibilitySharp,
-} from "@mui/icons-material";
+import { CheckCircleSharp, DeleteSharp, ErrorSharp } from "@mui/icons-material";
+import { Box, CircularProgress, Grid, IconButton } from "@mui/material";
+import { useState } from "react";
+
 import { ListPage } from "../../components/UICrud";
 import { FunctionExecutionServices } from "./services";
-import { Box, CircularProgress, Grid, IconButton } from "@mui/material";
 import { PageContainer } from "../../components/PageContainer";
 import { PageTitle } from "../../components/PageTitle";
 import { Filter } from "../../components/Filter";
-
 import { useListPage } from "../../hooks/useListPage";
-import { Link } from "react-router-dom";
 
 export const FunctionExecutionList: React.FC<any> = () => {
   const { data, loading, filters, setFilters } = useListPage(
@@ -44,6 +39,9 @@ export const FunctionExecutionList: React.FC<any> = () => {
               <>
                 <ListPage
                   data={data}
+                  viewLink={(o) =>
+                    `/function-execution/view-function-execution/${o.id}`
+                  }
                   keyColumnMap={{
                     name: "Function Name",
                     fileName: "File Name",
@@ -70,12 +68,40 @@ export const FunctionExecutionList: React.FC<any> = () => {
                     ),
                   }}
                   actions={(o) => {
+                    // eslint-disable-next-line react-hooks/rules-of-hooks
+                    const [_loading, _setLoading] = useState(false);
+                    if (_loading) {
+                      return (
+                        <Box
+                          sx={{
+                            display: "flex",
+                            alignItems: "center",
+                            widows: "100%",
+                            height: "100%",
+                          }}
+                        >
+                          <CircularProgress size={20} />
+                        </Box>
+                      );
+                    }
                     return (
                       <>
-                        <Link to={`/function-execution/view-function-execution/${o.id}`}>
-                          <VisibilitySharp />
-                        </Link>
-                        <IconButton onClick={() => undefined} sx={{ mr: 1 }}>
+                        <IconButton
+                          onClick={() => {
+                            _setLoading(true);
+
+                            fetch(
+                              `http://localhost:8002/executed_function/delete-executed-function/${o.id}`,
+                              {
+                                method: "POST",
+                              }
+                            ).then(() => {
+                              _setLoading(false);
+                              window.location.reload();
+                            });
+                          }}
+                          sx={{ mr: 1 }}
+                        >
                           <DeleteSharp />
                         </IconButton>
                       </>

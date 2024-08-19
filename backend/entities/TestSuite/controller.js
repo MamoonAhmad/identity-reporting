@@ -1,6 +1,7 @@
 
 import { v4 } from "uuid"
 import * as loader from "./loader.js"
+import { logger } from "../../logger.js";
 
 
 
@@ -62,4 +63,6 @@ export const updateTestSuite = async (testSuite) => {
 export const createTestSuite = async (testSuite) => {
     return await loader.createTestSuite(testSuite)
 }
+
+export const deleteTestSuite = (id) => loader.deleteTestSuite(id)
 

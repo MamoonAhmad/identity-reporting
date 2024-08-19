@@ -8,6 +8,8 @@ import { readJSONFilePromised } from "../../utils/readJSONFilePromised.js"
 import { ENTITY_NAME } from "./constants.js"
 import { writeFileJSONPromised } from "../../utils/writeFileJSONPromised.js";
 import { matchWithOperator } from "../../utils/loaderUtils.js";
+import { logger } from "../../logger.js";
+import { ERROR_CODES, throwError } from "../../errors.js";
 
 
 
@@ -64,6 +66,7 @@ export const updateTestSuite = async (testSuite) => {
     const testSuiteID = testSuite.id
     const testSuiteFile = `${testCasePath}/${testSuiteID}.json`
 
+    logger.debug("Updating test suite.", testSuite)
     try {
         await writeFileJSONPromised(testSuiteFile, testSuite);
     } catch (e) {
@@ -80,6 +83,8 @@ export const createTestSuite = async (testSuite) => {
         testSuite.id = testSuiteID;
     }
 
+    logger.debug("Creating new test suite.", testSuite)
+
     const testSuiteFile = `${testCasePath}/${testSuiteID}.json`
 
     if (fs.existsSync(testSuiteFile)) {
@@ -94,3 +99,27 @@ export const createTestSuite = async (testSuite) => {
 
 }
 
+export const deleteTestSuite = async (id) => {
+    const testSuiteFile = `${testCasePath}/${id}.json`
+
+    if (!fs.existsSync(testSuiteFile)) {
+        logger.debug(`Trying to delete the test suite with invalid ID ${id}. File does not exist.`)
+        return null
+    }
+
+    const promise = new Promise((resolve, reject) => {
+        fs.unlink(testSuiteFile, (err) => {
+            if (err) {
+                reject(err)
+            }
+            resolve();
+        })
+    })
+    try {
+        logger.debug(`Deleting test suite ${id}.`)
+        await promise;
+
+    } catch (e) {
+        throwError(ERROR_CODES.EXTERNAL_ERROR, { message: `Could not delete test suite. ${e?.toString()}` })
+    }
+}

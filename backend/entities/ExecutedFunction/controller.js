@@ -4,6 +4,8 @@ import { getExecutedFunctionTreeFromExecutedFunctions } from "./utils.js";
 import { ENTITY_NAME_URL, EXECUTED_FUNCTION_PATH } from "./constants.js";
 import { initDirectory } from "../../utils/initDirectory.js";
 import { runFunctionsOnClientApp } from "../../clientApp.js";
+import { ERROR_CODES, throwError } from "../../errors.js";
+import { logger } from "../../logger.js";
 
 
 /**
@@ -31,16 +33,17 @@ export const runCodeOnClientApplication = async (socketIOInstance, code) => {
         context: null,
     }
 
+    logger.debug("Running code on Client App.")
+    const [executedFunction] = await runFunctionsOnClientApp([
+        function_config
+    ])
+
+    await loader.createExecutedFunction(executedFunction);
+
     try {
-
-        const [executedFunction] = await runFunctionsOnClientApp([
-            function_config
-        ])
-        await loader.createExecutedFunction(executedFunction);
         socketIOInstance.emit(url("run_function_with_code:result"), executedFunction.id);
-
     } catch (e) {
-        throw e
+        throwError(ERROR_CODES.USER_SOCKET_ERROR, { message: e?.toString() || "" })
     }
 }
 
@@ -107,3 +110,5 @@ export const getAllExecutedFunctions = async (req, res) => {
 
     return loader.getAllExecutedFunctions(filters)
 }
+
+export const deleteExecutedFunction = (id) => loader.deleteExecutedFunction(id)

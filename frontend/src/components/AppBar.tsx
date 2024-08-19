@@ -18,9 +18,9 @@ import ListItemIcon from "@mui/material/ListItemIcon";
 import ListItemText from "@mui/material/ListItemText";
 import { CodeSharp, SettingsSharp } from "@mui/icons-material";
 import { Button, Container } from "@mui/material";
-import { Outlet, useNavigate } from "react-router-dom";
+import { Link, Outlet, useNavigate } from "react-router-dom";
+
 import { TestCaseRoutes } from "../entities/TestCase/routes";
-import { TestRunRoutes } from "../entities/TestRun/routes";
 import { FunctionExecutionRoutes } from "../entities/FunctionExecution/routes";
 import { ConfigRoutes } from "../entities/Config/routes";
 import { FunctionModal } from "../entities/FunctionExecution/components/RunFunctionModal";
@@ -32,14 +32,9 @@ const DrawerOptions: any = {
     route: FunctionExecutionRoutes.FunctionExecutionList,
   },
   test_cases: {
-    label: "Test Cases",
+    label: "Test Suites",
     Icon: CodeSharp,
     route: TestCaseRoutes.TestCaseList,
-  },
-  test_runs: {
-    label: "Test Runs",
-    Icon: CodeSharp,
-    route: TestRunRoutes.TestRunList,
   },
   config: {
     label: "Settings",
@@ -105,13 +100,6 @@ export default function PersistentDrawerLeft() {
 
   const [openRunCode, setOpenRunCode] = React.useState(false);
 
-  const [state, setState] = React.useReducer(
-    (p: any, c: any) => ({ ...p, ...c }),
-    {
-      currentDrawerOption: "test_cases",
-    }
-  );
-
   const handleDrawerOpen = () => {
     setOpen(true);
   };
@@ -139,9 +127,11 @@ export default function PersistentDrawerLeft() {
               >
                 <MenuIcon />
               </IconButton>
-              <Typography variant="h6" noWrap component="div">
-                Code Identity Reporting Tool
-              </Typography>
+              <Link to="/">
+                <Typography variant="h6" noWrap component="div">
+                  Code Identity Reporting Tool
+                </Typography>
+              </Link>
             </Box>
             <Button onClick={() => setOpenRunCode(true)} color="inherit">
               Run Function
@@ -180,11 +170,10 @@ export default function PersistentDrawerLeft() {
                 key={key}
                 disablePadding
                 onClick={() => {
-                  setState({ currentDrawerOption: key });
                   navigate(route);
                 }}
               >
-                <ListItemButton selected={state.currentDrawerOption === key}>
+                <ListItemButton selected={location.href.includes(route)}>
                   <ListItemIcon>
                     <Icon />
                   </ListItemIcon>

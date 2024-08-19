@@ -6,6 +6,7 @@ import {
   TableRow,
 } from "@mui/material";
 import { useMemo } from "react";
+import { Link } from "react-router-dom";
 
 export const ListPage: React.FC<{
   keyColumnMap: {
@@ -14,7 +15,14 @@ export const ListPage: React.FC<{
   columnOverride?: { [key: string]: React.FC<{ object: any }> };
   actions?: (o: any) => React.ReactNode;
   data: any[];
-}> = ({ keyColumnMap, actions, columnOverride = {}, data }) => {
+  viewLink?: (o: any) => string;
+}> = ({
+  keyColumnMap,
+  actions,
+  columnOverride = {},
+  data,
+  viewLink = () => "",
+}) => {
   const columns = useMemo(
     () => Object.keys(keyColumnMap).map((k) => keyColumnMap[k]),
     [keyColumnMap]
@@ -38,7 +46,11 @@ export const ListPage: React.FC<{
             <TableRow>
               {objectKeys.map((k) => (
                 <TableCell>
-                  {columnOverride[k] ? columnOverride[k]({ object: d }) : d[k]}
+                  <Link to={viewLink(d)}>
+                    {columnOverride[k]
+                      ? columnOverride[k]({ object: d })
+                      : d[k]}
+                  </Link>
                 </TableCell>
               ))}
               {actions ? actions(d) : null}
