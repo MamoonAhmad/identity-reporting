@@ -9,11 +9,10 @@ import { Server } from 'socket.io';
 
 import { registerExpressEndpoints as registerTestSuiteEndpoints } from "./entities/TestSuite/endpoints.js"
 import { registerExpressEndpoints as registerExecutedFunctionEndpoints, registerSocketEndpoints as registerExecutedFunctionSocketEndpoints } from './entities/ExecutedFunction/endpoints.js';
-import { registerSocketEndpoints as registerTestRunSocketEndpoints, registerExpressEndpoints as registerTestRunEndpoints } from './entities/TestRun/endpoints.js';
+import { registerSocketEndpoints as registerTestRunSocketEndpoints } from './entities/TestRun/endpoints.js';
 import { registerExpressEndpoints as registerUserSettingEndpoints } from './entities/UserSetting/endpoints.js';
 import { registerEndpoints as registerClientAppEndpoints } from './clientApp.js';
 import * as userSettingLoader from "./entities/UserSetting/loader.js"
-import { ERROR_CODES, throwError } from './errors.js';
 import { logger } from './logger.js';
 
 
@@ -98,7 +97,6 @@ export async function startServer() {
 
     registerExecutedFunctionEndpoints(app);
     registerTestSuiteEndpoints(app);
-    registerTestRunEndpoints(app);
     registerUserSettingEndpoints(app);
     registerClientAppEndpoints(app);
 

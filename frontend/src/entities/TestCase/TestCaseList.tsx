@@ -1,21 +1,10 @@
+import { useState } from "react";
+import { Button, CircularProgress, Grid, IconButton } from "@mui/material";
+import { DeleteSharp, PlayArrowSharp } from "@mui/icons-material";
+import { Link } from "react-router-dom";
+
 import { ListPage } from "../../components/UICrud";
 import { TestCaseServices } from "./services";
-import { TestCaseRoutes } from "./routes";
-import {
-  Box,
-  Button,
-  CircularProgress,
-  Grid,
-  IconButton,
-  Typography,
-} from "@mui/material";
-import {
-  DeleteSharp,
-  PlayArrowSharp,
-  VisibilitySharp,
-} from "@mui/icons-material";
-import { Link, useNavigate } from "react-router-dom";
-import { TestRunRoutes } from "../TestRun/routes";
 import { PageContainer } from "../../components/PageContainer";
 import { PageTitle } from "../../components/PageTitle";
 import { useListPage } from "../../hooks/useListPage";
@@ -62,6 +51,7 @@ export const TestCaseList: React.FC<any> = () => {
               <>
                 <ListPage
                   data={data}
+                  viewLink={(o) => `view-test-case/${o.id}`}
                   keyColumnMap={{
                     name: "Test Suite Name",
                     description: "Description",
@@ -72,12 +62,30 @@ export const TestCaseList: React.FC<any> = () => {
                       object?.functionMeta?.fileName || "",
                   }}
                   actions={(o) => {
+                    // eslint-disable-next-line react-hooks/rules-of-hooks
+                    const [_loading, _setLoading] = useState(false);
+                    if (_loading) {
+                      return <CircularProgress size={"small"} />;
+                    }
+
                     return (
                       <>
-                        <Link to={`view-test-case/${o.id}`}>
-                          <VisibilitySharp />
-                        </Link>
-                        <IconButton onClick={() => undefined} sx={{ mr: 1 }}>
+                        <IconButton
+                          onClick={() => {
+                            _setLoading(true);
+
+                            fetch(
+                              `http://localhost:8002/test_case/delete-test-case/${o.id}`,
+                              {
+                                method: "POST",
+                              }
+                            ).then(() => {
+                              _setLoading(false);
+                              window.location.reload();
+                            });
+                          }}
+                          sx={{ mr: 1 }}
+                        >
                           <DeleteSharp />
                         </IconButton>
                       </>

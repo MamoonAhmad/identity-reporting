@@ -5,13 +5,15 @@ export const ERROR_CODES = {
     CONFIG_FILE_NOT_FOUND: "CONFIG_FILE_NOT_FOUND",
     EXTERNAL_ERROR: "EXTERNAL_ERROR",
     VALIDATION_ERROR: "VALIDATION_ERROR",
+    USER_SOCKET_ERROR: "USER_SOCKET_ERROR"
 }
 
 const ERROR_MESSAGES = {
     EXTERNAL_ERROR: '&message&',
     PORT_ALREADY_IN_USE: `Port &port& is already in use.`,
     CONFIG_FILE_NOT_FOUND: `Config file does not exist. Create 'identity_config.json' in the root of your project.`,
-    VALIDATION_ERROR: "&entity& Error. &field& is not valid.&extraMessage&"
+    VALIDATION_ERROR: "&entity& Error. &field& is not valid.&extraMessage&",
+    USER_SOCKET_ERROR: "Error communicating with the user socket.&message&"
 }
 
 

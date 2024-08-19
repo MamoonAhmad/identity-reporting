@@ -3,6 +3,7 @@ import { readJSONFilePromised } from "../../utils/readJSONFilePromised.js"
 import { writeFileJSONPromised } from "../../utils/writeFileJSONPromised.js"
 import { ERROR_CODES, throwError } from '../../errors.js'
 import { validateUserSetting } from './validator.js'
+import { logger } from '../../logger.js'
 
 
 let _cachedSettings = null;
@@ -23,6 +24,7 @@ export const getSettings = async () => {
 export const updatesettings = async (settings) => {
     validateUserSetting(settings);
     _cachedSettings = settings;
+    logger.debug("Updating user setting", settings)
     return writeFileJSONPromised(`identity_config.json`, settings, true)
 }
 
