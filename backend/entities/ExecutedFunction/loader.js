@@ -1,17 +1,27 @@
 import fs from "fs";
-import path from "path";
 
 import { initDirectory } from "../../utils/initDirectory.js";
 import { readJSONFilePromised } from "../../utils/readJSONFilePromised.js";
 import { writeFileJSONPromised } from "../../utils/writeFileJSONPromised.js"
-import { EXECUTED_FUNCTION_PATH } from "./constants.js"
-import { matchWithOperator } from "../../utils/loaderUtils.js";
+import { ENTITY_NAME, EXECUTED_FUNCTION_PATH } from "./constants.js"
 import { logger } from "../../logger.js";
 import { ERROR_CODES, throwError } from "../../errors.js";
+import { FileIndex } from "../../utils/FileInex.js";
+import { IDENTITY_DIRECTORY } from "../../constants.js";
+import { getSettings } from "../UserSetting/loader.js";
 
 
+const userSettings = await getSettings();
 
+const INDEX_FILE_PATH = `${IDENTITY_DIRECTORY}/${ENTITY_NAME}/index.json`;
 
+let EXECUTED_FUNCTION_INDEX = new FileIndex(
+    ENTITY_NAME,
+    INDEX_FILE_PATH,
+    (res) => [res.id, res.name, res?.moduleName, res?.fileName],
+    userSettings.max_executed_functions
+);
+await EXECUTED_FUNCTION_INDEX.initCache();
 
 
 
@@ -19,6 +29,7 @@ export const createExecutedFunction = async (executedFunction = {}) => {
 
     initDirectory(EXECUTED_FUNCTION_PATH);
 
+    await EXECUTED_FUNCTION_INDEX.addRecord(executedFunction);
     const { id } = executedFunction;
     logger.debug("Creating executed function record", executedFunction)
     await writeFileJSONPromised(`${EXECUTED_FUNCTION_PATH}/${id}.json`, executedFunction);
@@ -41,34 +52,34 @@ export const getExecutedFunctionByID = async (id) => {
 
 export const getAllExecutedFunctions = async (filters) => {
 
-    initDirectory(EXECUTED_FUNCTION_PATH);
+    await initDirectory(EXECUTED_FUNCTION_PATH);
 
-    const files = fs.readdirSync(EXECUTED_FUNCTION_PATH)
-    const fileNames = files.map(f => path.join(EXECUTED_FUNCTION_PATH, f))
-    const results = []
+    let filteredIDs = null;
+    if (filters.name || filters.moduleName || filters.fileName) {
+        filteredIDs = await EXECUTED_FUNCTION_INDEX.filter([
+            filters.name,
+            filters.moduleName,
+            filters.fileName,
+        ])
+    } else {
+        filteredIDs = EXECUTED_FUNCTION_INDEX.cache.map(i => i[0]);
+    }
 
-    const promises = fileNames.map(fname => {
-        return (async () => {
-            const res = await readJSONFilePromised(fname)
-            const shouldAdd = Object.keys(filters).
-                every(propName => matchWithOperator(res, propName, filters[propName]))
+    const promises = filteredIDs.map(id => getExecutedFunctionByID(id));
+    return (await Promise.all(promises)).filter(res => !!res);
 
-            if (shouldAdd) {
-                results.push(res);
-            }
-
-        })();
-    })
-
-    await promises;
-
-    return results;
 
 }
 
 export const deleteExecutedFunction = async (id) => {
 
     initDirectory(EXECUTED_FUNCTION_PATH);
+
+    const executedFunction = await getExecutedFunctionByID(id);
+    if (!executedFunction) {
+        logger.debug(`Trying to delete executed function with invalid id ${id}.`)
+    }
+    await EXECUTED_FUNCTION_INDEX.deleteRecord(executedFunction);
 
     const executedFunctionFile = `${EXECUTED_FUNCTION_PATH}/${id}.json`
     if (!fs.existsSync(executedFunctionFile)) {

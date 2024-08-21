@@ -1,54 +1,53 @@
 import fs from "fs";
 import { v4 as uuidv4 } from "uuid"
-import path from "path";
 
 import { IDENTITY_DIRECTORY } from "../../constants.js"
 import { initDirectory } from "../../utils/initDirectory.js"
 import { readJSONFilePromised } from "../../utils/readJSONFilePromised.js"
 import { ENTITY_NAME } from "./constants.js"
 import { writeFileJSONPromised } from "../../utils/writeFileJSONPromised.js";
-import { matchWithOperator } from "../../utils/loaderUtils.js";
 import { logger } from "../../logger.js";
 import { ERROR_CODES, throwError } from "../../errors.js";
+import { FileIndex } from "../../utils/FileInex.js";
 
 
 
 
 const testCasePath = `${IDENTITY_DIRECTORY}/${ENTITY_NAME}`
+const INDEX_FILE_PATH = `${testCasePath}/index.json`;
+
+let TEST_SUITE_INDEX_FILE_CONTENT = new FileIndex(
+    ENTITY_NAME,
+    INDEX_FILE_PATH,
+    (res) => [res.id, res.name, res.functionMeta?.moduleName, res.functionMeta?.fileName]
+);
+await TEST_SUITE_INDEX_FILE_CONTENT.initCache();
 
 export const getAllTestSuits = async (filters = {}) => {
 
-    initDirectory(testCasePath);
+    await initDirectory(testCasePath);
 
-    const filterOverrides = {};
 
-    if (filters.fileName) {
-        filterOverrides.fileName = (object) => {
-            return object?.functionMeta?.fileName?.includes(filters.fileName.contains)
-        }
+    // const testSuiteIndex = await getTestSuiteIndex();
+
+    let filteredIDs;
+    if (filters.name || filters.moduleName || filters.fileName) {
+        filteredIDs = await TEST_SUITE_INDEX_FILE_CONTENT.filter([
+            filters.name,
+            filters.moduleName,
+            filters.fileName
+        ])
+
+    } else {
+        filteredIDs = TEST_SUITE_INDEX_FILE_CONTENT.cache.map(i => i[0]);
     }
-    if (filters.moduleName) {
-        filterOverrides.moduleName = (object) => {
-            return object?.functionMeta?.moduleName?.includes(filters.moduleName.contains)
-        }
-    }
 
-    const files = fs.readdirSync(testCasePath)
-    const fileNames = files.map(f => path.join(testCasePath, f))
-    const results = []
-    const promises = fileNames.map(fname => {
-        return (async () => {
-            const res = await readJSONFilePromised(fname)
-            const shouldAdd = Object.keys(filters).
-                every(key => matchWithOperator(res, key, filters[key], filterOverrides));
-            if (shouldAdd) {
-                results.push(res);
-            }
-        })()
+    const promises = filteredIDs.map((id) => {
+        return getTestSuiteByID(id);
     })
-    await promises;
 
-    return results;
+
+    return await Promise.all(promises);
 }
 
 export const getTestSuiteByID = async (testSuiteID) => {
@@ -70,13 +69,16 @@ export const updateTestSuite = async (testSuite) => {
     try {
         await writeFileJSONPromised(testSuiteFile, testSuite);
     } catch (e) {
-        throw new Error(`Could not update test suite. ${e?.toString()}`)
+        throwError(ERROR_CODES.EXTERNAL_ERROR, { message: `Could not update test suite. ${e?.toString()}` })
     }
+
+    await TEST_SUITE_INDEX_FILE_CONTENT.updateRecord(testSuite);
 
 }
 
 
 export const createTestSuite = async (testSuite) => {
+
     const testSuiteID = testSuite.id || uuidv4();
 
     if (!testSuite.id) {
@@ -93,19 +95,26 @@ export const createTestSuite = async (testSuite) => {
 
     try {
         await writeFileJSONPromised(testSuiteFile, testSuite);
+        logger.debug(`Created file fo test suite ${testSuiteFile}`)
     } catch (e) {
-        throw new Error(`Could not create test suite. ${e?.toString()}`)
+        throwError(
+            ERROR_CODES.EXTERNAL_ERROR,
+            { message: `Could not create test suite. ${e?.toString()}` }
+        )
     }
+
+    await TEST_SUITE_INDEX_FILE_CONTENT.addRecord(testSuite);
 
 }
 
 export const deleteTestSuite = async (id) => {
-    const testSuiteFile = `${testCasePath}/${id}.json`
 
-    if (!fs.existsSync(testSuiteFile)) {
-        logger.debug(`Trying to delete the test suite with invalid ID ${id}. File does not exist.`)
-        return null
-    }
+    const testSuite = await getTestSuiteByID(id)
+
+    await TEST_SUITE_INDEX_FILE_CONTENT.deleteRecord(testSuite);
+
+    const testSuiteFile = `${testCasePath}/${indexEntry[0]}.json`
+
 
     const promise = new Promise((resolve, reject) => {
         fs.unlink(testSuiteFile, (err) => {
@@ -114,12 +123,12 @@ export const deleteTestSuite = async (id) => {
             }
             resolve();
         })
-    })
-    try {
-        logger.debug(`Deleting test suite ${id}.`)
-        await promise;
+    });
 
+    try {
+        logger.debug(`Deleting test suite file ${id}.`)
+        await promise;
     } catch (e) {
-        throwError(ERROR_CODES.EXTERNAL_ERROR, { message: `Could not delete test suite. ${e?.toString()}` })
+        logger.error(`Could not delete test suite. ${e?.toString()}`)
     }
 }

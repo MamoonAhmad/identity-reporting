@@ -21,6 +21,7 @@ export const ViewTestCase = () => {
 
   return (
     <ViewPage
+      objectID={objectID}
       title={selectedTestCaseID ? "Test Case" : "Test Suite"}
       HeaderActions={({ object }) => {
         return (
