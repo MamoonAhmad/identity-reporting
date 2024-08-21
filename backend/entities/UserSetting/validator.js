@@ -12,8 +12,18 @@ export const validateUserSetting = (userSettings) => {
     }
 
     userSettings.server_port = parseInt(userSettings.server_port);
-    if(!userSettings.server_port) {
+    if (!userSettings.server_port) {
         throwError(ERROR_CODES.VALIDATION_ERROR, { ...defaultErrorMeta, field: "server_port", extraMessage: " server_port should be an integer value." })
+    }
+
+    if (userSettings.max_executed_functions !== undefined) {
+        if (userSettings.max_executed_functions) {
+            userSettings.max_executed_functions = parseInt(userSettings.max_executed_functions)
+            if (!userSettings.max_executed_functions || userSettings.max_executed_functions < 0) {
+                throwError(ERROR_CODES.VALIDATION_ERROR, { ...defaultErrorMeta, field: "max_executed_functions", extraMessage: " Should be an integer value greater than or equal to 0. 0 means unlimited." })
+            }
+        }
+
     }
 
 }

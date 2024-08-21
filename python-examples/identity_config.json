@@ -3,5 +3,6 @@
         "example2": true
     },
     "command": "/Users/mamoon/.local/share/virtualenvs/python-examples-SbgKRoz8/bin/python test.py",
-    "server_port": 8002
+    "server_port": 8002,
+    "max_executed_functions": -1
 }
