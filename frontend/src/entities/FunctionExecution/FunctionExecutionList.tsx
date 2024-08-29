@@ -1,7 +1,5 @@
 import { CheckCircleSharp, DeleteSharp, ErrorSharp } from "@mui/icons-material";
 import {
-  Backdrop,
-  CircularProgress,
   Grid,
   IconButton,
   Table,
@@ -10,30 +8,34 @@ import {
   TableHead,
   TableRow,
 } from "@mui/material";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { FunctionExecutionServices } from "./services";
 import { PageContainer } from "../../components/PageContainer";
 import { PageTitle } from "../../components/PageTitle";
 import { Filter } from "../../components/Filter";
-import { useListPage } from "../../hooks/useListPage";
 import { Link } from "react-router-dom";
 import { FunctionExecutionRoutes } from "./routes";
+import { useFilters } from "../../hooks/useFilters";
+import { ExecutedFunction } from "./types";
+import { BackDropLoading } from "../../components/BackDropLoading";
 
 export const FunctionExecutionList: React.FC<any> = () => {
-  const { data, loading, filters, setFilters } = useListPage(
-    FunctionExecutionServices.getallFunctionExecutions,
-    ["moduleName", "fileName", "name"]
-  );
+  const [filters, setFilters] = useFilters(["moduleName", "fileName", "name"]);
+  const [data, setData] = useState<ExecutedFunction[]>([]);
+
+  useEffect(() => {
+    _setLoading(false);
+    FunctionExecutionServices.getallFunctionExecutions(filters).then((res) => {
+      _setLoading(false);
+      setData(res);
+    });
+  }, [filters]);
+
   const [_loading, _setLoading] = useState(false);
   return (
     <>
-      <Backdrop
-        sx={{ color: "#fff", zIndex: (theme) => theme.zIndex.drawer + 1 }}
-        open={loading || _loading}
-      >
-        <CircularProgress color="inherit" />
-      </Backdrop>
+      {_loading && <BackDropLoading />}
       <PageContainer>
         <PageTitle title="Executed Functions"></PageTitle>
 
@@ -52,7 +54,6 @@ export const FunctionExecutionList: React.FC<any> = () => {
           </Grid>
 
           <Grid item xs={12}>
-            {loading && <CircularProgress />}
             {data && (
               <>
                 <Table>
@@ -67,10 +68,7 @@ export const FunctionExecutionList: React.FC<any> = () => {
                       <TableRow>
                         <TableCell>
                           <Link
-                            to={`/${FunctionExecutionRoutes.ViewFunctionExecution.replace(
-                              "*",
-                              d.id
-                            )}`}
+                            to={`${FunctionExecutionRoutes.ViewFunctionExecution}/${d.id}`}
                           >
                             {d?.executedSuccessfully ? (
                               <CheckCircleSharp
@@ -86,20 +84,14 @@ export const FunctionExecutionList: React.FC<any> = () => {
                         </TableCell>
                         <TableCell>
                           <Link
-                            to={`/${FunctionExecutionRoutes.ViewFunctionExecution.replace(
-                              "*",
-                              d.id
-                            )}`}
+                            to={`${FunctionExecutionRoutes.ViewFunctionExecution}/${d.id}`}
                           >
                             {d.fileName}
                           </Link>
                         </TableCell>
                         <TableCell>
                           <Link
-                            to={`/${FunctionExecutionRoutes.ViewFunctionExecution.replace(
-                              "*",
-                              d.id
-                            )}`}
+                            to={`${FunctionExecutionRoutes.ViewFunctionExecution}/${d.id}`}
                           >
                             {d.endTime - d.startTime} ms
                           </Link>

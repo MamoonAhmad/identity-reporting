@@ -12,14 +12,9 @@ import {
   ToggleButtonGroup,
   Typography,
 } from "@mui/material";
-import {
-  FunctionTestConfig,
-  FunctionTestConfigAssertion,
-} from "../../../components/NestedObjectView/someutil";
 import React, {
   PropsWithChildren,
   useCallback,
-  useContext,
   useState,
 } from "react";
 import { JSONTextField } from "../../../components/JSONTestField";
@@ -31,6 +26,7 @@ import {
 import { CodeTestField } from "../../../components/CodeTestField";
 import { Box } from "@mui/system";
 import { useObjectChange } from "./useObjectChange";
+import { FunctionTestConfig, FunctionTestConfigAssertion } from "../types";
 
 const NestedObjectContext = React.createContext<{
   mockFunction: (o: FunctionTestConfig) => void;

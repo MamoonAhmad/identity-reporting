@@ -10,8 +10,7 @@ import {
   AccordionSummaryProps,
   Button,
 } from "@mui/material";
-import { useCallback, useEffect, useRef, useState } from "react";
-import { TestResult } from "../../components/NestedObjectView/matcher";
+import { useCallback, useEffect, useState } from "react";
 import {
   CheckCircle,
   CloseSharp,
@@ -20,12 +19,17 @@ import {
   KeyboardArrowDownSharp,
   PlayArrowSharp,
 } from "@mui/icons-material";
-import { TestResultView } from "./ViewTestRun";
 import socketIO from "socket.io-client";
 import { Link, useSearchParams } from "react-router-dom";
 import { PageContainer } from "../../components/PageContainer";
 import { PageTitle } from "../../components/PageTitle";
 import { Filter, FilterObjectType } from "../../components/Filter";
+import { TestResult } from "./types";
+import { TestResultView } from "./components/TestResultView";
+import { BACKEND_API_SOCKET_UTL as BACKEND_API_SOCKET_URL } from "../../contants";
+import { BACKEND_SOCKET_EVENTS } from "./constants";
+
+let RUNNING_TESTS = false;
 
 const Accordion = styled((props: AccordionProps) => (
   <MuiAccordion disableGutters elevation={0} square {...props} />
@@ -74,14 +78,8 @@ export const RunAllTests = () => {
   );
   const [params, setParams] = useSearchParams();
 
-  const ref = useRef<{ passedTests: TestResult[]; failedTests: TestResult[] }>({
-    passedTests: [],
-    failedTests: [],
-  });
-
-  const { passedTests, failedTests } = ref.current;
-
-  const [t, setT] = useState(0);
+  const [passedTests, setPassedTests] = useState<TestResult[]>([]);
+  const [failedTests, setFailedTests] = useState<TestResult[]>([]);
 
   useEffect(() => {
     setFilters({
@@ -96,37 +94,42 @@ export const RunAllTests = () => {
       return;
     }
 
-    setT(0);
-    ref.current = { passedTests: [], failedTests: [] };
+    RUNNING_TESTS = true;
 
-    console.log("I am called. before");
-    const socket = socketIO("http://localhost:8002");
+    setPassedTests([]);
+    setFailedTests([]);
+
+    const socket = socketIO(BACKEND_API_SOCKET_URL);
     socket.emit("message", {
-      action: "test_run/run_test",
+      action: BACKEND_SOCKET_EVENTS.RUN_TEST_WITH_FILTER,
       payload: {
         filter: filters,
       },
     });
-    socket.on("test_run/run_test:stats", (data) => {
-      // setTotalTestCases(data.total || 0);
-    });
-    socket.on("test_run/test_run_result", (testResult: TestResult) => {
-      if (testResult.successful) {
-        ref.current.passedTests.push(testResult);
-      } else {
-        ref.current.failedTests.push(testResult);
-      }
-      setT((t) => t + 1);
-    });
-    socket.on("test_run/test_run_result:error", (testResult: TestResult) => {
-      ref.current.failedTests.push(testResult);
-      setT((t) => t + 1);
-    });
 
-    socket.on("test_run/test_run_init", (testSuiteID) => testSuiteID);
+    socket.on(
+      BACKEND_SOCKET_EVENTS.TEST_SUITE_RESULT,
+      (testResult: TestResult) => {
+        if (testResult.successful) {
+          setPassedTests((e) => [...e, testResult]);
+        } else {
+          setFailedTests((e) => [...e, testResult]);
+        }
+      }
+    );
+
+    socket.on(
+      BACKEND_SOCKET_EVENTS.TEST_SUITE_RESULT_ERROR,
+      (testResult: TestResult) => {
+        setFailedTests((e) => [...e, testResult]);
+      }
+    );
+
+    socket.on("close", () => (RUNNING_TESTS = false));
   }, [filters]);
 
   useEffect(() => {
+    if (RUNNING_TESTS) return;
     runTestsWithFilters();
   }, [runTestsWithFilters]);
 

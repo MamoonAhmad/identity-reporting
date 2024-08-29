@@ -1,20 +1,18 @@
 import { Button, Grid, TextField } from "@mui/material";
-import {
-  TestCaseForFunction,
-  TestConfigColumns,
-  TestSuiteForFunction,
-} from "./ConfigureTestCase";
-import { useReducer, useState } from "react";
-import { TestCaseServices } from "../services";
-import { getFunctionTestConfigForExecutedFunction } from "../../../components/NestedObjectView/someutil";
+import { TestConfigColumns } from "./ConfigureTestCase";
+import { useState } from "react";
+
 import { useObjectChange } from "./useObjectChange";
 import { JSONTextField } from "../../../components/JSONTestField";
+import { getFunctionTestConfigForExecutedFunction } from "../utils/getFunctionTestConfigForExecutedFunction";
+import { FunctionExecutionServices } from "../../FunctionExecution/services";
+import { TestSuiteForFunction } from "../types";
 
 export const TestCaseView: React.FC<{
   testSuite: TestSuiteForFunction;
   selectedTestCaseID: string;
   onSave?: (object: TestSuiteForFunction) => void;
-}> = ({ testSuite, selectedTestCaseID, onSave }) => {
+}> = ({ testSuite, selectedTestCaseID }) => {
   const testCase = testSuite.tests.find((t) => t.id === selectedTestCaseID);
 
   const updateState = useObjectChange(testCase, (obj) => [
@@ -40,10 +38,7 @@ export const TestCaseView: React.FC<{
           }}
           sx={{ my: 3 }}
         />
-        <Grid
-          width={"100%"}
-          sx={{ my: 1 }}
-        >
+        <Grid width={"100%"} sx={{ my: 1 }}>
           <JSONTextField
             object={testCase.inputToPass}
             onChange={(obj) => {
@@ -53,7 +48,7 @@ export const TestCaseView: React.FC<{
           />
           <Button
             onClick={() => {
-              TestCaseServices.runFunctionWithInput(
+              FunctionExecutionServices.runFunctionWithInput(
                 testCase.config.functionMeta,
                 testCase.inputToPass
               ).then((res) => {

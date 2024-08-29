@@ -6,8 +6,21 @@ import { writeFileJSONPromised } from "./writeFileJSONPromised.js";
 import { readJSONFilePromised } from "./readJSONFilePromised.js";
 
 
+/**
+ * This class is used for indexing the directory.
+ * TestSuite and ExecutedFunction entities utilize this to index the files.
+ * This class creates an index file inside the entity directory. 
+ * Search and filters will utilize the index file.
+*/
 export class FileIndex {
 
+    /**
+     * 
+     * @param {String} entity Entity label.
+     * @param {String} filePath File path for the entity.
+     * @param getContentFromRecordCallback Callback for retrieving fields to index.
+     * @param {Int} maxEntries Max number of entries in the index. 0 means infinite.
+     */
     constructor(entity, filePath, getContentFromRecordCallback, maxEntries = 0) {
         this.getContentFromRecordCallback = getContentFromRecordCallback;
         this.filePath = filePath;
@@ -35,6 +48,8 @@ export class FileIndex {
         logger.debug(`Index file for ${this.entity} does not exist. Initializing empty cache.`);
         this.cache = [];
     }
+
+    // Add records to the index cache
     async addRecord(res) {
         await this.initCache();
         const arr = this.getContentFromRecordCallback(res);
@@ -53,6 +68,8 @@ export class FileIndex {
 
         await this.writeToFile();
     }
+
+    // update record inside the index cache
     async updateRecord(res) {
         await this.initCache();
         const arr = this.getContentFromRecordCallback(res);
@@ -66,6 +83,7 @@ export class FileIndex {
         this.cache.splice(index, 1, arr);
         await this.writeToFile();
     }
+    // Delete record from the index cache
     async deleteRecord(res) {
         await this.initCache();
         const arr = this.getContentFromRecordCallback(res);
@@ -79,6 +97,10 @@ export class FileIndex {
         this.cache.splice(index, 1);
         await this.writeToFile();
     }
+
+    /**
+     * Write the cached data to index file.
+     */
     async writeToFile() {
         try {
             logger.debug(`Updating ${this.entity} cache.`, this.cache);

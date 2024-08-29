@@ -1,5 +1,5 @@
 import React from "react";
-import { TestSuiteForFunction, TestSuiteMetaData } from "./ConfigureTestCase";
+import { TestSuiteMetaData } from "./ConfigureTestCase";
 
 import {
   Button,
@@ -11,11 +11,12 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import { getFunctionTestConfigForExecutedFunction } from "../../../components/NestedObjectView/someutil";
 import { AddSharp } from "@mui/icons-material";
 
 import { TestCaseView } from "./TestCaseView";
 import { useObjectChange } from "./useObjectChange";
+import { getFunctionTestConfigForExecutedFunction } from "../utils/getFunctionTestConfigForExecutedFunction";
+import { TestSuiteForFunction } from "../types";
 
 export const CreateUpdateTestSuite: React.FC<{
   testSuite: TestSuiteForFunction;
