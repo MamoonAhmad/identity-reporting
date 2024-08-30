@@ -7,7 +7,7 @@ export const PageTitle: React.FC<
   }>
 > = ({ children, title }) => {
   return (
-    <Grid container>
+    <Grid container sx={{ my: 2 }}>
       <Grid item xs={12}>
         <Box sx={{ width: "100%", display: "flex", alignItems: "center" }}>
           <Typography sx={{ flexGrow: 1, textAlign: "left" }} variant="h3">

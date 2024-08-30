@@ -1,19 +1,11 @@
 import { useNavigate, useParams } from "react-router-dom";
-import { ViewPage } from "../../components/UICrud/ViewPage";
-import { FunctionExecutionServices } from "./services";
-import { ExecutedFunction } from "../../components/NestedObjectView/someutil";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-
 import {
   AddSharp,
   CloseSharp,
   ErrorSharp,
   PlayArrowSharp,
 } from "@mui/icons-material";
-import { TestCaseRoutes } from "../TestCase/routes";
-import { HorizontalFlowDiagram } from "../../components/FlowChart/HorizontalFlowDiagram";
-import { DiagramEntity } from "../../components/FlowChart/types";
-import { PyramidFlowDiagram } from "../../components/FlowChart/PyramidFlowDiagram";
 import {
   Box,
   Button,
@@ -25,60 +17,65 @@ import {
   Typography,
   useTheme,
 } from "@mui/material";
+
+import { FunctionExecutionServices } from "./services";
+import { TestCaseRoutes } from "../TestCase/routes";
+import { HorizontalFlowDiagram } from "../../components/FlowChart/HorizontalFlowDiagram";
+import { DiagramEntity } from "../../components/FlowChart/types";
+import { PyramidFlowDiagram } from "../../components/FlowChart/PyramidFlowDiagram";
 import { JSONTextField } from "../../components/JSONTestField";
 import { useObjectChange } from "../TestCase/components/useObjectChange";
-import { TestCaseServices } from "../TestCase/services";
 import { GeneralObjectView } from "../../components/ObjectView";
+import { PageTitle } from "../../components/PageTitle";
+import { BackDropLoading } from "../../components/BackDropLoading";
+import { ExecutedFunction } from "./types";
 
-export const ViewFunctionExecution = () => {
+export const ViewFunctionExecution: React.FC = () => {
   const params = useParams();
   const navigate = useNavigate();
   const objectID = params?.["*"];
-  if (!objectID) {
-    return <>Function ID not present in param.</>;
-  }
-  return (
-    <ViewPage
-      objectID={objectID}
-      title="Function Execution View"
-      dataLoader={async (objectID) =>
-        await FunctionExecutionServices.getFunctionExecutionById(objectID)
-      }
-      Content={P}
-      HeaderActions={() => {
-        return (
-          <Button
-            variant="outlined"
-            onClick={() =>
-              navigate(
-                TestCaseRoutes.CreateTestFromExecutedFunction.replace(
-                  "*",
-                  objectID
-                )
-              )
-            }
-          >
-            <AddSharp /> Create Test Case
-          </Button>
-        );
-      }}
-    ></ViewPage>
-  );
-};
 
-const P: React.FC<{ object: any }> = ({ object }) => {
+  const [object, setObject] = useState<ExecutedFunction | undefined>(undefined);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (!objectID) return;
+    setLoading(true);
+    FunctionExecutionServices.getFunctionExecutionById(objectID).then((res) => {
+      setObject(res);
+      setLoading(false);
+    });
+  }, [objectID]);
+
   return (
-    <>
-      <ExecutionView
-        function={object}
-        onChange={() => {
-          ("");
-        }}
-        onFunctionClick={() => {
-          ("");
-        }}
-      />
-    </>
+    <Grid container>
+      <PageTitle title="Executed Functions">
+        <Button
+          variant="outlined"
+          onClick={() =>
+            navigate(
+              `${TestCaseRoutes.CreateTestFromExecutedFunction}/${
+                objectID || ""
+              }`
+            )
+          }
+        >
+          <AddSharp /> Create Test Case
+        </Button>
+      </PageTitle>
+      {loading && <BackDropLoading />}
+      {!loading && object && (
+        <ExecutionView
+          function={object}
+          onChange={() => {
+            ("");
+          }}
+          onFunctionClick={() => {
+            ("");
+          }}
+        />
+      )}
+    </Grid>
   );
 };
 
@@ -168,7 +165,7 @@ export const ExecutionView: React.FC<ExecutionViewProps> = React.memo(
 
       visit(func);
 
-      TestCaseServices.runFunctionWithInput(
+      FunctionExecutionServices.runFunctionWithInput(
         func,
         inputToPass,
         Object.keys(mocks).length > 0 ? mocks : undefined

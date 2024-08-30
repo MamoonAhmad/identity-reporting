@@ -24,15 +24,21 @@ let EXECUTED_FUNCTION_INDEX = new FileIndex(
 await EXECUTED_FUNCTION_INDEX.initCache();
 
 
-
+/**
+ * Creates a new executed function and adds entry in the index file.
+*/
 export const createExecutedFunction = async (executedFunction = {}) => {
 
     initDirectory(EXECUTED_FUNCTION_PATH);
 
-    await EXECUTED_FUNCTION_INDEX.addRecord(executedFunction);
+    // create the file first.
     const { id } = executedFunction;
     logger.debug("Creating executed function record", executedFunction)
     await writeFileJSONPromised(`${EXECUTED_FUNCTION_PATH}/${id}.json`, executedFunction);
+
+    // add entry inside index file
+    await EXECUTED_FUNCTION_INDEX.addRecord(executedFunction);
+    
     return executedFunction;
 }
 
@@ -71,6 +77,9 @@ export const getAllExecutedFunctions = async (filters) => {
 
 }
 
+/**
+ * Removes entry from the index file and removes the function file from the directory.
+*/
 export const deleteExecutedFunction = async (id) => {
 
     initDirectory(EXECUTED_FUNCTION_PATH);
@@ -79,6 +88,8 @@ export const deleteExecutedFunction = async (id) => {
     if (!executedFunction) {
         logger.debug(`Trying to delete executed function with invalid id ${id}.`)
     }
+    
+    // Delete entry from the index file.
     await EXECUTED_FUNCTION_INDEX.deleteRecord(executedFunction);
 
     const executedFunctionFile = `${EXECUTED_FUNCTION_PATH}/${id}.json`

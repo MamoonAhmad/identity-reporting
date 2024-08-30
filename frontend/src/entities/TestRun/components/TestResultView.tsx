@@ -1,27 +1,11 @@
-import { ViewPage } from "../../components/UICrud/ViewPage";
-import { useParams } from "react-router-dom";
-import { useCallback, useEffect, useState } from "react";
-import {
-  FunctionTestResult,
-  TestResult,
-  TestResultForCase,
-  TestRunForTestSuite,
-  matchExecutionWithTestConfig,
-} from "../../components/NestedObjectView/matcher";
-import {
-  TestResultColumns,
-  TestResultFunctionView,
-} from "./components/NestedObjectTestResultView";
-import { TestRunServices } from "./services";
+import { useCallback, useState } from "react";
+import { TestResultFunctionView } from "./NestedObjectTestResultView";
 import {
   Accordion as MuiAccordion,
   AccordionDetails as MuiAccordionDetails,
   AccordionSummary as MuiAccordionSummary,
   Box,
   Button,
-  Chip,
-  Collapse,
-  Container,
   Grid,
   IconButton,
   Modal,
@@ -36,17 +20,15 @@ import {
 } from "@mui/material";
 import {
   ArrowForwardIosSharp,
-  BugReportSharp,
   CheckCircle,
   CheckCircleSharp,
-  CheckSharp,
   CloseSharp,
-  DoneSharp,
   ErrorSharp,
 } from "@mui/icons-material";
-import { HorizontalFlowDiagram } from "../../components/FlowChart/HorizontalFlowDiagram";
-import { PyramidFlowDiagram } from "../../components/FlowChart/PyramidFlowDiagram";
-import { DiagramEntity } from "../../components/FlowChart/types";
+import { HorizontalFlowDiagram } from "../../../components/FlowChart/HorizontalFlowDiagram";
+import { PyramidFlowDiagram } from "../../../components/FlowChart/PyramidFlowDiagram";
+import { DiagramEntity } from "../../../components/FlowChart/types";
+import { FunctionTestResult, TestResult, TestResultForCase } from "../types";
 
 const Accordion = styled(
   (
@@ -130,38 +112,6 @@ const AccordionDetails = styled(MuiAccordionDetails)(({ theme }) => ({
   padding: theme.spacing(2),
   borderTop: "1px solid rgba(0, 0, 0, .125)",
 }));
-
-export const ViewTestRun = () => {
-  const params = useParams();
-  const objectID = params?.["*"] || "";
-  return (
-    <ViewPage
-      objectID={objectID}
-      title="Test Suite Run"
-      dataLoader={async () => {
-        return await TestRunServices.getTestRunById(objectID);
-      }}
-      Content={ExecutedFunctionToTestConfigConverter}
-    ></ViewPage>
-  );
-};
-
-const ExecutedFunctionToTestConfigConverter: React.FC<{
-  object: TestRunForTestSuite;
-}> = ({ object }) => {
-  const [result, setResult] = useState<TestResult | undefined>(undefined);
-  useEffect(() => {
-    if (!object) return;
-
-    const res = matchExecutionWithTestConfig(object);
-    setResult(res);
-  }, [object]);
-
-  if (!result) {
-    return null;
-  }
-  return <TestResultView result={result} />;
-};
 
 export const TestResultView: React.FC<{
   result: TestResult;
@@ -377,9 +327,6 @@ export const TestCaseResult: React.FC<{
                       ),
                     ]}
                   />
-                )}
-                {diagramType === "columns" && (
-                  <TestResultColumns object={testCaseResult.result!} />
                 )}
               </Grid>
             </Grid>

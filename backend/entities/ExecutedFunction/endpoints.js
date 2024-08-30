@@ -1,7 +1,7 @@
 import { logger } from "../../logger.js"
 import { expressEndpointResolver } from "../../utils/expressEndpointResolver.js"
 import { ENTITY_NAME, ENTITY_NAME_URL } from "./constants.js"
-import { deleteExecutedFunction, getAllExecutedFunctions, getExecutedFunctionByID, runCodeOnClientApplication, runFunctionWithInput, saveExecutedFunctions } from "./controller.js"
+import { deleteExecutedFunction, getAllExecutedFunctions, getExecutedFunctionByID, runCodeOnClientApplication, runFunctionWithInput } from "./controller.js"
 
 
 
@@ -11,11 +11,6 @@ export const registerExpressEndpoints = (app) => {
     const url = (endpoint) => {
         return `/${ENTITY_NAME_URL}/${endpoint}`
     }
-
-    app.post(url("save-function-execution-trace"), expressEndpointResolver((req => {
-        const functions = req.body?.data;
-        return saveExecutedFunctions(functions);
-    })))
     
     app.post(url('run-function-with-input'), expressEndpointResolver(req => runFunctionWithInput(req.body)));
     app.post(url('delete-executed-function/:id'), expressEndpointResolver((req) => deleteExecutedFunction(req.params.id)));

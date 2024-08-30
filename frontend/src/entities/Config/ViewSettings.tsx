@@ -1,32 +1,21 @@
 import { Button, Grid, TextField, Typography } from "@mui/material";
-import { ViewPage } from "../../components/UICrud/ViewPage";
 import { useEffect, useReducer } from "react";
 import { ConfigServices } from "./services";
+import { PageTitle } from "../../components/PageTitle";
 
-export const ViewSettings = () => {
-  return (
-    <ViewPage
-      title="Settings"
-      dataLoader={async () => {
-        return await ConfigServices.getConfig();
-      }}
-      Content={Settings}
-    />
-  );
-};
-
-const Settings: React.FC<any> = ({ object: settings }) => {
+export const ViewSettings: React.FC<any> = () => {
   const [state, setState] = useReducer(
     (p: any, c: any) => ({ ...p, ...c }),
     {}
   );
 
   useEffect(() => {
-    settings && setState({ ...settings });
-  }, [settings]);
+    ConfigServices.getConfig().then((res) => setState(res));
+  }, []);
 
   return (
     <Grid container xs={12}>
+      <PageTitle title="Settings" />
       <Grid
         item
         display={"flex"}

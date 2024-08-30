@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Backdrop,
   Button,
@@ -17,21 +17,30 @@ import { Link } from "react-router-dom";
 import { TestCaseServices } from "./services";
 import { PageContainer } from "../../components/PageContainer";
 import { PageTitle } from "../../components/PageTitle";
-import { useListPage } from "../../hooks/useListPage";
 import { Filter } from "../../components/Filter";
 import { TestCaseRoutes } from "./routes";
+import { useFilters } from "../../hooks/useFilters";
+import { TestSuiteForFunction } from "./types";
 
 export const TestCaseList: React.FC<any> = () => {
-  const { data, loading, filters, setFilters } = useListPage(
-    TestCaseServices.getAllTestCases,
-    ["moduleName", "fileName", "name"]
-  );
-  const [_loading, setLoading] = useState(false);
+
+  const [filters, setFilters] = useFilters(["moduleName", "fileName", "name"])
+  const [loading, setLoading] = useState(false);
+  const [data, setData] = useState<TestSuiteForFunction[]>([]);
+
+  useEffect(() => {
+    setLoading(true);
+    TestCaseServices.getAllTestCases().then(res => {
+      setLoading(false);
+      setData(res);
+    })
+  }, [filters])
+
   return (
     <>
       <Backdrop
         sx={{ color: "#fff", zIndex: (theme) => theme.zIndex.drawer + 1 }}
-        open={loading || _loading}
+        open={loading}
       >
         <CircularProgress color="inherit" />
       </Backdrop>
@@ -80,7 +89,7 @@ export const TestCaseList: React.FC<any> = () => {
                       <TableRow>
                         <TableCell>
                           <Link
-                            to={TestCaseRoutes.ViewTestCase.replace("*", d.id)}
+                            to={`${TestCaseRoutes.ViewTestCase}/${d.id}`}
                           >
                             {d.name}{" "}
                           </Link>
@@ -88,7 +97,7 @@ export const TestCaseList: React.FC<any> = () => {
 
                         <TableCell>
                           <Link
-                            to={TestCaseRoutes.ViewTestCase.replace("*", d.id)}
+                            to={`${TestCaseRoutes.ViewTestCase}/${d.id}`}
                           >
                             {d.description}
                           </Link>
@@ -96,7 +105,7 @@ export const TestCaseList: React.FC<any> = () => {
 
                         <TableCell>
                           <Link
-                            to={TestCaseRoutes.ViewTestCase.replace("*", d.id)}
+                            to={`${TestCaseRoutes.ViewTestCase}/${d.id}`}
                           >
                             {d.functionMeta?.fileName}
                           </Link>

@@ -1,6 +1,5 @@
 import { v4 } from "uuid"
 import * as loader from "./loader.js";
-import { getExecutedFunctionTreeFromExecutedFunctions } from "./utils.js";
 import { ENTITY_NAME_URL, EXECUTED_FUNCTION_PATH } from "./constants.js";
 import { initDirectory } from "../../utils/initDirectory.js";
 import { runFunctionsOnClientApp } from "../../clientApp.js";
@@ -24,6 +23,7 @@ export const runCodeOnClientApplication = async (socketIOInstance, code) => {
 
     const runFileId = v4()
 
+    // function run config for tracing agent
     const function_config = {
         execution_id: runFileId,
         input_to_pass: null,
@@ -33,11 +33,13 @@ export const runCodeOnClientApplication = async (socketIOInstance, code) => {
         context: null,
     }
 
+    // run code on client app
     logger.debug("Running code on Client App.")
     const [executedFunction] = await runFunctionsOnClientApp([
         function_config
     ])
 
+    // save the executed function
     await loader.createExecutedFunction(executedFunction);
 
     try {
@@ -47,10 +49,14 @@ export const runCodeOnClientApplication = async (socketIOInstance, code) => {
     }
 }
 
+/**
+ * Runs the function on client app with the provided input.
+*/
 export const runFunctionWithInput = async (args = {}) => {
 
-    const { name, fileName, packageName, environmentName, moduleName, inputToPass, mocks } = args
+    const { name, fileName, moduleName, inputToPass, mocks } = args
 
+    // function run config for tracing agent.
     const executedFunctions = await runFunctionsOnClientApp(
         [
             {
@@ -71,20 +77,6 @@ export const runFunctionWithInput = async (args = {}) => {
 
     return { executedFunction: executedFunctions[0] }
 }
-
-
-export const saveExecutedFunctions = async (functions) => {
-
-
-
-    const functionsToSave = getExecutedFunctionTreeFromExecutedFunctions(functions)
-
-    const promises = functionsToSave.map(f => loader.createExecutedFunction(f))
-
-    return await Promise.all(promises)
-
-}
-
 
 export const getExecutedFunctionByID = async (id) => {
     return await loader.getExecutedFunctionByID(id)

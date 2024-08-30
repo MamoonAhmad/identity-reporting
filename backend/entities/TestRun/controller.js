@@ -1,12 +1,15 @@
 import { runTestsOnClientApp } from "../../clientApp.js"
 import { logger } from "../../logger.js"
+import { SOCKET_EVENTS } from "./constants.js"
 
-
+/**
+ * Runs test on client app. Emits the test result to the socket when a test run completes.
+*/
 export const runTestSuits = async (socketIOInstance, filter) => {
 
 
     const onTestComplete = (testSuiteMatcherResult) => {
-        socketIOInstance.emit("test_run/test_run_result", testSuiteMatcherResult)
+        socketIOInstance.emit(SOCKET_EVENTS.TEST_SUITE_RESULT, testSuiteMatcherResult)
     }
 
 
@@ -18,5 +21,6 @@ export const runTestSuits = async (socketIOInstance, filter) => {
 
     logger.debug("Running tests on client app with filters", filters)
     await runTestsOnClientApp(filters, onTestComplete)
+    await socketIOInstance.close();
 
 }

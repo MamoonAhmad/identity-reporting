@@ -1,8 +1,8 @@
 
-
-
-
-
+/**
+ * Decorator for express endpoint functions.
+ * If the function throws an error it returns a JSON error response.
+*/
 export const expressEndpointResolver = (handlerFunction = () => undefined) => {
 
 

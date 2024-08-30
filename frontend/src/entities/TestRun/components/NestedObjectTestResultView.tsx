@@ -1,200 +1,31 @@
 import { useState } from "react";
 import {
-  NestedObjectColumnItem,
-  NestedObjectColumns,
-} from "../../../components/NestedObjectView/NestedObjectView";
-import {
-  AssertionResult,
-  FunctionTestResult,
-  GenericObjectTestResult,
-} from "../../../components/NestedObjectView/matcher";
-import {
   Accordion,
   AccordionDetails,
   AccordionSummary,
   Box,
-  Button,
   Chip,
   Grid,
   IconButton,
   List,
   ListItem,
   ListItemText,
-  TextField,
   Typography,
   useTheme,
 } from "@mui/material";
 import {
   AddSharp,
   CheckCircleSharp,
-  CheckSharp,
   CloseSharp,
-  DoneSharp,
   ErrorSharp,
   KeyboardArrowDownSharp,
-  KeyboardArrowRightSharp,
   RemoveSharp,
-  ReplaySharp,
 } from "@mui/icons-material";
 import { GeneralObjectView } from "../../../components/ObjectView";
 import { ClientErrorMessage } from "../../../components/ClientErrorMessage";
+import { AssertionResult, FunctionTestResult } from "../types";
 
 type GenericTestResult = FunctionTestResult;
-const getChildren = (
-  object: GenericTestResult,
-  objectPath: string[]
-): NestedObjectColumnItem[] => {
-  if (object._type === "FunctionTestResult") {
-    return getFunctionTestResultChildren(object, objectPath);
-  }
-  return [];
-};
-
-const hasChildren = (object: FunctionTestResult | GenericObjectTestResult) => {
-  return (
-    object._type === "FunctionTestResult" ||
-    (object._type === "ObjectTestResult" && object.type !== "literal")
-  );
-};
-const getFunctionTestResultChildren = (
-  obj: FunctionTestResult,
-  objectPath: string[]
-): NestedObjectColumnItem[] => {
-  return [
-    ...(obj.children.map((cr) => ({
-      id: cr.name,
-      name: cr.name,
-      object: cr,
-      objectPath: [...objectPath, cr.name],
-      selected: false,
-    })) || []),
-  ];
-};
-
-const getGenericObjectTestResultChildren = (
-  obj: GenericObjectTestResult,
-  objectPath: string[]
-): NestedObjectColumnItem[] => {
-  if (obj.type === "object") {
-    return Object.keys(obj.expectedValue).map((k) => {
-      return {
-        id: k,
-        name: k,
-        object: obj.expectedValue[k],
-        objectPath: [...objectPath, k],
-        selected: false,
-      };
-    });
-  } else if (obj.type === "array") {
-    return obj.expectedValue.map((c, i) => {
-      return {
-        id: i.toString(),
-        name: i.toString(),
-        object: c,
-        objectPath: [...objectPath, i.toString()],
-        selected: false,
-      };
-    });
-  }
-  return [];
-};
-
-const getColumns = (
-  obj: FunctionTestResult,
-  objectPath: string[]
-): NestedObjectColumnItem[][] => {
-  const columns: NestedObjectColumnItem[][] = [
-    [
-      {
-        id: obj.name,
-        name: obj.name,
-        object: obj,
-        objectPath: [obj.name],
-        selected: true,
-      },
-    ],
-  ];
-
-  let previousSelected = columns[0][0];
-  for (let a = 1; a <= objectPath.length; a++) {
-    previousSelected.selected = true;
-    const nextColumns = getChildren(
-      previousSelected.object,
-      previousSelected.objectPath
-    );
-    if (!nextColumns.length) {
-      break;
-    }
-    columns.push(nextColumns);
-    const currentName = objectPath[a];
-    if (currentName) {
-      previousSelected = nextColumns.find((c) => c.id === currentName)!;
-    }
-  }
-
-  return columns;
-};
-
-export const TestResultColumns: React.FC<{ object: FunctionTestResult }> = ({
-  object,
-}) => {
-  const [columns, setColumns] = useState<NestedObjectColumnItem[][]>(
-    getColumns(object, [object.name])
-  );
-  return (
-    <NestedObjectColumns
-      objects={columns}
-      onObjectSelected={(o) => {
-        setColumns(getColumns(object, o.objectPath));
-      }}
-      DetailView={TestResultDetailView}
-      ListItemView={({ object, selectObject }) => {
-        return (
-          <Button
-            sx={{
-              width: "100%",
-              height: 20,
-              backgroundColor: object.selected ? "cyan" : "white",
-              color: object.selected ? "white" : "cyan",
-              "&:hover": {
-                backgroundColor: "cyan",
-                color: "white",
-              },
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "flex-start",
-              cursor: "pointer",
-              textTransform: "none",
-            }}
-            onClick={() => selectObject()}
-          >
-            <Box sx={{ mx: 2 }}>
-              {object?.object?.executionContext?.isMocked ? (
-                <ReplaySharp />
-              ) : object.object?.successful ? (
-                <DoneSharp color="success" />
-              ) : (
-                <CloseSharp color="error" />
-              )}
-            </Box>
-            <Typography variant="body1" sx={{ flexGrow: 1, textAlign: "left" }}>
-              {object.name}
-            </Typography>
-            {hasChildren(object.object || {}) && <KeyboardArrowRightSharp />}
-          </Button>
-        );
-      }}
-    />
-  );
-};
-
-export const TestResultDetailView: React.FC<{
-  object: NestedObjectColumnItem;
-}> = ({ object }) => {
-  const resultObject: FunctionTestResult = object.object;
-
-  return <TestResultFunctionView resultObject={resultObject} />;
-};
 
 export const TestResultFunctionView: React.FC<{
   resultObject: FunctionTestResult;

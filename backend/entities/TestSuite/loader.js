@@ -72,11 +72,14 @@ export const updateTestSuite = async (testSuite) => {
         throwError(ERROR_CODES.EXTERNAL_ERROR, { message: `Could not update test suite. ${e?.toString()}` })
     }
 
+    // update the index file entry as well.
     await TEST_SUITE_INDEX_FILE_CONTENT.updateRecord(testSuite);
 
 }
 
-
+/**
+ * Creates a test suite file and adds entry in the index file.
+*/
 export const createTestSuite = async (testSuite) => {
 
     const testSuiteID = testSuite.id || uuidv4();
@@ -93,6 +96,7 @@ export const createTestSuite = async (testSuite) => {
         throw new Error(`Test suite ${testSuiteID} already exists.`)
     }
 
+    // create a new test suite file.
     try {
         await writeFileJSONPromised(testSuiteFile, testSuite);
         logger.debug(`Created file fo test suite ${testSuiteFile}`)
@@ -103,6 +107,7 @@ export const createTestSuite = async (testSuite) => {
         )
     }
 
+    // add entry in index file
     await TEST_SUITE_INDEX_FILE_CONTENT.addRecord(testSuite);
 
 }
@@ -111,6 +116,7 @@ export const deleteTestSuite = async (id) => {
 
     const testSuite = await getTestSuiteByID(id)
 
+    // remove entry from the index file.
     await TEST_SUITE_INDEX_FILE_CONTENT.deleteRecord(testSuite);
 
     const testSuiteFile = `${testCasePath}/${indexEntry[0]}.json`

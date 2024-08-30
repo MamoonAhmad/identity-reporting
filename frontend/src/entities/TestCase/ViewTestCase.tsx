@@ -3,11 +3,10 @@ import { ViewPage } from "../../components/UICrud/ViewPage";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { TestCaseServices } from "./services";
 import axios from "axios";
-import { TestCaseView } from "./components/TestCaseView";
 import { TestCaseRoutes } from "./routes";
 import { NavigateNext } from "@mui/icons-material";
 import { CreateUpdateTestSuite } from "./components/CreateUpdateTestSuite";
-import { TestSuiteForFunction } from "./components/ConfigureTestCase";
+import { TestSuiteForFunction } from "./types";
 
 export const ViewTestCase = () => {
   const params = useParams();

@@ -1,8 +1,6 @@
 
 import { v4 } from "uuid"
 import * as loader from "./loader.js"
-import { logger } from "../../logger.js";
-
 
 
 
