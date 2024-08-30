@@ -60,7 +60,7 @@ export const ViewFunctionExecution: React.FC = () => {
             )
           }
         >
-          <AddSharp /> Create Test Case
+          <AddSharp /> Create New Test Suite
         </Button>
       </PageTitle>
       {loading && <BackDropLoading />}
