@@ -5,20 +5,20 @@ import { ViewTestCase } from "./ViewTestCase";
 const prefixRoute = (route: string) => `/test-case/${route}`;
 
 export const TestCaseRoutes = {
-  ViewTestCase: prefixRoute("view-test-case/*"),
+  ViewTestCase: prefixRoute("view-test-case"),
   CreateTestFromExecutedFunction: prefixRoute(
-    "create-test-from-executed-function/*"
+    "create-test-from-executed-function"
   ),
   TestCaseList: prefixRoute(""),
 };
 
 export const TestCaseConfig = [
   {
-    path: TestCaseRoutes.ViewTestCase,
+    path: `${TestCaseRoutes.ViewTestCase}/*`,
     element: <ViewTestCase />,
   },
   {
-    path: TestCaseRoutes.CreateTestFromExecutedFunction,
+    path: `${TestCaseRoutes.CreateTestFromExecutedFunction}/*`,
     element: <CreateTestFromExecutedFunction />,
   },
   {

@@ -47,7 +47,11 @@ export const deleteReportHandlerForReportEndpoint = (reportID) => {
     delete clientReportMap[reportID]
 }
 
-
+/**
+ * Creates a run file and invokes the script to run the functions on client app.
+ * Returns a promise which gets resolved when the process finishes successfully. 
+ * Promise gets rejected when process is existed with 1.
+*/
 export const runFunctionsOnClientApp = async (functionArray) => {
 
     const runFileID = v4()
@@ -96,7 +100,11 @@ export const runFunctionsOnClientApp = async (functionArray) => {
     return promise
 }
 
-
+/**
+ * Runs test on client app by invoking the python command.
+ * Returns a promise that gets resolved when the process finishes.
+ * Rejects a promise if the process exits with 1.
+ */
 export const runTestsOnClientApp = async ({
     name, moduleName, functionName
 }, onTestSuiteComplete) => {
