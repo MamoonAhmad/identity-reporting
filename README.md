@@ -61,9 +61,3 @@ Once the function is executed, you will be able to see this function in executed
 From the function execution view page, in the page actions, Click `Create New Test Suite`. This will take you to test suite creation page. Enter the name for your test suite and click `Save`.
 Once the new test suite is created, you can add test cases to your test suite. Test you function with different inputs.
 After setting up your test suite, you can run test by select `Run Test` from the top right corner, or Selecting `Run All Tests` from test suites list page.
-
-### Contribution Guidelines
-- Only work on issues or feature requests which has a `ready` label.
-- Browse the issue tracker before creating a new issue or feature request. We records all the issues and feature requests in the issue tracker.
-- In your issue, explain in detail whats wrong or what needs to be added, in such a way that other people can read it. Once an issue or feature request is approved, it should get a `ready` label.
-- It is recommended to create an issue and get an approval to work on it. We value your time and it would be frustrating for you to create a PR only to get it rejected.
