@@ -49,6 +49,9 @@ my_function("some named or positional arguments to pass.")
 ```
 When submitted, Identity Server will tell the tracer to run this code in the context of you python app. Once the function runs, tracer will capture the function execution and this function execution will be recorded. Once the function is executed, you will be redirected to a page where you will see the visual representation of the executed function. You will be able to see all the (decorated) functions that got called when `my_function` got executed.
 
+![image](https://github.com/user-attachments/assets/c0506aaa-dfd3-49fd-a20b-1f94ade006ee)
+In the above picture, you can see how each function and its children show up. In the above execution, `create_ticket_and_item` called `create_ticket` and `add_item_to_ticket`.
+
 Lets say `my_function` called `another_function` from any other module or the same module, and you wanna see the function call to `another_function`. You would have to decorate `another_function` too. You can do that via `identity_config.json` file.
 
 Once the function is executed, you will be able to see this function in executed functions list page by choosing the option from the menu bar.
