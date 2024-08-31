@@ -4,9 +4,10 @@ import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { TestCaseServices } from "./services";
 import axios from "axios";
 import { TestCaseRoutes } from "./routes";
-import { NavigateNext } from "@mui/icons-material";
+import { NavigateNext, PlayArrowSharp } from "@mui/icons-material";
 import { CreateUpdateTestSuite } from "./components/CreateUpdateTestSuite";
 import { TestSuiteForFunction } from "./types";
+import { TestRunRoutes } from "../TestRun/routes";
 
 export const ViewTestCase = () => {
   const params = useParams();
@@ -26,21 +27,15 @@ export const ViewTestCase = () => {
         return (
           <>
             <Button
+              variant="outlined"
               onClick={() => {
-                axios
-                  .post("http://localhost:8002/run-test", {
-                    testCaseId: object._id,
-                  })
-                  .then((res) => {
-                    const testRun = res.data;
-                    navigate("/test-run/test-run/" + testRun._id);
-                  });
+                navigate(
+                  `${TestRunRoutes.RunAllTests}/?testSuiteID=${object.id}`
+                );
               }}
             >
+              <PlayArrowSharp sx={{ mr: 1 }} />
               Run Test
-            </Button>
-            <Button onClick={() => navigate(`/test-runs/${object._id}`)}>
-              View Test Runs
             </Button>
           </>
         );
@@ -55,16 +50,13 @@ export const ViewTestCase = () => {
             label: "All Test Cases",
           },
           {
-            url: TestCaseRoutes.ViewTestCase.replace("*", object.id),
+            url: `${TestCaseRoutes.ViewTestCase}/${object.id}`,
             label: object.name,
           },
         ];
         if (selectedTestCaseID) {
           breadCrumbs.push({
-            url: TestCaseRoutes.ViewTestCase.replace(
-              "*",
-              `${object.id}?testCaseID=${selectedTestCaseID}`
-            ),
+            url: `${TestCaseRoutes.ViewTestCase}/${object.id}?testCaseID=${selectedTestCaseID}`,
             label:
               object?.tests?.find((t: any) => t.id === selectedTestCaseID)
                 ?.name || selectedTestCaseID,

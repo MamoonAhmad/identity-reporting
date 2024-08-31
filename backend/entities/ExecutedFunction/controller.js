@@ -39,6 +39,9 @@ export const runCodeOnClientApplication = async (socketIOInstance, code) => {
         function_config
     ])
 
+    if(!executedFunction) {
+        socketIOInstance.emit(url("run_function_with_code:error"), "Could not get executed function.");
+    }
     // save the executed function
     await loader.createExecutedFunction(executedFunction);
 

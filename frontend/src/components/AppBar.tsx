@@ -129,7 +129,7 @@ export default function PersistentDrawerLeft() {
               </IconButton>
               <Link to="/">
                 <Typography variant="h6" noWrap component="div">
-                  Code Identity Reporting Tool
+                  Identity Server
                 </Typography>
               </Link>
             </Box>

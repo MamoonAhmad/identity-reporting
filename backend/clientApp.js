@@ -85,7 +85,12 @@ export const runFunctionsOnClientApp = async (functionArray) => {
 
             readJSONFilePromised(runFileName).then((functionRuns) => {
                 // resolve executed functions
-                resolve(functionRuns.functions_to_run?.map(c => c.executed_function))
+                const executedFunction = functionRuns.functions_to_run?.map(c => c.executed_function)
+                if(!executedFunction?.every(e => !!e)) {
+                    reject(stdout.toString())
+                }
+                resolve(executedFunction)
+                
             }).catch(err => {
                 reject(`Could not read run file after client process got finished.${err?.toString() || ""} `)
             }).finally(() => {
@@ -106,7 +111,7 @@ export const runFunctionsOnClientApp = async (functionArray) => {
  * Rejects a promise if the process exits with 1.
  */
 export const runTestsOnClientApp = async ({
-    name, moduleName, functionName
+    name, moduleName, functionName, testSuiteID
 }, onTestSuiteComplete) => {
 
     const reportID = v4()
@@ -125,6 +130,10 @@ export const runTestsOnClientApp = async ({
     if (functionName) {
         commandFilters.push(`--functionName=${functionName}`)
     }
+    if(testSuiteID) {
+        commandFilters.push(`--testSuiteID=${testSuiteID}`)
+    }
+
     if (onTestSuiteComplete) {
         commandFilters.push(`--reportURL="http://localhost:8002/client_app_completion_endpoint/${reportID}"`)
         registerReportHandlerForReportEndpoint(

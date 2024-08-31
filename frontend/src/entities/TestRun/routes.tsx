@@ -1,11 +1,9 @@
 import { RunAllTests } from "./RunAllTests";
 
-const prefixRoute = (route: string) => `test-run/${route}`;
+const prefixRoute = (route: string) => `/test-run/${route}`;
 
 export const TestRunRoutes = {
-  TestRunList: prefixRoute("test-run-list/*"),
-  ViewTestRun: prefixRoute("test-run/*"),
-  RunAllTests: prefixRoute("run-all-tests/*"),
+  RunAllTests: prefixRoute("run-all-tests"),
 };
 
 export const TestRunRoutesConfig = [

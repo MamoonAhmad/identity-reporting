@@ -5,6 +5,8 @@ import {
   CloseSharp,
   ErrorSharp,
   PlayArrowSharp,
+  RedoSharp,
+  UndoSharp,
 } from "@mui/icons-material";
 import {
   Box,
@@ -29,6 +31,7 @@ import { GeneralObjectView } from "../../components/ObjectView";
 import { PageTitle } from "../../components/PageTitle";
 import { BackDropLoading } from "../../components/BackDropLoading";
 import { ExecutedFunction } from "./types";
+import { FunctionMetaData } from "./components/FunctionMetaData";
 
 export const ViewFunctionExecution: React.FC = () => {
   const params = useParams();
@@ -49,7 +52,7 @@ export const ViewFunctionExecution: React.FC = () => {
 
   return (
     <Grid container>
-      <PageTitle title="Executed Functions">
+      <PageTitle title="Executed Function">
         <Button
           variant="outlined"
           onClick={() =>
@@ -179,56 +182,7 @@ export const ExecutionView: React.FC<ExecutionViewProps> = React.memo(
     return (
       <>
         <Grid container>
-          <Grid item xs={12}>
-            <Box sx={{ display: "flex", alignItems: "flex-start" }}>
-              <Box
-                display={"flex"}
-                flexDirection={"column"}
-                alignItems={"flex-start"}
-                sx={{ my: 2, flexGrow: 1 }}
-              >
-                <Typography variant="subtitle1" sx={{ mt: 0.2 }}>
-                  Execution Time: 38ms
-                </Typography>
-                {!func.error && (
-                  <Typography
-                    variant="subtitle1"
-                    color={"green"}
-                    sx={{ mt: 0.2 }}
-                  >
-                    Status: Function executed successfully.
-                  </Typography>
-                )}
-                {func.error && (
-                  <Typography
-                    variant="subtitle1"
-                    color={"red"}
-                    textAlign={"left"}
-                    sx={{ mt: 0.2 }}
-                  >
-                    {func.error?.split("\n")?.map((s) => (
-                      <Typography
-                        variant="subtitle1"
-                        color={"red"}
-                        sx={{ mt: 0.2 }}
-                      >
-                        {s}
-                      </Typography>
-                    ))}
-                  </Typography>
-                )}
-              </Box>
-              <Button
-                sx={{ mx: 2, flexShrink: 0, mt: 2 }}
-                onClick={runFunctionWithInput}
-              >
-                <Typography sx={{ display: "flex", alignItems: "center" }}>
-                  <PlayArrowSharp sx={{ mr: 1 }} />
-                  Run Function Again
-                </Typography>
-              </Button>
-            </Box>
-          </Grid>
+          <FunctionMetaData executedFunction={func} />
           <Grid item xs={12} my={2}>
             <JSONTextField
               object={inputToPass}
@@ -236,7 +190,17 @@ export const ExecutionView: React.FC<ExecutionViewProps> = React.memo(
               label="Input To Pass (JSON)"
             />
           </Grid>
-          <Grid item xs={12} display={"flex"}>
+          <Grid item xs={12}>
+            <Box sx={{ display: "flex", alignItems: "flex-start" }}>
+              <Button onClick={runFunctionWithInput}>
+                <Typography sx={{ display: "flex", alignItems: "center" }}>
+                  <PlayArrowSharp sx={{ mr: 1 }} />
+                  Run Function Again
+                </Typography>
+              </Button>
+            </Box>
+          </Grid>
+          <Grid item xs={12} display={"flex"} mt={2}>
             <ToggleButtonGroup
               size="small"
               color="primary"
@@ -417,12 +381,11 @@ const FunctionView: React.FC<{
   ]);
   return (
     <Grid container>
-      <Grid item xs={12}>
-        <Typography variant="h6">{executedFunction.name}</Typography>
-      </Grid>
+      <FunctionMetaData executedFunction={executedFunction} />
       <Grid item xs={12}>
         {!executedFunction.isMocked ? (
           <Button
+            variant="outlined"
             onClick={() => {
               updateObject({
                 isMocked: true,
@@ -430,7 +393,9 @@ const FunctionView: React.FC<{
                 mockedErrorMessage: executedFunction.error,
               });
             }}
+            sx={{ my: 3 }}
           >
+            <RedoSharp sx={{ mr: 0.3 }} fontSize="small" />
             Mock This Function
           </Button>
         ) : (
@@ -442,8 +407,11 @@ const FunctionView: React.FC<{
                 mockedErrorMessage: undefined,
               });
             }}
+            sx={{ my: 3 }}
+            variant="outlined"
           >
-            UnMock This Function
+            <UndoSharp sx={{ mr: 0.3 }} fontSize="small" />
+            Un Mock This Function
           </Button>
         )}
       </Grid>
@@ -462,27 +430,6 @@ const FunctionView: React.FC<{
       ) : null}
       {!executedFunction.isMocked ? (
         <>
-          <Grid item xs={12}>
-            <Typography variant="subtitle1" sx={{ mt: 0.2 }}>
-              Execution Time: 38ms
-            </Typography>
-            {!executedFunction.error && (
-              <Typography variant="subtitle1" color={"green"} sx={{ mt: 0.2 }}>
-                Status: Function executed successfully.
-              </Typography>
-            )}
-            {executedFunction.error && (
-              <>
-                <Typography variant="subtitle1" color={"red"} sx={{ mt: 0.2 }}>
-                  <>
-                    {executedFunction.error?.split("\n").map((s) => (
-                      <Typography color={"red"}>{s}</Typography>
-                    ))}
-                  </>
-                </Typography>
-              </>
-            )}
-          </Grid>
           <Grid item xs={12}>
             <Grid container spacing={1}>
               <Grid item xs={6}>

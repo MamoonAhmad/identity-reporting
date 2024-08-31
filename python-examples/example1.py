@@ -1,5 +1,6 @@
 
 from identity_trace.decorator import watch
+import time
 count = 0
 
 
@@ -16,7 +17,6 @@ def create_ticket_and_item(anchor = None):
     if anchor:
         raise Exception("Anchor present")
     global count
-    
     # raise Exception("Something went wrong")
     
     ticket = create_ticket()
@@ -25,8 +25,8 @@ def create_ticket_and_item(anchor = None):
     count = count + 1
     # if count > 1:
     #     ticket['price'] = 0
-    return ticket
-    # return 10
+    # return ticket
+    return 10
 
 @watch()
 def create_ticket():
