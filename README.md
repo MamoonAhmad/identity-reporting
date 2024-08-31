@@ -49,7 +49,7 @@ my_function("some named or positional arguments to pass.")
 ```
 When submitted, Identity Server will tell the tracer to run this code in the context of you python app. Once the function runs, tracer will capture the function execution and this function execution will be recorded. Once the function is executed, you will be redirected to a page where you will see the visual representation of the executed function. You will be able to see all the (decorated) functions that got called when `my_function` got executed.
 
-![image](https://github.com/user-attachments/assets/c77e7302-1983-4b85-9fae-712840156b23)
+![image](https://github.com/user-attachments/assets/841dac19-6c14-4694-bb68-94521d710f3f)
 
 In the above picture, you can see how each function and its children show up. In the above execution, `create_ticket_and_item` called `create_ticket` and `add_item_to_ticket`.
 
