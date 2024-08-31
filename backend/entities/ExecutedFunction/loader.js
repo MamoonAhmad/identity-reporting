@@ -33,6 +33,13 @@ export const createExecutedFunction = async (executedFunction = {}) => {
 
     // create the file first.
     const { id } = executedFunction;
+    if(!id) {
+        throwError(ERROR_CODES.VALIDATION_ERROR, {
+            entity: ENTITY_NAME,
+            field: "id",
+            extraMessage: "Trying to save invalid executed function object."
+        })
+    }
     logger.debug("Creating executed function record", executedFunction)
     await writeFileJSONPromised(`${EXECUTED_FUNCTION_PATH}/${id}.json`, executedFunction);
 

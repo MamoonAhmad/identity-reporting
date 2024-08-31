@@ -9,6 +9,7 @@ import {
   AccordionProps,
   AccordionSummaryProps,
   Button,
+  IconButton,
 } from "@mui/material";
 import { useCallback, useEffect, useState } from "react";
 import {
@@ -20,7 +21,7 @@ import {
   PlayArrowSharp,
 } from "@mui/icons-material";
 import socketIO from "socket.io-client";
-import { Link, useSearchParams } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { PageContainer } from "../../components/PageContainer";
 import { PageTitle } from "../../components/PageTitle";
 import { Filter, FilterObjectType } from "../../components/Filter";
@@ -28,6 +29,7 @@ import { TestResult } from "./types";
 import { TestResultView } from "./components/TestResultView";
 import { BACKEND_API_SOCKET_UTL as BACKEND_API_SOCKET_URL } from "../../contants";
 import { BACKEND_SOCKET_EVENTS } from "./constants";
+import { TestCaseRoutes } from "../TestCase/routes";
 
 let RUNNING_TESTS = false;
 
@@ -86,6 +88,7 @@ export const RunAllTests = () => {
       name: params.get("name") || undefined,
       fileName: params.get("fileName") || undefined,
       moduleName: params.get("moduleName") || undefined,
+      testSuiteID: params.get("testSuiteID") || undefined,
     });
   }, [params]);
 
@@ -125,7 +128,9 @@ export const RunAllTests = () => {
       }
     );
 
-    socket.on("close", () => (RUNNING_TESTS = false));
+    socket.on(BACKEND_SOCKET_EVENTS.TEST_RUN_COMPLETE, () => {
+      RUNNING_TESTS = false;
+    });
   }, [filters]);
 
   useEffect(() => {
@@ -136,7 +141,7 @@ export const RunAllTests = () => {
   return (
     <PageContainer>
       <PageTitle title="Test Run">
-        <Button onClick={runTestsWithFilters}>
+        <Button onClick={runTestsWithFilters} variant="outlined">
           <PlayArrowSharp sx={{ mr: 1 }} />
           Run Tests Again
         </Button>
@@ -206,6 +211,7 @@ export const RunAllTests = () => {
               name: "Test Name",
               functionName: "Function Name",
               moduleName: "Module Name",
+              testSuiteID: "Test Suite ID",
             }}
             onFilter={(filters) => setParams(new URLSearchParams(filters))}
           />
@@ -250,8 +256,12 @@ export const RunAllTests = () => {
 const TestSuiteAccordion: React.FC<{
   r: TestResult;
 }> = ({ r }) => {
+  const navigate = useNavigate();
   return (
-    <Accordion defaultExpanded={!!r.result} disabled={!r.result}>
+    <Accordion
+      defaultExpanded={!r.successful && !!r.result}
+      disabled={!r.result}
+    >
       <AccordionSummary sx={{ display: "flex", alignItems: "center" }}>
         <Typography sx={{ textAlign: "left", flexShrink: 0 }}>
           {r?.successful && (
@@ -272,13 +282,14 @@ const TestSuiteAccordion: React.FC<{
           ({r.functionMeta?.moduleName})
         </Typography>
 
-        <Link
-          to={`/test-case/view-test-case/${r.testSuiteID}`}
-          onClick={(e) => e.stopPropagation()}
-          target="_blank"
+        <IconButton
+          sx={{ m: 0, p: 0 }}
+          onClick={() =>
+            navigate(`${TestCaseRoutes.ViewTestCase}/${r.testSuiteID}`)
+          }
         >
-          <EditSharp sx={{ fontSize: "1.3rem" }} />
-        </Link>
+          <EditSharp fontSize="small" />
+        </IconButton>
       </AccordionSummary>
       <AccordionDetails>
         {r.result && <TestResultView result={r} />}

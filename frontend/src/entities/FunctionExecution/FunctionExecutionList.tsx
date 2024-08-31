@@ -93,7 +93,7 @@ export const FunctionExecutionList: React.FC<any> = () => {
                           <Link
                             to={`${FunctionExecutionRoutes.ViewFunctionExecution}/${d.id}`}
                           >
-                            {d.endTime - d.startTime} ms
+                            {d.totalTime?.toFixed(2)}ms
                           </Link>
                         </TableCell>
                         <TableCell>

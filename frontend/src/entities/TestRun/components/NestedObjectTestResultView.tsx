@@ -511,10 +511,10 @@ const GeneralObjectDiff: React.FC<{
   targetObject: any;
   name: string;
 }> = (props) => {
-  const { sourceObject } = props;
-  if (Array.isArray(sourceObject)) {
+  const { sourceObject, targetObject } = props;
+  if (Array.isArray(sourceObject) && Array.isArray(targetObject)) {
     return <ArrayDiff {...props} />;
-  } else if (sourceObject && typeof sourceObject === "object") {
+  } else if (sourceObject && typeof sourceObject === "object" && targetObject && typeof targetObject === "object") {
     return <ObjectDiff {...props} />;
   } else {
     return <LiteralDiff {...props} />;

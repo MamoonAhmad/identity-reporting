@@ -22,7 +22,7 @@ export const APP_ROUTES = createBrowserRouter([
       {
         path: "/",
         element: (
-          <Redirect to={`/${FunctionExecutionRoutes.FunctionExecutionList}`} />
+          <Redirect to={`${FunctionExecutionRoutes.FunctionExecutionList}`} />
         ),
       },
       ...TestRunRoutesConfig,
