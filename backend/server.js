@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 
 
-import express from 'express';
+import express, { Router } from 'express';
+import path from 'path';
 import cors from 'cors';
 import { urlLoggerMiddleware } from './utils/server.js';
 import http from 'http';
@@ -15,6 +16,12 @@ import { registerEndpoints as registerClientAppEndpoints } from './clientApp.js'
 import * as userSettingLoader from "./entities/UserSetting/loader.js"
 import { logger } from './logger.js';
 
+
+import { fileURLToPath } from 'url';
+
+
+const __fileName = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__fileName)
 
 const prepareSocketListeners = (socketIOInstance) => {
 
@@ -91,13 +98,33 @@ export async function startServer() {
     }))
     app.use(urlLoggerMiddleware)
 
-    server.listen(userSettings.server_port, () => {
-        logger.info(`Server started on port ${userSettings.server_port}.`)
+    // Register REST API routes
+    const apiRouter = express.Router()
+    registerExecutedFunctionEndpoints(apiRouter);
+    registerTestSuiteEndpoints(apiRouter);
+    registerUserSettingEndpoints(apiRouter);
+    registerClientAppEndpoints(apiRouter);
+    app.use("/api", apiRouter);
+    logger.debug("Registered API Routes on /api")
+
+    // Serve React App Build
+    app.use("/", (req, res, next) => {
+        if (req.url.startsWith("/api") || req.url.startsWith("/assets")) {
+            next()
+        }
+        else {
+            res.sendFile(path.join(__dirname, '../frontend/dist', 'index.html'))
+        }
     })
 
-    registerExecutedFunctionEndpoints(app);
-    registerTestSuiteEndpoints(app);
-    registerUserSettingEndpoints(app);
-    registerClientAppEndpoints(app);
+    // Static files
+    app.use(express.static(path.join(__dirname, '../frontend/dist')));
 
+
+    server.listen(userSettings.server_port, (error) => {
+        logger.info(`Server started on port ${userSettings.server_port}.`)
+        logger.info(`URL http://localhost:${userSettings.server_port}/`)
+    })
+
+    
 }
