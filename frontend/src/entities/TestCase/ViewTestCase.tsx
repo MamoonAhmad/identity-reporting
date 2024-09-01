@@ -67,7 +67,7 @@ export const ViewTestCase = () => {
             .post("http://localhost:8002/test_case/save-test-case", {
               ...testSuite,
             })
-            .then((res) => {
+            .then(() => {
               window.location.reload();
             });
         };

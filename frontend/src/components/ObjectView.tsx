@@ -1,5 +1,5 @@
 import { AddSharp, RemoveSharp } from "@mui/icons-material";
-import { Box, IconButton, Typography, useTheme } from "@mui/material";
+import { Box, IconButton, Typography } from "@mui/material";
 import { useState } from "react";
 
 const ObjectView: React.FC<{
@@ -183,8 +183,6 @@ const LiteralView: React.FC<{
   sourceObject: any;
   name: string;
 }> = ({ sourceObject, name }) => {
-  const theme = useTheme();
-
   return (
     <Box
       sx={{

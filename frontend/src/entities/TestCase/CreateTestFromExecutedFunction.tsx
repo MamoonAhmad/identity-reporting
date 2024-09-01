@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import axios from "axios";
 import { FunctionExecutionServices } from "../FunctionExecution/services";
 import { CreateUpdateTestSuite } from "./components/CreateUpdateTestSuite";
 import { TestCaseRoutes } from "./routes";

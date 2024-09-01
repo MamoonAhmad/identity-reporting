@@ -1,7 +1,5 @@
 import { Button, Grid, TextField } from "@mui/material";
 import { TestConfigColumns } from "./ConfigureTestCase";
-import { useState } from "react";
-
 import { useObjectChange } from "./useObjectChange";
 import { JSONTextField } from "../../../components/JSONTestField";
 import { getFunctionTestConfigForExecutedFunction } from "../utils/getFunctionTestConfigForExecutedFunction";
@@ -19,8 +17,6 @@ export const TestCaseView: React.FC<{
     obj?.name,
     obj?.inputToPass,
   ]);
-
-  const [inputToPassError, setInputToPassError] = useState(false);
 
   if (!testCase) {
     return null;
@@ -65,7 +61,7 @@ export const TestCaseView: React.FC<{
             Run Function with This Input
           </Button>
         </Grid>
-        <TestConfigColumns object={testCase} onDelete={() => undefined} />
+        <TestConfigColumns object={testCase} />
       </Grid>
     </Grid>
   );
