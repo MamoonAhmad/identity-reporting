@@ -224,7 +224,6 @@ export const TestCaseResult: React.FC<{
                   >
                     <ToggleButton value={"horizontal"}>Horizontal</ToggleButton>
                     <ToggleButton value={"vertical"}>Vertical</ToggleButton>
-                    <ToggleButton value={"columns"}>Columns</ToggleButton>
                   </ToggleButtonGroup>
                 </Grid>
               </Grid>

@@ -20,3 +20,14 @@ class Some:
 
     def __init__(self, some = None) -> None:
         self.some = some
+
+
+def create_ticket(user=None):
+    # if not user:
+    #     raise Exception("User not present.")
+
+    return dict(
+        user = user,
+        name = "Some Awesome User"
+    )
+    

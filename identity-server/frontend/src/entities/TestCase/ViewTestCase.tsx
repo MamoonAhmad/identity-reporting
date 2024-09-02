@@ -63,10 +63,7 @@ export const ViewTestCase = () => {
           });
         }
         const onSaveTestSuite = (testSuite: TestSuiteForFunction) => {
-          axios
-            .post("http://localhost:8002/test_case/save-test-case", {
-              ...testSuite,
-            })
+          TestCaseServices.saveTestSuite(testSuite)
             .then(() => {
               window.location.reload();
             });

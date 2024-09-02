@@ -20,11 +20,11 @@ export const TestCaseServices = {
     return res.data;
   },
 
-  async onSaveTestSuite(
+  async saveTestSuite(
     testSuite: TestSuiteForFunction
   ): Promise<TestSuiteForFunction> {
     return axios
-      .post("http://localhost:8002/test_case/save-test-case", {
+      .post(BACKEND_API_ROUTES.SAVE_TEST_CASE, {
         ...testSuite,
       })
       .then((res) => res.data);

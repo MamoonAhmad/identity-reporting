@@ -104,14 +104,16 @@ export async function startServer() {
     registerTestSuiteEndpoints(apiRouter);
     registerUserSettingEndpoints(apiRouter);
     registerClientAppEndpoints(apiRouter);
+
     app.use("/api", apiRouter);
     logger.debug("Registered API Routes on /api")
 
     // Serve React App Build
     app.use("/", (req, res, next) => {
-        if (req.url.startsWith("/api") || req.url.startsWith("/assets")) {
+        if (req.url.startsWith("/api") || req.url.startsWith("/assets") || req.url.startsWith("/socket.io")) {
             next()
         }
+
         else {
             res.sendFile(path.join(__dirname, '../frontend/dist', 'index.html'))
         }
@@ -126,5 +128,5 @@ export async function startServer() {
         logger.info(`URL http://localhost:${userSettings.server_port}/`)
     })
 
-    
+
 }

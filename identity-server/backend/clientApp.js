@@ -135,7 +135,7 @@ export const runTestsOnClientApp = async ({
     }
 
     if (onTestSuiteComplete) {
-        commandFilters.push(`--reportURL="http://localhost:8002/client_app_completion_endpoint/${reportID}"`)
+        commandFilters.push(`--reportURL="http://localhost:8002/api/client_app_completion_endpoint/${reportID}"`)
         registerReportHandlerForReportEndpoint(
             reportID, (testSuiteResultReport) => {
                 onTestSuiteComplete(testSuiteResultReport)
