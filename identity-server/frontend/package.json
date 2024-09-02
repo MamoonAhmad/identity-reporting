@@ -1,5 +1,5 @@
 {
-  "name": "identity-reporting1",
+  "name": "identity-server-frontend",
   "private": true,
   "version": "0.0.0",
   "type": "module",

@@ -83,7 +83,7 @@ type ExecutionViewProps = {
   function: ExecutedFunction;
 };
 export const ExecutionView: React.FC<ExecutionViewProps> = React.memo(
-  ({ function: executedFucntion }) => {
+  ({ function: executedFunction }) => {
     const theme = useTheme();
     const [diagramType, setDiagramType] = useState("horizontal");
 
@@ -99,13 +99,13 @@ export const ExecutionView: React.FC<ExecutionViewProps> = React.memo(
       setSelectedFunctionEntity(null);
     };
 
-    const [inputToPass, setInputToPass] = useState(executedFucntion?.input);
+    const [inputToPass, setInputToPass] = useState(executedFunction?.input);
 
-    const [f, setF] = useState(executedFucntion);
+    const [f, setF] = useState(executedFunction);
     useEffect(() => {
-      setF(executedFucntion);
-      setInputToPass(executedFucntion?.input);
-    }, [executedFucntion]);
+      setF(executedFunction);
+      setInputToPass(executedFunction?.input);
+    }, [executedFunction]);
 
     const func: ExecutedFunctionWithMockMeta = useMemo(() => {
       const callCountMap: { [key: string]: number } = {};

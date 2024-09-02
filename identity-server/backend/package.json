@@ -1,0 +1,22 @@
+{
+  "name": "identity-server-backend",
+  "version": "1.0.0",
+  "description": "",
+  "bin": {
+    "identity-server": "./cli.js"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "cross-spawn": "^7.0.3",
+    "express": "^4.18.3",
+    "mongoose": "^8.2.0",
+    "socket.io": "^4.7.5",
+    "uuid": "^9.0.1"
+  },
+  "type": "module"
+}
