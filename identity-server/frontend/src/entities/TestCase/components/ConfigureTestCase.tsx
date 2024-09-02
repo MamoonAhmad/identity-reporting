@@ -22,8 +22,7 @@ import {
 
 export const TestConfigColumns: React.FC<{
   object: TestCaseForFunction;
-  onDelete: () => void;
-}> = ({ object: functionTestConfig, onDelete }) => {
+}> = ({ object: functionTestConfig }) => {
   useObjectChange(functionTestConfig, (t) => [t.config]);
 
   if (!functionTestConfig.config) {
@@ -53,8 +52,6 @@ const TestConfigViews: React.FC<{
   const onModalClose = () => {
     setSelectedFunctionEntity(undefined);
   };
-
-  const _ = useObjectChange(config);
 
   const onEntityClick = (e: DiagramEntity) => {
     setSelectedFunctionEntity(e.metaData?.function);

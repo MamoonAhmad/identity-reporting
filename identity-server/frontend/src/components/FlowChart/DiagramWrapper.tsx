@@ -1,17 +1,17 @@
 import { Grid } from "@mui/material";
-import { DiagramEntity, DiagramNodeComponent, DrawingFunction } from "./types";
+import { DiagramEntity, DrawingFunction } from "./types";
 import { useEffect, useRef } from "react";
 
 export const DiagramWrapper: React.FC<{
   entities: DiagramEntity[];
   drawingFunction: DrawingFunction;
   children: (reDraw: () => void) => React.ReactNode;
-  DiagramNodeComponent?: DiagramNodeComponent;
-}> = ({ entities, drawingFunction, children, DiagramNodeComponent }) => {
+}> = ({ entities, drawingFunction, children }) => {
   const canvasRef = useRef(null);
 
   useEffect(() => {
     reDraw();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [entities]);
 
   const wrapperRef = useRef(null);

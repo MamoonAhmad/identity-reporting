@@ -55,16 +55,21 @@ export const useObjectChange = (
   const reRender = () => setCounter((counter) => counter + 1);
 
   useEffect(() => {
+    // create a snapshot
     let snapshot = getSnapShot?.(object) || null;
 
     const callback = () => {
+      // If we have snapshot, check if the snapshot matches in the object
       if (getSnapShot) {
         const newSnapShot = getSnapShot(object);
+
+        // match with old snapshot
         const shouldUpdate = snapshot?.some((s, i) => s !== newSnapShot[i]);
         if (shouldUpdate) {
           snapshot = newSnapShot;
           reRender();
         }
+
       } else {
         reRender();
       }
@@ -76,6 +81,8 @@ export const useObjectChange = (
     return () => {
       deleteObjectChangeCallback(object, callback);
     };
+  // won't list to getSnapshot changes.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [object]);
 
   const updateObject = useCallback(

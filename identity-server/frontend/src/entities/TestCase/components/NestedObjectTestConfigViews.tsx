@@ -12,11 +12,7 @@ import {
   ToggleButtonGroup,
   Typography,
 } from "@mui/material";
-import React, {
-  PropsWithChildren,
-  useCallback,
-  useState,
-} from "react";
+import React, { PropsWithChildren, useCallback, useState } from "react";
 import { JSONTextField } from "../../../components/JSONTestField";
 import {
   AddSharp,
@@ -159,10 +155,9 @@ const AssertionView: React.FC<{
 }> = ({ assertion, onDelete, config }) => {
   const updateState = useObjectChange(assertion);
 
-  const _ = useObjectChange(config, (obj) => [
-    obj.functionMeta.input,
-    obj.functionMeta.input,
-  ]);
+  
+  useObjectChange(config, (obj) => [obj.functionMeta.input]);
+  console.log("re rendering")
 
   return (
     <Accordion>
@@ -438,7 +433,6 @@ export const MockedFunctionView: React.FC<{
   onChange: (c: FunctionTestConfig) => void;
 }> = ({ config }) => {
   const updateState = useObjectChange(config);
-
 
   return (
     <>
