@@ -1,14 +1,29 @@
 {
   "name": "identity-server",
-  "version": "1.0.0",
+  "version": "1.0.4",
   "description": "",
   "main": "index.js",
   "bin": {
     "identity-server": "./cli.js"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "publish": "npm run build:frontend && npm publish",
+    "build:frontend": "npm run build --workspace frontend"
   },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "cross-spawn": "^7.0.3",
+    "express": "^4.18.3",
+    "socket.io": "^4.7.5",
+    "uuid": "^9.0.1"
+  },
+  "workspaces": [
+    "frontend"
+  ],
+  "files": [
+    "backend/",
+    "frontend/dist"
+  ],
   "keywords": [],
   "author": "",
   "license": "ISC",
