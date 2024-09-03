@@ -375,9 +375,7 @@ const getDiagramEntityFromExecutedFunction = (
 ): DiagramEntity => {
   const entity: DiagramEntity = {
     id: func.id,
-    label:
-      func.name +
-      (func.executionContext.test_run?.is_mocked ? " (Mocked)" : ""),
+    label: func.name + (func.isMocked ? " (Mocked)" : ""),
     type: "node",
     metaData: {
       result: func,

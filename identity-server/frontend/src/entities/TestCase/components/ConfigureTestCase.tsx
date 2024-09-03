@@ -1,13 +1,15 @@
 import {
   Box,
+  Button,
   Grid,
   IconButton,
   Modal,
   ToggleButton,
   ToggleButtonGroup,
   Typography,
+  useTheme,
 } from "@mui/material";
-import { CloseSharp } from "@mui/icons-material";
+import { CloseSharp, ErrorSharp } from "@mui/icons-material";
 import { NestedObjectTestConfigView } from "./NestedObjectTestConfigViews";
 import { useState } from "react";
 import { HorizontalFlowDiagram } from "../../../components/FlowChart/HorizontalFlowDiagram.tsx";
@@ -43,6 +45,7 @@ export const TestConfigColumns: React.FC<{
 const TestConfigViews: React.FC<{
   config: FunctionTestConfig;
 }> = ({ config }) => {
+  const theme = useTheme();
   const [diagramType, setDiagramType] = useState("vertical");
 
   const [selectedFunctionEntity, setSelectedFunctionEntity] = useState<
@@ -54,7 +57,7 @@ const TestConfigViews: React.FC<{
   };
 
   const onEntityClick = (e: DiagramEntity) => {
-    setSelectedFunctionEntity(e.metaData?.function);
+    setSelectedFunctionEntity(e.metaData?.config);
   };
   return (
     <Grid container>
@@ -79,6 +82,45 @@ const TestConfigViews: React.FC<{
       <Grid item xs={12}>
         {diagramType === "horizontal" && (
           <HorizontalFlowDiagram
+            DiagramNodeComponent={({ entity }) => {
+              const config: FunctionTestConfig = entity.metaData!.config;
+              return (
+                <Button
+                  sx={{
+                    p: 1,
+                    borderRadius: 4,
+                    border: "1px solid black",
+                    display: "flex",
+                    alignItems: "center",
+                    textTransform: "none",
+                    color: "black",
+                    background: config.functionMeta?.executedSuccessfully
+                      ? "transparent"
+                      : theme.palette.error.light,
+                  }}
+                  onClick={() => onEntityClick(entity)}
+                >
+                  {!config.functionMeta?.executedSuccessfully ? (
+                    <ErrorSharp
+                      sx={{ color: theme.palette.error.contrastText }}
+                    />
+                  ) : null}
+                  <Typography
+                    sx={{
+                      color: !config.functionMeta?.executedSuccessfully
+                        ? theme.palette.error.contrastText
+                        : undefined,
+                      ml: 1,
+                    }}
+                  >
+                    {entity.label}
+                    <Typography fontWeight={"bold"}>
+                      {entity.metaData?.function?.isMocked ? " (Mocked)" : ""}
+                    </Typography>
+                  </Typography>
+                </Button>
+              );
+            }}
             entities={[
               getDiagramEntityFromExecutedFunction(config, onEntityClick),
             ]}
@@ -86,6 +128,45 @@ const TestConfigViews: React.FC<{
         )}
         {diagramType === "vertical" && (
           <PyramidFlowDiagram
+            DiagramNodeComponent={({ entity }) => {
+              const config: FunctionTestConfig = entity.metaData!.config;
+              return (
+                <Button
+                  sx={{
+                    p: 1,
+                    borderRadius: 4,
+                    border: "1px solid black",
+                    display: "flex",
+                    alignItems: "center",
+                    textTransform: "none",
+                    color: "black",
+                    background: config.functionMeta?.executedSuccessfully
+                      ? "transparent"
+                      : theme.palette.error.light,
+                  }}
+                  onClick={() => onEntityClick(entity)}
+                >
+                  {!config.functionMeta?.executedSuccessfully ? (
+                    <ErrorSharp
+                      sx={{ color: theme.palette.error.contrastText }}
+                    />
+                  ) : null}
+                  <Typography
+                    sx={{
+                      color: !config.functionMeta?.executedSuccessfully
+                        ? theme.palette.error.contrastText
+                        : undefined,
+                      ml: 1,
+                    }}
+                  >
+                    {entity.label}
+                    <Typography fontWeight={"bold"}>
+                      {entity.metaData?.function?.isMocked ? " (Mocked)" : ""}
+                    </Typography>
+                  </Typography>
+                </Button>
+              );
+            }}
             entities={[
               getDiagramEntityFromExecutedFunction(config, onEntityClick),
             ]}
@@ -142,7 +223,7 @@ const getDiagramEntityFromExecutedFunction = (
     label: func.functionMeta.name,
     type: "node",
     metaData: {
-      function: func,
+      config: func,
     },
     onClick,
     children: [],

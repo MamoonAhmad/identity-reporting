@@ -37,7 +37,9 @@ export const TestResultFunctionView: React.FC<{
           <Typography variant="h5">{resultObject.name}</Typography>
 
           <Box sx={{ ml: 1 }}>
-            {resultObject.successful ? (
+            {resultObject.isMocked ? (
+              <Chip label="Mocked" color="info" size="small" />
+            ) : resultObject.successful ? (
               <Chip label="Passed" color="success" size="small" />
             ) : (
               <Chip label="Failed" color="error" size="small" />
@@ -76,35 +78,52 @@ export const TestResultSuccessView: React.FC<{ object: GenericTestResult }> = ({
 }) => {
   return (
     <>
-      <Grid
-        xs={12}
-        display={"flex"}
-        alignItems={"center"}
-        justifyContent={"flex-start"}
-      >
-        <Typography variant="subtitle1">Result:</Typography>
-        <Typography sx={{ ml: 1 }} variant="body1" color={"green"}>
-          Successfully matched with config
-        </Typography>
-      </Grid>
+      {object.isMocked ? (
+        <>
+          <Grid xs={12}>
+            <Accordion>
+              <AccordionSummary expandIcon={<KeyboardArrowDownSharp />}>
+                Mocked Output
+              </AccordionSummary>
+              <AccordionDetails>
+                <GeneralObjectView sourceObject={object.mockedOutput} name="" />
+              </AccordionDetails>
+            </Accordion>
+          </Grid>
+        </>
+      ) : (
+        <>
+          <Grid
+            xs={12}
+            display={"flex"}
+            alignItems={"center"}
+            justifyContent={"flex-start"}
+          >
+            <Typography variant="subtitle1">Result:</Typography>
+            <Typography sx={{ ml: 1 }} variant="body1" color={"green"}>
+              Successfully matched with config
+            </Typography>
+          </Grid>
 
-      <Grid
-        xs={12}
-        display={"flex"}
-        alignItems={"center"}
-        justifyContent={"flex-start"}
-      >
-        {object.executedSuccessfully && (
-          <Typography variant="body1" color={"green"}>
-            Function successfully executed.
-          </Typography>
-        )}
-      </Grid>
-      <Grid item xs={12} sx={{ my: 2 }}>
-        {object.assertions.map((a) => (
-          <AssertionSuccessView assertion={a} />
-        ))}
-      </Grid>
+          <Grid
+            xs={12}
+            display={"flex"}
+            alignItems={"center"}
+            justifyContent={"flex-start"}
+          >
+            {object.executedSuccessfully && (
+              <Typography variant="body1" color={"green"}>
+                Function successfully executed.
+              </Typography>
+            )}
+          </Grid>
+          <Grid item xs={12} sx={{ my: 2 }}>
+            {object.assertions.map((a) => (
+              <AssertionSuccessView assertion={a} />
+            ))}
+          </Grid>
+        </>
+      )}
     </>
   );
 };
@@ -514,7 +533,12 @@ const GeneralObjectDiff: React.FC<{
   const { sourceObject, targetObject } = props;
   if (Array.isArray(sourceObject) && Array.isArray(targetObject)) {
     return <ArrayDiff {...props} />;
-  } else if (sourceObject && typeof sourceObject === "object" && targetObject && typeof targetObject === "object") {
+  } else if (
+    sourceObject &&
+    typeof sourceObject === "object" &&
+    targetObject &&
+    typeof targetObject === "object"
+  ) {
     return <ObjectDiff {...props} />;
   } else {
     return <LiteralDiff {...props} />;
