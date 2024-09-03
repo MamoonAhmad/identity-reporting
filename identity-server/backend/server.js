@@ -1,10 +1,10 @@
 #!/usr/bin/env node
 
 
-import express, { Router } from 'express';
+import express from 'express';
+import { fileURLToPath } from 'url';
 import path from 'path';
 import cors from 'cors';
-import { urlLoggerMiddleware } from './utils/server.js';
 import http from 'http';
 import { Server } from 'socket.io';
 
@@ -15,14 +15,18 @@ import { registerExpressEndpoints as registerUserSettingEndpoints } from './enti
 import { registerEndpoints as registerClientAppEndpoints } from './clientApp.js';
 import * as userSettingLoader from "./entities/UserSetting/loader.js"
 import { logger } from './logger.js';
+import { urlLoggerMiddleware } from './utils/server.js';
 
 
-import { fileURLToPath } from 'url';
+
 
 
 const __fileName = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__fileName)
 
+/**
+ * Prepares callbacks for action types on socket.io
+*/
 const prepareSocketListeners = (socketIOInstance) => {
 
     const socket = { on: () => { } }
@@ -37,20 +41,27 @@ const prepareSocketListeners = (socketIOInstance) => {
 
 
 
-
+/**
+ * Starts the server to host API on network.
+ * REST API: /api/
+ * WebSocket: /socket.io/
+ * Static Files: Serves from the directory `frontend/dist/assets`
+ * All Other Routes: Return html file from `frontend/dist/index.html`. This is done because of 
+ *                   routes in React APP
+ */
 export async function startServer() {
 
+    // Load user settings
     userSettingLoader.assertConfigFileExists()
     let userSettings;
-
     userSettings = await userSettingLoader.getSettings()
-
-
-
 
     const app = express();
 
     const server = http.createServer(app);
+
+    // Socket IO
+    // Served on /
     const socketIOInstance = new Server(server, {
         cors: {
             origin: '*',
@@ -105,15 +116,15 @@ export async function startServer() {
     registerUserSettingEndpoints(apiRouter);
     registerClientAppEndpoints(apiRouter);
 
+    // Server REST API in /api
     app.use("/api", apiRouter);
     logger.debug("Registered API Routes on /api")
 
-    // Serve React App Build
+    // This middleware intercepts routes to forward to appropriate handlers
     app.use("/", (req, res, next) => {
         if (req.url.startsWith("/api") || req.url.startsWith("/assets") || req.url.startsWith("/socket.io")) {
             next()
         }
-
         else {
             res.sendFile(path.join(__dirname, '../frontend/dist', 'index.html'))
         }
@@ -123,10 +134,12 @@ export async function startServer() {
     app.use(express.static(path.join(__dirname, '../frontend/dist')));
 
 
-    server.listen(userSettings.server_port, (error) => {
+    server.listen(userSettings.server_port, () => {
         logger.info(`Server started on port ${userSettings.server_port}.`)
         logger.info(`URL http://localhost:${userSettings.server_port}/`)
     })
 
-
+    server.on("error", (error) => {
+        logger.error(error);
+    })
 }
