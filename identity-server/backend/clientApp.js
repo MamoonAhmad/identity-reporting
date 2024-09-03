@@ -2,11 +2,13 @@
 
 import { v4 } from "uuid";
 import fs from "fs"
+import { exec } from "child_process";
+
 import * as userSettingsLoader from "./entities/UserSetting/loader.js"
 import { IDENTITY_TEMP_DIRECTORY } from "./constants.js";
 import { readJSONFilePromised } from "./utils/readJSONFilePromised.js";
 import { writeFileJSONPromised } from "./utils/writeFileJSONPromised.js";
-import { exec } from "child_process";
+import { getServerRestApiUrl } from "./utils/getServerURL.js";
 
 let clientApp = {};
 
@@ -86,11 +88,11 @@ export const runFunctionsOnClientApp = async (functionArray) => {
             readJSONFilePromised(runFileName).then((functionRuns) => {
                 // resolve executed functions
                 const executedFunction = functionRuns.functions_to_run?.map(c => c.executed_function)
-                if(!executedFunction?.every(e => !!e)) {
+                if (!executedFunction?.every(e => !!e)) {
                     reject(stdout.toString())
                 }
                 resolve(executedFunction)
-                
+
             }).catch(err => {
                 reject(`Could not read run file after client process got finished.${err?.toString() || ""} `)
             }).finally(() => {
@@ -130,12 +132,12 @@ export const runTestsOnClientApp = async ({
     if (functionName) {
         commandFilters.push(`--functionName=${functionName}`)
     }
-    if(testSuiteID) {
+    if (testSuiteID) {
         commandFilters.push(`--testSuiteID=${testSuiteID}`)
     }
 
     if (onTestSuiteComplete) {
-        commandFilters.push(`--reportURL="http://localhost:8002/api/client_app_completion_endpoint/${reportID}"`)
+        commandFilters.push(`--reportURL="${await getServerRestApiUrl()}/client_app_completion_endpoint/${reportID}"`)
         registerReportHandlerForReportEndpoint(
             reportID, (testSuiteResultReport) => {
                 onTestSuiteComplete(testSuiteResultReport)
