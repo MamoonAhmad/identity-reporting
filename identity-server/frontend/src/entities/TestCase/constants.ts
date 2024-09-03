@@ -9,4 +9,5 @@ const url = (endpoint: string) => {
 export const BACKEND_API_ROUTES = {
   GET_TEST_CASE_BY_ID: url("get-test-case"),
   GET_ALL_TEST_CASES: url("test-cases"),
+  SAVE_TEST_CASE: url("save-test-case"),
 };

@@ -53,7 +53,7 @@ export const CreateTestFromExecutedFunction: React.FC = () => {
   }, [object]);
 
   const onSaveTestSuite = (testSuite: TestSuiteForFunction) => {
-    TestCaseServices.onSaveTestSuite(testSuite).then((testSuite) => {
+    TestCaseServices.saveTestSuite(testSuite).then((testSuite) => {
       if (testSuite.id) {
         navigate(`${TestCaseRoutes.ViewTestCase}/${testSuite.id}`);
       }

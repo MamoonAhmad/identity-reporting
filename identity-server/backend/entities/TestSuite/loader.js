@@ -62,6 +62,7 @@ export const getTestSuiteByID = async (testSuiteID) => {
 
 
 export const updateTestSuite = async (testSuite) => {
+    await initDirectory(testCasePath);
     const testSuiteID = testSuite.id
     const testSuiteFile = `${testCasePath}/${testSuiteID}.json`
 
@@ -81,7 +82,7 @@ export const updateTestSuite = async (testSuite) => {
  * Creates a test suite file and adds entry in the index file.
 */
 export const createTestSuite = async (testSuite) => {
-
+    await initDirectory(testCasePath);
     const testSuiteID = testSuite.id || uuidv4();
 
     if (!testSuite.id) {
