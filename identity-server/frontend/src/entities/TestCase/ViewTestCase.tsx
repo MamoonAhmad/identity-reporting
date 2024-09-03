@@ -2,7 +2,6 @@ import { Breadcrumbs, Button, Link, Typography } from "@mui/material";
 import { ViewPage } from "../../components/UICrud/ViewPage";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { TestCaseServices } from "./services";
-import axios from "axios";
 import { TestCaseRoutes } from "./routes";
 import { NavigateNext, PlayArrowSharp } from "@mui/icons-material";
 import { CreateUpdateTestSuite } from "./components/CreateUpdateTestSuite";
