@@ -2,11 +2,10 @@ import { ExecutedFunction } from "../../FunctionExecution/types";
 import { FunctionTestConfig, FunctionTestConfigAssertion } from "../types";
 
 type FunctionTestConfigContext = {
-    functionCallCountMap: {
-      [key: string]: number;
-    };
+  functionCallCountMap: {
+    [key: string]: number;
   };
-  
+};
 
 export const getFunctionTestConfigForExecutedFunction = (
   f: ExecutedFunction,
@@ -20,6 +19,21 @@ export const getFunctionTestConfigForExecutedFunction = (
   context.functionCallCountMap[functionKey]++;
   const assertions: FunctionTestConfigAssertion[] = [];
 
+  if (f.executionContext.is_mocked) {
+    return {
+      _type: "FunctionTestConfig",
+      _version: 1,
+      assertions: [],
+      children: [],
+      functionCallCount: context.functionCallCountMap[functionKey],
+      functionMeta: f,
+      isRootFunction,
+      isMocked: true,
+      mockedErrorMessage: f.error,
+      mockedOutput: f.output,
+      shouldThrowError: !!f.error,
+    };
+  }
   if (f.error) {
     assertions.push({
       name: "Assert Error Message",

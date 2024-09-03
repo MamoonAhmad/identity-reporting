@@ -34,6 +34,8 @@ export type FunctionTestResult = BaseTestResult & {
   children: FunctionTestResult[];
   assertions: AssertionResult[];
   passedInput: any;
+  isMocked: boolean;
+  mockedOutput: any
 };
 
 export type AssertionResult = {

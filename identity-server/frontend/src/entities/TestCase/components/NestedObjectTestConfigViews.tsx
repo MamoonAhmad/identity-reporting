@@ -82,8 +82,10 @@ const FunctionConfigView: React.FC<{
       }
       updateState({ assertions: [...config.assertions] });
     },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [config]
   );
+
   return (
     <Grid container>
       <Grid item xs={12} display={"flex"} alignItems={"center"}>
@@ -155,9 +157,8 @@ const AssertionView: React.FC<{
 }> = ({ assertion, onDelete, config }) => {
   const updateState = useObjectChange(assertion);
 
-  
   useObjectChange(config, (obj) => [obj.functionMeta.input]);
-  console.log("re rendering")
+  console.log("re rendering");
 
   return (
     <Accordion>

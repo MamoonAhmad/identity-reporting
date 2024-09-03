@@ -1,6 +1,25 @@
 import { useCallback, useEffect, useState } from "react";
 
 const objectCallbacksSet: any[] = [];
+const allObjectCallbackSet: any[] = [];
+
+export const registerAnyObjectChangeCallback = (
+  key: string,
+  callback: (o: any) => void,
+  shouldCallCallback?: (o: any) => boolean
+) => {
+  const exists = allObjectCallbackSet.find((entry) => entry[0] === key);
+  if (exists) return;
+
+  allObjectCallbackSet.push([key, shouldCallCallback, callback]);
+};
+
+export const deleteAnyObjectChangeCallback = (key: string) => {
+  const index = allObjectCallbackSet.find((entry) => entry[0] === key);
+  if (index > -1) {
+    allObjectCallbackSet.splice(index, 1);
+  }
+};
 
 export const registerObjectChangeCallback = (
   object: any,
@@ -43,6 +62,15 @@ export const notifyObjectChange = (object: any) => {
       }
     });
   }
+  allObjectCallbackSet.forEach((entry) => {
+    if (entry[1]) {
+      const shouldCallCallback = entry[1](object);
+      if (!shouldCallCallback) {
+        return;
+      }
+    }
+    entry[2](object);
+  });
 };
 
 export const useObjectChange = (
@@ -69,7 +97,6 @@ export const useObjectChange = (
           snapshot = newSnapShot;
           reRender();
         }
-
       } else {
         reRender();
       }
@@ -81,8 +108,8 @@ export const useObjectChange = (
     return () => {
       deleteObjectChangeCallback(object, callback);
     };
-  // won't list to getSnapshot changes.
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // won't list to getSnapshot changes.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [object]);
 
   const updateObject = useCallback(

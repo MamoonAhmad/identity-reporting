@@ -46,10 +46,12 @@ export type TestCaseForFunction = {
   id: string;
   inputToPass: any;
   name: string;
-  mocks: {
-    [functionName: string]: FunctionMockConfig;
-  };
+  mocks: TestCaseMocks;
   config: FunctionTestConfig;
+};
+
+export type TestCaseMocks = {
+  [functionName: string]: FunctionMockConfig;
 };
 
 export type FunctionMockConfig = {
