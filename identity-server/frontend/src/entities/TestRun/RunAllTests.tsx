@@ -10,6 +10,7 @@ import {
   AccordionSummaryProps,
   Button,
   IconButton,
+  LinearProgress,
 } from "@mui/material";
 import { useCallback, useEffect, useState } from "react";
 import {
@@ -30,8 +31,6 @@ import { TestResultView } from "./components/TestResultView";
 import { BACKEND_API_SOCKET_UTL as BACKEND_API_SOCKET_URL } from "../../contants";
 import { BACKEND_SOCKET_EVENTS } from "./constants";
 import { TestCaseRoutes } from "../TestCase/routes";
-
-let RUNNING_TESTS = false;
 
 const Accordion = styled((props: AccordionProps) => (
   <MuiAccordion disableGutters elevation={0} square {...props} />
@@ -82,6 +81,7 @@ export const RunAllTests = () => {
 
   const [passedTests, setPassedTests] = useState<TestResult[]>([]);
   const [failedTests, setFailedTests] = useState<TestResult[]>([]);
+  const [testRunInProgress, setTestRunInProgress] = useState(false);
 
   useEffect(() => {
     setFilters({
@@ -97,7 +97,7 @@ export const RunAllTests = () => {
       return;
     }
 
-    RUNNING_TESTS = true;
+    setTestRunInProgress(true);
 
     setPassedTests([]);
     setFailedTests([]);
@@ -129,12 +129,12 @@ export const RunAllTests = () => {
     );
 
     socket.on(BACKEND_SOCKET_EVENTS.TEST_RUN_COMPLETE, () => {
-      RUNNING_TESTS = false;
+      setTestRunInProgress(false);
     });
   }, [filters]);
 
   useEffect(() => {
-    if (RUNNING_TESTS) return;
+    if (testRunInProgress) return;
     runTestsWithFilters();
   }, [runTestsWithFilters]);
 
@@ -146,6 +146,7 @@ export const RunAllTests = () => {
           Run Tests Again
         </Button>
       </PageTitle>
+      {testRunInProgress && <LinearProgress />}
       <Grid container>
         <Grid item xs={12} my={1} pl={1}>
           <Box
@@ -209,7 +210,6 @@ export const RunAllTests = () => {
             filters={filters || {}}
             filterMap={{
               name: "Test Name",
-              functionName: "Function Name",
               moduleName: "Module Name",
               testSuiteID: "Test Suite ID",
             }}

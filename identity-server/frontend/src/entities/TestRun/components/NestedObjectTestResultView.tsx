@@ -16,8 +16,8 @@ import {
 import {
   AddSharp,
   CheckCircleSharp,
-  CloseSharp,
   ErrorSharp,
+  InfoSharp,
   KeyboardArrowDownSharp,
   RemoveSharp,
 } from "@mui/icons-material";
@@ -47,19 +47,36 @@ export const TestResultFunctionView: React.FC<{
           </Box>
         </Grid>
 
-        <Grid item xs={12} my={2}>
-          <Accordion>
-            <AccordionSummary expandIcon={<KeyboardArrowDownSharp />}>
-              Passed Input
-            </AccordionSummary>
-            <AccordionDetails>
-              <GeneralObjectView
-                sourceObject={resultObject.passedInput}
-                name=""
-              />
-            </AccordionDetails>
-          </Accordion>
-        </Grid>
+        {resultObject.functionMeta && (
+          <Grid item xs={12} my={2}>
+            <Accordion>
+              <AccordionSummary expandIcon={<KeyboardArrowDownSharp />}>
+                Passed Input
+              </AccordionSummary>
+              <AccordionDetails>
+                <GeneralObjectView
+                  sourceObject={resultObject.functionMeta.input}
+                  name=""
+                />
+              </AccordionDetails>
+            </Accordion>
+          </Grid>
+        )}
+        {resultObject.functionMeta && (
+          <Grid item xs={12} my={2}>
+            <Accordion>
+              <AccordionSummary expandIcon={<KeyboardArrowDownSharp />}>
+                Function's Output
+              </AccordionSummary>
+              <AccordionDetails>
+                <GeneralObjectView
+                  sourceObject={resultObject.functionMeta.output}
+                  name=""
+                />
+              </AccordionDetails>
+            </Accordion>
+          </Grid>
+        )}
 
         <Grid item xs={12} sx={{ mt: 2 }}>
           {resultObject.successful ? (
@@ -134,23 +151,14 @@ export const TestResultFailView: React.FC<{ object: GenericTestResult }> = ({
   const theme = useTheme();
   return (
     <>
-      <Grid
-        xs={12}
-        display={"flex"}
-        alignItems={"center"}
-        justifyContent={"flex-start"}
-      >
-        <Typography variant="subtitle1">Result:</Typography>
-        <Typography sx={{ ml: 1 }} variant="body1" color={"red"}>
-          Did not match with config.
-        </Typography>
-      </Grid>
       <List>
         {object.failureReasons?.map((r) => (
           <ListItem>
             <ListItemText>
-              <CloseSharp color="error" fontSize="medium" sx={{ mr: 1 }} />
-              {r}
+              <Box sx={{ display: "flex", alignItems: "center" }}>
+                <ErrorSharp color="error" fontSize="medium" sx={{ mr: 1 }} />
+                <Typography variant="body2">{r}</Typography>
+              </Box>
             </ListItemText>
           </ListItem>
         ))}
@@ -270,65 +278,123 @@ const AssertionFailView: React.FC<{
                   variant="subtitle1"
                 />
               </Grid>
-              <Grid item xs={12} mt={2}>
-                <Typography variant="body1" fontWeight={"bold"}>
-                  Received Error Message
-                </Typography>
-                <ClientErrorMessage
-                  message={assertion.expectedErrorMessage.receivedError || ""}
-                  color={theme.palette.error.dark}
-                  variant="subtitle1"
-                />
-              </Grid>
+              {assertion.expectedErrorMessage.receivedError && (
+                <Grid item xs={12} mt={2}>
+                  <Typography variant="body1" fontWeight={"bold"}>
+                    Thrown Error Message
+                  </Typography>
+                  <ClientErrorMessage
+                    message={assertion.expectedErrorMessage.receivedError || ""}
+                    color={theme.palette.error.dark}
+                    variant="subtitle1"
+                  />
+                </Grid>
+              )}
+              {!assertion.expectedErrorMessage.receivedError &&
+                assertion.expectedErrorMessage.functionOutput && (
+                  <Grid item xs={12} mt={2}>
+                    <Typography variant="body1" fontWeight={"bold"}>
+                      Function Output
+                    </Typography>
+                    <Typography
+                      variant="body1"
+                      sx={{ my: 1, display: "flex", alignItems: "center" }}
+                    >
+                      <InfoSharp color="error" sx={{ mr: 1 }} />
+                      This function was supposed to throw error but it executed
+                      successfully.
+                    </Typography>
+                    <GeneralObjectView
+                      name="Output"
+                      sourceObject={
+                        assertion.expectedErrorMessage.functionOutput
+                      }
+                    />
+                  </Grid>
+                )}
             </Grid>
           </>
         )}
         {assertion.ioConfig && (
           <Grid container>
-            <Grid item xs={12}>
-              <Box
-                display={"flex"}
-                flexDirection={"column"}
-                alignItems={"flex-start"}
-              >
-                <Box display={"flex"} my={1}>
-                  <Typography fontWeight={"bold"} mr={1}>
-                    Object Target:
-                  </Typography>
-                  <Typography>
-                    Function's {assertion.ioConfig.target}
-                  </Typography>
+            {!assertion.ioConfig.thrownError && (
+              <Grid item xs={12}>
+                <Box
+                  display={"flex"}
+                  flexDirection={"column"}
+                  alignItems={"flex-start"}
+                >
+                  <Box display={"flex"} my={1}>
+                    <Typography fontWeight={"bold"} mr={1}>
+                      Object Target:
+                    </Typography>
+                    <Typography>
+                      Function's {assertion.ioConfig.target}
+                    </Typography>
+                  </Box>
+                  <Box display={"flex"} my={1}>
+                    <Typography fontWeight={"bold"} mr={1}>
+                      Operator:
+                    </Typography>
+                    <Typography>{assertion.ioConfig.operator}</Typography>
+                  </Box>
                 </Box>
-                <Box display={"flex"} my={1}>
-                  <Typography fontWeight={"bold"} mr={1}>
-                    Operator:
-                  </Typography>
-                  <Typography>{assertion.ioConfig.operator}</Typography>
-                </Box>
-              </Box>
-              <Grid
-                item
-                xs={12}
-                my={1}
-                sx={{ bgcolor: "#e7ecf0", p: 2, overflow: "scroll" }}
-              >
-                <Box display={"flex"} alignItems={"center"} mb={1}>
-                  <Box
-                    sx={{ height: 15, width: 15, background: "green", mr: 1 }}
+
+                <Grid
+                  item
+                  xs={12}
+                  my={1}
+                  sx={{ bgcolor: "#e7ecf0", p: 2, overflow: "scroll" }}
+                >
+                  <Box display={"flex"} alignItems={"center"} mb={1}>
+                    <Box
+                      sx={{ height: 15, width: 15, background: "green", mr: 1 }}
+                    />
+                    <Typography sx={{ mr: 1 }}>Expected</Typography>
+                    <Box
+                      sx={{ height: 15, width: 15, background: "red", mr: 1 }}
+                    />
+                    <Typography>Received</Typography>
+                  </Box>
+                  <GeneralObjectDiff
+                    sourceObject={assertion.ioConfig.object}
+                    targetObject={assertion.ioConfig.receivedObject}
+                    name={""}
                   />
-                  <Typography sx={{ mr: 1 }}>Expected</Typography>
-                  <Box
-                    sx={{ height: 15, width: 15, background: "red", mr: 1 }}
-                  />
-                  <Typography>Received</Typography>
-                </Box>
-                <GeneralObjectDiff
-                  sourceObject={assertion.ioConfig.object}
-                  targetObject={assertion.ioConfig.receivedObject}
-                  name={""}
-                />
+                </Grid>
               </Grid>
-            </Grid>
+            )}
+            {assertion.ioConfig.thrownError && (
+              <Grid container>
+                <Grid item xs={12} mt={2}>
+                  <Typography variant="body1" fontWeight={"bold"}>
+                    Expected Function Output
+                  </Typography>
+                  <Typography
+                    variant="body1"
+                    sx={{ my: 1, display: "flex", alignItems: "center" }}
+                  >
+                    <InfoSharp color="error" sx={{ mr: 1 }} />
+                    This function was supposed to return the following output
+                    but it failed to execute successfully.
+                  </Typography>
+                  <GeneralObjectView
+                    name="Expected Output"
+                    sourceObject={assertion.ioConfig.object}
+                  />
+                </Grid>
+                <Grid item xs={12}>
+                  <Typography variant="body1" fontWeight={"bold"}>
+                    Thrown Error
+                  </Typography>
+                  <ClientErrorMessage
+                    message={assertion.ioConfig.thrownError}
+                    color={theme.palette.error.dark}
+                    variant="subtitle1"
+                  />
+                </Grid>
+              </Grid>
+            )}
           </Grid>
         )}
       </AccordionDetails>
