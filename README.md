@@ -62,3 +62,11 @@ Once the function is executed, you will be able to see this function in executed
 From the function execution view page, in the page actions, Click `Create New Test Suite`. This will take you to test suite creation page. Enter the name for your test suite and click `Save`.
 Once the new test suite is created, you can add test cases to your test suite. Test you function with different inputs.
 After setting up your test suite, you can run test by select `Run Test` from the top right corner, or Selecting `Run All Tests` from test suites list page.
+
+### Include Tests In Your CI/CD Pipeline
+
+If you want to run tests in your CI/CD pipeline, execute the following command in the root of your python project.
+```
+	python -m identity_trace --runTests
+```
+This command will run all the tests you have configured. Command will exit with `sys.exit(0)` if any of the tests are failing.
