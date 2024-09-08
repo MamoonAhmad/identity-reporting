@@ -67,6 +67,6 @@ After setting up your test suite, you can run test by select `Run Test` from the
 
 If you want to run tests in your CI/CD pipeline, execute the following command in the root of your python project.
 ```
-	python -m identity_trace --runTests
+python -m identity_trace --runTests
 ```
 This command will run all the tests you have configured. Command will exit with `sys.exit(0)` if any of the tests are failing.
