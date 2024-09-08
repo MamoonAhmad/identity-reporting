@@ -21,7 +21,10 @@ export const runTestSuits = async (socketIOInstance, filter) => {
     }
 
     logger.debug("Running tests on client app with filters", filters)
-    await runTestsOnClientApp(filters, onTestComplete)
-    socketIOInstance.emit(SOCKET_EVENTS.TEST_RUN_COMPLETE)
+    try {
+        await runTestsOnClientApp(filters, onTestComplete)
+    } finally {
+        socketIOInstance.emit(SOCKET_EVENTS.TEST_RUN_COMPLETE)
+    }
 
 }
