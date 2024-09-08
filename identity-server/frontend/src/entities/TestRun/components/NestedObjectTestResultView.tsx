@@ -1,8 +1,5 @@
 import { useState } from "react";
 import {
-  Accordion,
-  AccordionDetails,
-  AccordionSummary,
   Box,
   Chip,
   Grid,
@@ -24,6 +21,11 @@ import {
 import { GeneralObjectView } from "../../../components/ObjectView";
 import { ClientErrorMessage } from "../../../components/ClientErrorMessage";
 import { AssertionResult, FunctionTestResult } from "../types";
+import {
+  Accordion,
+  AccordionDetails,
+  AccordionSummary,
+} from "../../../components/Accordion";
 
 type GenericTestResult = FunctionTestResult;
 
@@ -33,7 +35,7 @@ export const TestResultFunctionView: React.FC<{
   return (
     <>
       <Grid container>
-        <Grid item xs={12} display={"flex"} alignItems={"center"}>
+        <Grid item xs={12} display={"flex"} alignItems={"center"} mb={2}>
           <Typography variant="h5">{resultObject.name}</Typography>
 
           <Box sx={{ ml: 1 }}>
@@ -48,7 +50,7 @@ export const TestResultFunctionView: React.FC<{
         </Grid>
 
         {resultObject.functionMeta && (
-          <Grid item xs={12} my={2}>
+          <Grid item xs={12}>
             <Accordion>
               <AccordionSummary expandIcon={<KeyboardArrowDownSharp />}>
                 Passed Input
@@ -62,8 +64,8 @@ export const TestResultFunctionView: React.FC<{
             </Accordion>
           </Grid>
         )}
-        {resultObject.functionMeta && (
-          <Grid item xs={12} my={2}>
+        {resultObject.functionMeta && !resultObject.functionMeta.error && (
+          <Grid item xs={12}>
             <Accordion>
               <AccordionSummary expandIcon={<KeyboardArrowDownSharp />}>
                 Function's Output
@@ -73,6 +75,24 @@ export const TestResultFunctionView: React.FC<{
                   sourceObject={resultObject.functionMeta.output}
                   name=""
                 />
+              </AccordionDetails>
+            </Accordion>
+          </Grid>
+        )}
+
+        {resultObject.functionMeta && resultObject.functionMeta.error && (
+          <Grid item xs={12}>
+            <Accordion defaultExpanded>
+              <AccordionSummary expandIcon={<KeyboardArrowDownSharp />}>
+                Thrown Error
+              </AccordionSummary>
+              <AccordionDetails>
+                <Typography color={"error"} variant="body2">
+                  {resultObject.functionMeta.error}
+                </Typography>
+                {resultObject.functionMeta.stackTrace?.map((s) => (
+                  <Typography color={"error"}>{s}</Typography>
+                ))}
               </AccordionDetails>
             </Accordion>
           </Grid>
@@ -110,30 +130,6 @@ export const TestResultSuccessView: React.FC<{ object: GenericTestResult }> = ({
         </>
       ) : (
         <>
-          <Grid
-            xs={12}
-            display={"flex"}
-            alignItems={"center"}
-            justifyContent={"flex-start"}
-          >
-            <Typography variant="subtitle1">Result:</Typography>
-            <Typography sx={{ ml: 1 }} variant="body1" color={"green"}>
-              Successfully matched with config
-            </Typography>
-          </Grid>
-
-          <Grid
-            xs={12}
-            display={"flex"}
-            alignItems={"center"}
-            justifyContent={"flex-start"}
-          >
-            {object.executedSuccessfully && (
-              <Typography variant="body1" color={"green"}>
-                Function successfully executed.
-              </Typography>
-            )}
-          </Grid>
           <Grid item xs={12} sx={{ my: 2 }}>
             {object.assertions.map((a) => (
               <AssertionSuccessView assertion={a} />
@@ -151,6 +147,7 @@ export const TestResultFailView: React.FC<{ object: GenericTestResult }> = ({
   const theme = useTheme();
   return (
     <>
+      <Typography variant="h5">Failure Reasons</Typography>
       <List>
         {object.failureReasons?.map((r) => (
           <ListItem>
@@ -163,17 +160,24 @@ export const TestResultFailView: React.FC<{ object: GenericTestResult }> = ({
           </ListItem>
         ))}
       </List>
-      <Grid container>
-        <Grid item xs={12} sx={{ bgcolor: theme.palette.background.default }}>
-          {object.assertions.map((a) =>
-            a.success ? (
-              <AssertionSuccessView assertion={a} />
-            ) : (
-              <AssertionFailView assertion={a} />
-            )
-          )}
+      {object.assertions.length ? (
+        <Grid container>
+          <Grid item xs={12}>
+            <Typography variant="h5" sx={{ mb: 2 }}>
+              Assertions
+            </Typography>
+          </Grid>
+          <Grid item xs={12} sx={{ bgcolor: theme.palette.background.default }}>
+            {object.assertions.map((a) =>
+              a.success ? (
+                <AssertionSuccessView assertion={a} />
+              ) : (
+                <AssertionFailView assertion={a} />
+              )
+            )}
+          </Grid>
         </Grid>
-      </Grid>
+      ) : null}
     </>
   );
   // }

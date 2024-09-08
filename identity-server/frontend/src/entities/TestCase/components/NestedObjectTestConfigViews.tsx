@@ -1,7 +1,4 @@
 import {
-  Accordion,
-  AccordionDetails,
-  AccordionSummary,
   Button,
   FormControlLabel,
   Grid,
@@ -23,6 +20,11 @@ import { CodeTestField } from "../../../components/CodeTestField";
 import { Box } from "@mui/system";
 import { useObjectChange } from "./useObjectChange";
 import { FunctionTestConfig, FunctionTestConfigAssertion } from "../types";
+import {
+  Accordion,
+  AccordionDetails,
+  AccordionSummary,
+} from "../../../components/Accordion";
 
 const NestedObjectContext = React.createContext<{
   mockFunction: (o: FunctionTestConfig) => void;
