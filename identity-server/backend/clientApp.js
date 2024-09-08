@@ -71,12 +71,13 @@ export const runFunctionsOnClientApp = async (functionArray) => {
     const cwd = process.cwd();
 
     // Run command to run functions on client app
+    const command = `cd ${cwd} && ${settings.command} --runFile="${runFileID}"`
 
-    console.log(`executing cd "${cwd}"; ${settings.command} --runFile="${runFileID}"`)
+    console.log(`executing ${command}`)
 
     const promise = new Promise((resolve, reject) => {
 
-        exec(`cd "${cwd}"; ${settings.command} --runFile="${runFileID}"`, (err, stdout, stderr) => {
+        exec(command, (err, stdout, stderr) => {
 
             console.log(stdout.toString())
 
@@ -145,7 +146,7 @@ export const runTestsOnClientApp = async ({
         )
     }
 
-    const command = `cd "${cwd}"; ${settings.command} --runTests ${commandFilters.join(" ")}`
+    const command = `cd ${cwd} && ${settings.command} --runTests ${commandFilters.join(" ")}`
     // Run command to run functions on client app
 
     console.log(`executing ${command}`)

@@ -1,9 +1,6 @@
 import { FilterAltSharp } from "@mui/icons-material";
 import {
-  Accordion,
   AccordionActions,
-  AccordionDetails,
-  AccordionSummary,
   Box,
   Button,
   Grid,
@@ -11,6 +8,7 @@ import {
   Typography,
 } from "@mui/material";
 import React, { useEffect, useState } from "react";
+import { Accordion, AccordionDetails, AccordionSummary } from "./Accordion";
 
 export type FilterObjectType = { [key: string]: any };
 export const Filter: React.FC<{

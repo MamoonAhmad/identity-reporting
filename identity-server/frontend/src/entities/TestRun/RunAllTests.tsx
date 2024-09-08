@@ -1,15 +1,10 @@
 import {
-  Accordion as MuiAccordion,
-  AccordionDetails as MuiAccordionDetails,
-  AccordionSummary as MuiAccordionSummary,
   Box,
   Grid,
   Typography,
-  styled,
-  AccordionProps,
-  AccordionSummaryProps,
   Button,
   IconButton,
+  LinearProgress,
 } from "@mui/material";
 import { useCallback, useEffect, useState } from "react";
 import {
@@ -17,7 +12,6 @@ import {
   CloseSharp,
   EditSharp,
   ErrorSharp,
-  KeyboardArrowDownSharp,
   PlayArrowSharp,
 } from "@mui/icons-material";
 import socketIO from "socket.io-client";
@@ -30,49 +24,11 @@ import { TestResultView } from "./components/TestResultView";
 import { BACKEND_API_SOCKET_UTL as BACKEND_API_SOCKET_URL } from "../../contants";
 import { BACKEND_SOCKET_EVENTS } from "./constants";
 import { TestCaseRoutes } from "../TestCase/routes";
-
-let RUNNING_TESTS = false;
-
-const Accordion = styled((props: AccordionProps) => (
-  <MuiAccordion disableGutters elevation={0} square {...props} />
-))(({ theme }) => ({
-  border: `1px solid ${theme.palette.divider}`,
-  "&:not(:last-child)": {
-    borderBottom: 0,
-  },
-  "&::before": {
-    display: "none",
-  },
-}));
-
-const AccordionSummary = styled((props: AccordionSummaryProps) => (
-  <MuiAccordionSummary
-    expandIcon={<KeyboardArrowDownSharp sx={{ fontSize: "2rem", mx: 0.5 }} />}
-    {...props}
-  />
-))(({ theme }) => ({
-  backgroundColor:
-    theme.palette.mode === "dark"
-      ? "rgba(255, 255, 255, .05)"
-      : "rgba(0, 0, 0, .05)",
-  minHeight: "auto",
-  height: "auto",
-  padding: theme.spacing(0.5),
-
-  "& .MuiAccordionSummary-expandIconWrapper.Mui-expanded": {
-    transform: "rotate(-180deg)",
-  },
-  "& .MuiAccordionSummary-content": {
-    margin: theme.spacing(1),
-    marginTop: 0,
-    marginBottom: 0,
-  },
-}));
-
-const AccordionDetails = styled(MuiAccordionDetails)(({ theme }) => ({
-  padding: theme.spacing(3),
-  borderTop: "1px solid rgba(0, 0, 0, .125)",
-}));
+import {
+  Accordion,
+  AccordionDetails,
+  AccordionSummary,
+} from "../../components/Accordion";
 
 export const RunAllTests = () => {
   const [filters, setFilters] = useState<FilterObjectType | undefined>(
@@ -82,6 +38,7 @@ export const RunAllTests = () => {
 
   const [passedTests, setPassedTests] = useState<TestResult[]>([]);
   const [failedTests, setFailedTests] = useState<TestResult[]>([]);
+  const [testRunInProgress, setTestRunInProgress] = useState(false);
 
   useEffect(() => {
     setFilters({
@@ -97,7 +54,7 @@ export const RunAllTests = () => {
       return;
     }
 
-    RUNNING_TESTS = true;
+    setTestRunInProgress(true);
 
     setPassedTests([]);
     setFailedTests([]);
@@ -129,12 +86,12 @@ export const RunAllTests = () => {
     );
 
     socket.on(BACKEND_SOCKET_EVENTS.TEST_RUN_COMPLETE, () => {
-      RUNNING_TESTS = false;
+      setTestRunInProgress(false);
     });
   }, [filters]);
 
   useEffect(() => {
-    if (RUNNING_TESTS) return;
+    if (testRunInProgress) return;
     runTestsWithFilters();
   }, [runTestsWithFilters]);
 
@@ -146,6 +103,7 @@ export const RunAllTests = () => {
           Run Tests Again
         </Button>
       </PageTitle>
+      {testRunInProgress && <LinearProgress />}
       <Grid container>
         <Grid item xs={12} my={1} pl={1}>
           <Box
@@ -209,7 +167,6 @@ export const RunAllTests = () => {
             filters={filters || {}}
             filterMap={{
               name: "Test Name",
-              functionName: "Function Name",
               moduleName: "Module Name",
               testSuiteID: "Test Suite ID",
             }}

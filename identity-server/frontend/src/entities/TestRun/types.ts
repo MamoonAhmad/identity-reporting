@@ -33,9 +33,9 @@ export type FunctionTestResult = BaseTestResult & {
   executionContext: Record<string, any>;
   children: FunctionTestResult[];
   assertions: AssertionResult[];
-  passedInput: any;
+  functionMeta: ExecutedFunction;
   isMocked: boolean;
-  mockedOutput: any
+  mockedOutput: any;
 };
 
 export type AssertionResult = {
@@ -44,12 +44,14 @@ export type AssertionResult = {
     operator: "contains" | "equals";
     object: any;
     receivedObject: any;
+    thrownError?: string;
   };
 
   expectedErrorMessage?: {
     operator: "contains" | "equals";
     message: string;
     receivedError?: string;
+    functionOutput?: any;
   };
 
   customValidator?: {
