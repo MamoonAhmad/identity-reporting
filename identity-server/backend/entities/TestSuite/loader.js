@@ -9,11 +9,13 @@ import { writeFileJSONPromised } from "../../utils/writeFileJSONPromised.js";
 import { logger } from "../../logger.js";
 import { ERROR_CODES, throwError } from "../../errors.js";
 import { FileIndex } from "../../utils/FileInex.js";
+import * as userSettingsLoader from "../UserSetting/loader.js"
 
 
 
+const settings = await userSettingsLoader.getSettings();
 
-const testCasePath = `${IDENTITY_DIRECTORY}/${ENTITY_NAME}`
+const testCasePath = settings.tests_directory;
 const INDEX_FILE_PATH = `${testCasePath}/index.json`;
 
 let TEST_SUITE_INDEX_FILE_CONTENT = new FileIndex(
