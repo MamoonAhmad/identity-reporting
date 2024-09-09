@@ -26,4 +26,10 @@ export const validateUserSetting = (userSettings) => {
 
     }
 
+    // Tests Directory
+    // Defaults to /tests from the root of project
+    if(!userSettings.tests_directory) {
+        userSettings.tests_directory = "tests";
+    }
+
 }
