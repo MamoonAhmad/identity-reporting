@@ -23,7 +23,7 @@ In the root of your python project, create a file called `identity_config.json`.
 		"your_python_module": true // This will decorate all the functions  and classes inside the module
 		"another_module": [... String list of function and class name to decorate]
 	},
-	"command": "/Users/mamoon/.local/share/virtualenvs/your-env-name/bin/python", // path to your virtualenv python. You can set it "python3" or "python" if you wanna use the global python without virtual env.
+	"python_path": "/Users/mamoon/.local/share/virtualenvs/your-env-name/bin/python", // path to your virtual env python executable. You can set it to "python3" or "python" if you want to use the global python without virtual env.
 	"server_port": 8002, // Port on which Identity server will start. You can then visit http://localhost:8002 To access the identity server web app.
 	"max_executed_functions": 100 // Number of executed function records to keep. 0 means unlimited. Limiting it will be good for storage space.
 }

@@ -14,6 +14,10 @@ let clientApp = {};
 
 const clientReportMap = {};
 
+const settings = await userSettingsLoader.getSettings()
+const CLI_COMMAND = `${settings.python_path} -m identity_trace `
+
+
 export const registerEndpoints = (app) => {
 
     app.post("/client_app_completion_endpoint/:id", (req, res) => {
@@ -66,12 +70,10 @@ export const runFunctionsOnClientApp = async (functionArray) => {
         functions_to_run: functionArray
     })
 
-    const settings = await userSettingsLoader.getSettings()
-
     const cwd = process.cwd();
 
     // Run command to run functions on client app
-    const command = `cd ${cwd} && ${settings.command} --runFile="${runFileID}"`
+    const command = `cd ${cwd} && ${CLI_COMMAND} --runFile="${runFileID}"`
 
     console.log(`executing ${command}`)
 
@@ -118,7 +120,6 @@ export const runTestsOnClientApp = async ({
 }, onTestSuiteComplete) => {
 
     const reportID = v4()
-    const settings = await userSettingsLoader.getSettings()
 
     const cwd = process.cwd();
 
@@ -146,7 +147,7 @@ export const runTestsOnClientApp = async ({
         )
     }
 
-    const command = `cd ${cwd} && ${settings.command} --runTests ${commandFilters.join(" ")}`
+    const command = `cd ${cwd} && ${CLI_COMMAND} --runTests ${commandFilters.join(" ")}`
     // Run command to run functions on client app
 
     console.log(`executing ${command}`)
