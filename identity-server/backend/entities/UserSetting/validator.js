@@ -16,6 +16,15 @@ export const validateUserSetting = (userSettings) => {
         throwError(ERROR_CODES.VALIDATION_ERROR, { ...defaultErrorMeta, field: "server_port", extraMessage: " server_port should be an integer value." })
     }
 
+    // Python Path is required
+    if(!userSettings.python_path) {
+        throwError(ERROR_CODES.VALIDATION_ERROR, { 
+            ...defaultErrorMeta,
+            field: "python_path",
+            extraMessage: " python_path should be a path to python executable. Include virtual env path if you wish to execute in a virtual environment."
+        })
+    }
+
     if (userSettings.max_executed_functions !== undefined) {
         if (userSettings.max_executed_functions) {
             userSettings.max_executed_functions = parseInt(userSettings.max_executed_functions)
